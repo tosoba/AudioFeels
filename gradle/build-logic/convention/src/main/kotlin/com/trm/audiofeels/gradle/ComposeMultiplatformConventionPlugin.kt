@@ -6,6 +6,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.jetbrains.kotlin.compose.compiler.gradle.ComposeCompilerGradlePluginExtension
+import org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag
 
 class ComposeMultiplatformConventionPlugin : Plugin<Project> {
   override fun apply(target: Project) =
@@ -20,7 +21,7 @@ fun Project.configureCompose() {
   composeCompiler {
     // Enable 'strong skipping'
     // https://medium.com/androiddevelopers/jetpack-compose-strong-skipping-mode-explained-cbdb2aa4b900
-    enableStrongSkippingMode.set(true)
+    featureFlags.add(ComposeFeatureFlag.StrongSkipping)
 
     // Needed for Layout Inspector to be able to see all of the nodes in the component tree:
     // https://issuetracker.google.com/issues/338842143
