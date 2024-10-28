@@ -5,7 +5,13 @@ plugins {
 
 kotlin {
   sourceSets {
-    commonMain { dependencies { implementation(libs.kotlin.stdlib) } }
+    commonMain {
+      dependencies {
+        implementation(libs.kotlin.stdlib)
+        implementation(libs.ktor.client.core)
+        implementation(libs.okio)
+      }
+    }
 
     commonTest { dependencies { implementation(libs.kotlin.test) } }
 
