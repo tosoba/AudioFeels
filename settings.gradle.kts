@@ -31,5 +31,4 @@ dependencyResolutionManagement {
   }
 }
 
-include(":composeApp")
-include(":domain")
+include(":composeApp", ":domain", ":core:cache")
