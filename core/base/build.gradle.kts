@@ -7,12 +7,8 @@ kotlin {
   sourceSets {
     commonMain {
       dependencies {
-        implementation(projects.core.base)
-
         implementation(libs.kotlin.stdlib)
         implementation(libs.kotlininject.runtime)
-        implementation(libs.ktor.client.core)
-        implementation(libs.okio)
       }
     }
 
@@ -24,4 +20,4 @@ kotlin {
   }
 }
 
-android { namespace = "com.trm.audiofeels.core.cache" }
+android { namespace = "com.trm.audiofeels.core.base" }
