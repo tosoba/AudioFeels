@@ -1,3 +1,4 @@
+import com.trm.audiofeels.gradle.addKspDependencyForAllTargets
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
@@ -6,6 +7,7 @@ plugins {
   id("com.trm.audiofeels.kotlin.multiplatform")
   id("com.trm.audiofeels.android.application")
   id("com.trm.audiofeels.compose")
+  alias(libs.plugins.ksp)
 }
 
 kotlin {
@@ -29,6 +31,7 @@ kotlin {
     }
 
     commonMain.dependencies {
+      implementation(projects.core.base)
       implementation(projects.core.cache)
       implementation(projects.domain)
 
@@ -41,6 +44,8 @@ kotlin {
 
       implementation(libs.androidx.lifecycle.viewmodel)
       implementation(libs.androidx.lifecycle.runtime.compose)
+
+      implementation(libs.kotlininject.runtime)
     }
   }
 }
@@ -68,3 +73,7 @@ android {
 }
 
 dependencies { debugImplementation(compose.uiTooling) }
+
+ksp { arg("me.tatarka.inject.generateCompanionExtensions", "true") }
+
+addKspDependencyForAllTargets(libs.kotlininject.compiler)

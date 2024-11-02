@@ -17,6 +17,7 @@ compose-plugin = "1.6.11"
 junit = "4.13.2"
 kotlin = "2.0.21"
 kotlininject = "0.7.2"
+ksp = "2.0.21-1.0.26"
 ktor = "2.3.12"
 okio = "3.9.1"
 
@@ -61,3 +62,4 @@ compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-m
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
