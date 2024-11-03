@@ -36,6 +36,7 @@ include(
   ":composeApp",
   ":core:base",
   ":core:cache",
+  ":core:network",
   ":data:hosts",
   ":data:playlists",
   ":domain",

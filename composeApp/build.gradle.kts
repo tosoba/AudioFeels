@@ -34,6 +34,7 @@ kotlin {
       implementation(projects.api.audius)
       implementation(projects.core.base)
       implementation(projects.core.cache)
+      implementation(projects.core.network)
       implementation(projects.data.hosts)
       implementation(projects.data.playlists)
       implementation(projects.domain)
