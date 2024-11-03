@@ -31,4 +31,4 @@ dependencyResolutionManagement {
   }
 }
 
-include(":composeApp", ":domain", ":core:base", ":core:cache")
+include(":api:audius", ":composeApp", ":core:base", ":core:cache", ":domain")

@@ -1,7 +1,7 @@
 package com.trm.audiofeels.di
 
 import android.app.Application
-import com.trm.audio.feels.base.di.ApplicationScope
+import com.trm.audiofeels.base.di.ApplicationScope
 import com.trm.audiofeels.core.cache.di.CacheComponent
 import me.tatarka.inject.annotations.Component
 import me.tatarka.inject.annotations.Provides
