@@ -9,7 +9,6 @@ kotlin {
       dependencies {
         implementation(libs.kotlin.stdlib)
         implementation(libs.kotlininject.runtime)
-        implementation(libs.ktor.client.core)
       }
     }
 
@@ -21,4 +20,4 @@ kotlin {
   }
 }
 
-android { namespace = "com.trm.audiofeels.api.audius" }
+android { namespace = "com.trm.audiofeels.data.playlists" }
