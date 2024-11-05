@@ -12,8 +12,11 @@ kotlin {
         implementation(projects.core.network)
 
         implementation(libs.kotlin.stdlib)
+        implementation(libs.kotlinx.serialization.json)
         implementation(libs.kotlininject.runtime)
+
         implementation(libs.ktor.client.core)
+        implementation(libs.ktor.serialization.kotlinx.json)
       }
     }
 
