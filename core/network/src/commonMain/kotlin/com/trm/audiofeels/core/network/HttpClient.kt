@@ -9,17 +9,15 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.serialization.kotlinx.json.json
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 
 internal fun httpClient(config: HttpClientConfig<*>.() -> Unit): HttpClient = HttpClient(config)
 
-@OptIn(ExperimentalSerializationApi::class)
-internal fun httpClientDefaultConfig(
+internal fun HttpClientConfig<*>.configureDefault(
   logLevel: LogLevel? = null,
   cacheStorage: CacheStorage? = null,
   maxRetries: Int? = null,
-): HttpClientConfig<*>.() -> Unit = {
+) {
   install(ContentNegotiation) {
     json(
       Json {

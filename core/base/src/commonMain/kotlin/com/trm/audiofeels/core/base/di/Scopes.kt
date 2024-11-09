@@ -1,4 +1,4 @@
-package com.trm.audiofeels.base.di
+package com.trm.audiofeels.core.base.di
 
 import me.tatarka.inject.annotations.Scope
 

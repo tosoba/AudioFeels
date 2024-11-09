@@ -1,4 +1,4 @@
-package com.trm.audiofeels.base.util
+package com.trm.audiofeels.core.base.util
 
 import kotlin.coroutines.cancellation.CancellationException
 

@@ -37,6 +37,7 @@ include(
   ":core:base",
   ":core:cache",
   ":core:network",
+  ":core:preferences",
   ":data:hosts",
   ":data:playlists",
   ":domain",

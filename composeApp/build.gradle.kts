@@ -35,6 +35,7 @@ kotlin {
       implementation(projects.core.base)
       implementation(projects.core.cache)
       implementation(projects.core.network)
+      implementation(projects.core.preferences)
       implementation(projects.data.hosts)
       implementation(projects.data.playlists)
       implementation(projects.domain)

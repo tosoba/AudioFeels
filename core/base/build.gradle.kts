@@ -11,17 +11,6 @@ kotlin {
         implementation(libs.kotlininject.runtime)
       }
     }
-
-    commonTest {
-      dependencies {
-        implementation(libs.kotlin.test)
-        implementation(libs.kotlinx.coroutines.core)
-      }
-    }
-
-    androidMain { dependencies {} }
-
-    iosMain { dependencies {} }
   }
 }
 

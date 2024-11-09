@@ -1,6 +1,6 @@
 package com.trm.audiofeels.domain
 
-import com.trm.audiofeels.base.util.cancellableRunCatching
+import com.trm.audiofeels.core.base.util.cancellableRunCatching
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi

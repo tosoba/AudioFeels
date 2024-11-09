@@ -1,7 +1,7 @@
 package com.trm.audiofeels.core.cache.di
 
 import android.app.Application
-import com.trm.audiofeels.base.di.ApplicationScope
+import com.trm.audiofeels.core.base.di.ApplicationScope
 import com.trm.audiofeels.core.cache.disk.DiskCacheStorage
 import io.ktor.client.plugins.cache.storage.CacheStorage
 import me.tatarka.inject.annotations.Provides

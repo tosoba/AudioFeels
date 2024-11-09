@@ -1,6 +1,6 @@
 package com.trm.audiofeels.core.cache.di
 
-import com.trm.audiofeels.base.di.ApplicationScope
+import com.trm.audiofeels.core.base.di.ApplicationScope
 import io.ktor.client.plugins.cache.storage.*
 import io.ktor.client.plugins.cache.storage.CacheStorage
 import me.tatarka.inject.annotations.Provides

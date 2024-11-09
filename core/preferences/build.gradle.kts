@@ -19,4 +19,4 @@ kotlin {
   }
 }
 
-android { namespace = "com.trm.audiofeels.data.hosts" }
+android { namespace = "com.trm.audiofeels.core.preferences" }
