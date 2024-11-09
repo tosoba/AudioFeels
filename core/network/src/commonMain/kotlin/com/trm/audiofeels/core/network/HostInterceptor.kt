@@ -5,7 +5,7 @@ import io.ktor.client.plugins.HttpSend
 import io.ktor.client.plugins.plugin
 import io.ktor.http.isSuccess
 
-fun HttpClient.useHostInterceptor(
+fun HttpClient.pluginHostInterceptor(
   retrieveHost: suspend () -> String,
   onResponseSuccess: suspend (String) -> Unit,
 ): HttpClient {
