@@ -7,16 +7,13 @@ kotlin {
   sourceSets {
     commonMain {
       dependencies {
+        implementation(projects.api.audius)
+        implementation(projects.data.hosts)
+
         implementation(libs.kotlin.stdlib)
         implementation(libs.kotlininject.runtime)
       }
     }
-
-    commonTest { dependencies { implementation(libs.kotlin.test) } }
-
-    androidMain { dependencies {} }
-
-    iosMain { dependencies {} }
   }
 }
 

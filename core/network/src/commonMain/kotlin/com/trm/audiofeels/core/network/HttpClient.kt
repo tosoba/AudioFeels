@@ -11,9 +11,9 @@ import io.ktor.client.plugins.logging.Logging
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
-internal fun httpClient(config: HttpClientConfig<*>.() -> Unit): HttpClient = HttpClient(config)
+fun httpClient(config: HttpClientConfig<*>.() -> Unit): HttpClient = HttpClient(config)
 
-internal fun HttpClientConfig<*>.configureDefault(
+fun HttpClientConfig<*>.configureDefault(
   logLevel: LogLevel? = null,
   cacheStorage: CacheStorage? = null,
   maxRetries: Int? = null,

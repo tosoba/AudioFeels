@@ -1,11 +1,11 @@
-package com.trm.audiofeels.api.audius
+package com.trm.audiofeels.api.hosts
 
-import com.trm.audiofeels.api.audius.model.HostsResponse
+import com.trm.audiofeels.api.hosts.model.HostsResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 
-internal class AudiusHostEndpoint(private val client: HttpClient) {
+class HostsEndpoint(private val client: HttpClient) {
   suspend operator fun invoke(): HostsResponse = client.get(URL).body<HostsResponse>()
 
   companion object {

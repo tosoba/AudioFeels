@@ -33,6 +33,7 @@ dependencyResolutionManagement {
 
 include(
   ":api:audius",
+  ":api:hosts",
   ":composeApp",
   ":core:base",
   ":core:cache",
