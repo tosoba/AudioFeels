@@ -7,6 +7,7 @@ kotlin {
   sourceSets {
     commonMain {
       dependencies {
+        implementation(projects.api.hosts)
         implementation(projects.core.base)
 
         implementation(libs.androidx.datastore)

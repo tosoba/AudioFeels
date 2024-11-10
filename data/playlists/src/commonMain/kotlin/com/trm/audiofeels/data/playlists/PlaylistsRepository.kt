@@ -12,8 +12,8 @@ class PlaylistsRepository(
 ) {
   init {
     audiusEndpoints.value.client.pluginHostInterceptor(
-      retrieveHost = hostsRepository.value::getAudiusHost,
-      onResponseSuccess = { hostsRepository.value.updateAudiusHost() },
+      retrieveHost = hostsRepository.value::getHost,
+      fetchNewHost = hostsRepository.value::fetchNewHost,
     )
   }
 }
