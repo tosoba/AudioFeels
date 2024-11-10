@@ -27,26 +27,26 @@ class HostsRepository(
   suspend fun getHost(): String =
     inMemoryDataSource.host
       ?: mutex.withLock {
-        dataStore.data
-          .map { preferences -> preferences[HOST_PREF_KEY] }
-          .firstOrNull()
-          ?.also(::storeHostInMemory)
-          ?: fetchHosts()?.firstSuccessful()?.also { storeHost(it) }
+        getHostFromPreferences()?.also(::storeHostInMemory)
+          ?: fetchHosts()?.firstSuccessfulOrNull()?.also { storeHost(it) }
           ?: throw NoHostAvailableException
       }
 
   suspend fun fetchNewHost(oldHost: String?): String =
     mutex.withLock {
-      // Firstly, check lastWorkingHost stored in memory again
+      // Firstly, check lastWorkingHost stored in memory again (must be within the lock)
       // in case another request already fetched and updated a new working host
       // after it encountered a 404 response with the oldHost.
       inMemoryDataSource.host?.takeIf { it != oldHost }
         ?: fetchHosts()
           ?.run { oldHost?.let { filter { host -> host != it } } ?: this }
-          ?.firstSuccessful()
+          ?.firstSuccessfulOrNull()
           ?.also { storeHost(it) }
         ?: throw NoHostAvailableException
     }
+
+  private suspend fun getHostFromPreferences() =
+    dataStore.data.map { preferences -> preferences[HOST_PREF_KEY] }.firstOrNull()
 
   private suspend fun fetchHosts(): List<String>? = endpoints.getHosts().hosts
 
@@ -59,7 +59,7 @@ class HostsRepository(
     inMemoryDataSource.host = host
   }
 
-  private suspend fun List<String>.firstSuccessful(): String? = firstOrNull {
+  private suspend fun List<String>.firstSuccessfulOrNull(): String? = firstOrNull {
     endpoints.pingHost(it.trimHttps())
   }
 
