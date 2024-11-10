@@ -1,9 +1,14 @@
 package com.trm.audiofeels.data.playlists
 
 import com.trm.audiofeels.api.audius.AudiusEndpoints
+import com.trm.audiofeels.api.audius.model.PlaylistsResponseItem
+import com.trm.audiofeels.api.audius.model.TrackResponseItem
 import com.trm.audiofeels.core.network.HostFetcher
 import com.trm.audiofeels.core.network.HostRetriever
 import com.trm.audiofeels.core.network.hostInterceptor
+import com.trm.audiofeels.data.playlists.util.isValid
+import com.trm.audiofeels.data.playlists.util.toPlaylist
+import com.trm.audiofeels.data.playlists.util.toTrack
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.model.Track
 import com.trm.audiofeels.domain.repository.PlaylistsRepository
@@ -21,11 +26,21 @@ class AudiusPlaylistsRepository(
     )
   }
 
-  override fun getPlaylistsForMood(mood: String): List<Playlist> {
-    TODO("Not yet implemented")
-  }
+  override suspend fun getPlaylistsForMood(mood: String): List<Playlist> =
+    audiusEndpoints
+      .getPlaylists(mood)
+      .items
+      ?.filter(PlaylistsResponseItem::isValid)
+      ?.map(PlaylistsResponseItem::toPlaylist)
+      .orEmpty()
 
-  override fun getPlaylistTracks(playlistId: String): List<Track> {
-    TODO("Not yet implemented")
-  }
+  override suspend fun getPlaylistTracks(playlistId: String): List<Track> =
+    audiusEndpoints
+      .getPlaylistById(playlistId)
+      .items
+      ?.firstOrNull()
+      ?.tracks
+      ?.filter(TrackResponseItem::isValid)
+      ?.map(TrackResponseItem::toTrack)
+      .orEmpty()
 }
