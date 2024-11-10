@@ -6,6 +6,8 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.trm.audiofeels.api.hosts.HostsEndpoints
 import com.trm.audiofeels.core.base.di.ApplicationScope
+import com.trm.audiofeels.core.network.HostFetcher
+import com.trm.audiofeels.core.network.HostRetriever
 import com.trm.audiofeels.data.hosts.exception.NoHostAvailableException
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
@@ -19,12 +21,12 @@ class HostsRepository(
   private val inMemoryDataSource: HostsInMemoryDataSource,
   private val dataStore: DataStore<Preferences>,
   endpoints: Lazy<HostsEndpoints>,
-) {
+) : HostRetriever, HostFetcher {
   private val endpoints by endpoints
 
   private val mutex = Mutex()
 
-  suspend fun getHost(): String =
+  override suspend fun retrieveHost(): String =
     inMemoryDataSource.host
       ?: mutex.withLock {
         getHostFromPreferences()?.also(::storeHostInMemory)
@@ -32,16 +34,13 @@ class HostsRepository(
           ?: throw NoHostAvailableException
       }
 
-  suspend fun fetchNewHost(oldHost: String?): String =
+  override suspend fun fetchHost(oldHost: String): String =
     mutex.withLock {
       // Firstly, check lastWorkingHost stored in memory again (must be within the lock)
       // in case another request already fetched and updated a new working host
       // after it encountered a 404 response with the oldHost.
       inMemoryDataSource.host?.takeIf { it != oldHost }
-        ?: fetchHosts()
-          ?.run { oldHost?.let { filter { host -> host != it } } ?: this }
-          ?.firstSuccessfulOrNull()
-          ?.also { storeHost(it) }
+        ?: fetchHosts()?.filter { it != oldHost }?.firstSuccessfulOrNull()?.also { storeHost(it) }
         ?: throw NoHostAvailableException
     }
 

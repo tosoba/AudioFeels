@@ -1,21 +1,20 @@
 package com.trm.audiofeels.data.playlists
 
 import com.trm.audiofeels.api.audius.AudiusEndpoints
+import com.trm.audiofeels.core.network.HostFetcher
+import com.trm.audiofeels.core.network.HostRetriever
 import com.trm.audiofeels.core.network.hostInterceptor
-import com.trm.audiofeels.data.hosts.HostsRepository
 import me.tatarka.inject.annotations.Inject
 
 @Inject
 class PlaylistsRepository(
-  private val hostsRepository: HostsRepository,
+  hostRetriever: HostRetriever,
+  hostFetcher: HostFetcher,
   private val audiusEndpoints: AudiusEndpoints,
 ) {
   init {
     audiusEndpoints.addSendInterceptor(
-      hostInterceptor(
-        retrieveHost = hostsRepository::getHost,
-        fetchNewHost = hostsRepository::fetchNewHost,
-      )
+      hostInterceptor(hostRetriever = hostRetriever, hostFetcher = hostFetcher)
     )
   }
 }

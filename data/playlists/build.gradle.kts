@@ -9,7 +9,6 @@ kotlin {
       dependencies {
         implementation(projects.api.audius)
         implementation(projects.core.network)
-        implementation(projects.data.hosts)
 
         implementation(libs.ktor.client.core)
 
