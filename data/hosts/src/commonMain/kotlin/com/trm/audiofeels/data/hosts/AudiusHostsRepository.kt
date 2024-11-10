@@ -17,8 +17,8 @@ import me.tatarka.inject.annotations.Inject
 
 @ApplicationScope
 @Inject
-class HostsRepository(
-  private val inMemoryDataSource: HostsInMemoryDataSource,
+class AudiusHostsRepository(
+  private val inMemoryDataSource: AudiusHostsInMemoryDataSource,
   private val dataStore: DataStore<Preferences>,
   endpoints: Lazy<HostsEndpoints>,
 ) : HostRetriever, HostFetcher {

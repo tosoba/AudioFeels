@@ -5,6 +5,6 @@ import me.tatarka.inject.annotations.Inject
 
 @Inject
 @ApplicationScope
-class HostsInMemoryDataSource {
+class AudiusHostsInMemoryDataSource {
   var host: String? = null
 }
