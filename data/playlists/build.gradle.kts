@@ -11,8 +11,6 @@ kotlin {
         implementation(projects.core.network)
         implementation(projects.domain)
 
-        implementation(libs.ktor.client.core)
-
         implementation(libs.kotlin.stdlib)
         implementation(libs.kotlininject.runtime)
       }
