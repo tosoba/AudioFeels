@@ -30,7 +30,7 @@ class AudiusHostsRepository(
     inMemoryDataSource.host
       ?: mutex.withLock {
         getHostFromPreferences()?.also(::storeHostInMemory)
-          ?: fetchHosts()?.firstSuccessfulOrNull()?.also { storeHost(it) }
+          ?: fetchHosts()?.firstSuccessfulOrNull()?.also { storeHost(it.trimHttps()) }
           ?: throw NoHostAvailableException
       }
 

@@ -9,17 +9,23 @@ import com.trm.audiofeels.core.network.httpClient
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.call.body
+import io.ktor.client.plugins.HttpSend
+import io.ktor.client.plugins.plugin
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.http.appendPathSegments
 import io.ktor.http.path
 
-class AudiusEndpoints private constructor(private val client: HttpClient) {
+class AudiusEndpoints(private val client: HttpClient) {
   constructor(
     hostRetriever: HostRetriever,
     hostFetcher: HostFetcher,
     config: HttpClientConfig<*>.() -> Unit,
-  ) : this(httpClient(config).apply { hostInterceptor(hostRetriever, hostFetcher) })
+  ) : this(
+    httpClient(config).apply {
+      plugin(HttpSend).intercept(hostInterceptor(hostRetriever, hostFetcher))
+    }
+  )
 
   suspend fun getPlaylists(mood: String): PlaylistsResponse =
     client

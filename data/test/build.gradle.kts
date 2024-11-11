@@ -10,7 +10,12 @@ kotlin {
         implementation(projects.api.audius)
         implementation(projects.api.hosts)
         implementation(projects.core.network)
+        implementation(projects.data.hosts)
+        implementation(projects.data.playlists)
         implementation(projects.domain)
+
+        implementation(libs.androidx.datastore)
+        implementation(libs.androidx.datastore.preferences)
 
         implementation(libs.kotlin.stdlib)
         implementation(libs.kotlin.test)
