@@ -1,5 +1,6 @@
 package com.trm.audiofeels.api.hosts.model
 
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-data class HostsResponse(@SerialName("data") val hosts: List<String>?)
+@Serializable data class HostsResponse(@SerialName("data") val hosts: List<String>?)

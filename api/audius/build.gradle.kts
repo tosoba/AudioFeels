@@ -1,6 +1,7 @@
 plugins {
   id("com.trm.audiofeels.android.library")
   id("com.trm.audiofeels.kotlin.multiplatform")
+  alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
@@ -20,8 +21,6 @@ kotlin {
         implementation(libs.ktor.serialization.kotlinx.json)
       }
     }
-
-    commonTest { dependencies { implementation(libs.kotlin.test) } }
   }
 }
 

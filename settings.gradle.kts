@@ -41,5 +41,6 @@ include(
   ":core:preferences",
   ":data:hosts",
   ":data:playlists",
+  ":data:test",
   ":domain",
 )

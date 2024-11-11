@@ -1,7 +1,9 @@
 package com.trm.audiofeels.api.audius.model
 
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class PlaylistResponseItem(
   @SerialName("artwork") val artwork: Artwork?,
   @SerialName("description") val description: String?,

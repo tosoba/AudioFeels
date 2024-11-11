@@ -1,28 +1,29 @@
 plugins {
   id("com.trm.audiofeels.android.library")
   id("com.trm.audiofeels.kotlin.multiplatform")
-  alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
   sourceSets {
-    commonMain {
+    commonTest {
       dependencies {
-        implementation(projects.core.base)
+        implementation(projects.api.audius)
+        implementation(projects.api.hosts)
         implementation(projects.core.network)
+        implementation(projects.domain)
 
         implementation(libs.kotlin.stdlib)
+        implementation(libs.kotlin.test)
+        implementation(libs.kotlinx.coroutines.test)
         implementation(libs.kotlinx.serialization.json)
-        implementation(libs.kotlininject.runtime)
 
+        implementation(libs.ktor.client.content.negotiation)
         implementation(libs.ktor.client.core)
-        implementation(libs.ktor.client.logging)
+        implementation(libs.ktor.client.mock)
         implementation(libs.ktor.serialization.kotlinx.json)
       }
     }
-
-    commonTest { dependencies { implementation(libs.kotlin.test) } }
   }
 }
 
-android { namespace = "com.trm.audiofeels.api.hosts" }
+android { namespace = "com.trm.audiofeels.data.test" }
