@@ -59,12 +59,12 @@ class AudiusHostsRepository(
   }
 
   private suspend fun List<String>.firstSuccessfulOrNull(): String? = firstOrNull {
-    endpoints.pingHost(it.trimHttps())
+    endpoints.pingHost(it)
   }
 
   private fun String.trimHttps() = replace("https://", "")
 
   companion object {
-    private val HOST_PREF_KEY = stringPreferencesKey("host")
+    val HOST_PREF_KEY = stringPreferencesKey("host")
   }
 }
