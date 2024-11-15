@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.trm.audiofeels.api.hosts.HostsEndpoints
 import com.trm.audiofeels.core.base.di.ApplicationScope
+import com.trm.audiofeels.core.base.util.trimHttps
 import com.trm.audiofeels.core.network.HostFetcher
 import com.trm.audiofeels.core.network.HostRetriever
 import com.trm.audiofeels.data.hosts.exception.NoHostAvailableException
@@ -62,8 +63,6 @@ class AudiusHostsRepository(
   private suspend fun List<String>.firstSuccessfulOrNull(): String? = firstOrNull {
     endpoints.pingHost(it)
   }
-
-  private fun String.trimHttps(): String = replace("https://", "")
 
   companion object {
     val HOST_PREF_KEY = stringPreferencesKey("host")

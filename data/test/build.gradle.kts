@@ -9,6 +9,7 @@ kotlin {
       dependencies {
         implementation(projects.api.audius)
         implementation(projects.api.hosts)
+        implementation(projects.core.base)
         implementation(projects.core.network)
         implementation(projects.data.hosts)
         implementation(projects.data.playlists)
