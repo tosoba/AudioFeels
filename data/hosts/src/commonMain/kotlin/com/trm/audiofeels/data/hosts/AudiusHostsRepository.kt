@@ -30,7 +30,7 @@ class AudiusHostsRepository(
     inMemoryDataSource.host
       ?: mutex.withLock {
         getHostFromPreferences()?.also(::storeHostInMemory)
-          ?: fetchHosts()?.firstSuccessfulOrNull()?.also { storeHost(it.trimHttps()) }
+          ?: fetchHosts()?.firstSuccessfulOrNull()?.also { storeHost(it) }
           ?: throw NoHostAvailableException
       }
 
@@ -50,8 +50,9 @@ class AudiusHostsRepository(
   private suspend fun fetchHosts(): List<String>? = endpoints.getHosts().hosts
 
   private suspend fun storeHost(host: String) {
-    dataStore.edit { it[HOST_PREF_KEY] = host }
-    storeHostInMemory(host)
+    val trimmed = host.trimHttps()
+    dataStore.edit { it[HOST_PREF_KEY] = trimmed }
+    storeHostInMemory(trimmed)
   }
 
   private fun storeHostInMemory(host: String) {
@@ -62,7 +63,7 @@ class AudiusHostsRepository(
     endpoints.pingHost(it)
   }
 
-  private fun String.trimHttps() = replace("https://", "")
+  private fun String.trimHttps(): String = replace("https://", "")
 
   companion object {
     val HOST_PREF_KEY = stringPreferencesKey("host")

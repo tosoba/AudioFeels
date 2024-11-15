@@ -21,7 +21,6 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
-import io.ktor.utils.io.ByteReadChannel
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -29,7 +28,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
 
-class AudiusPlaylistsRepositoryTest {
+class AudiusRepositoryTest {
   @Test
   fun `given no host stored locally - when call to getPlaylistsForMood - then hosts are fetched`() =
     runTest {
@@ -93,8 +92,7 @@ class AudiusPlaylistsRepositoryTest {
 
       playlistsRepository(
           hostsEngine = hostsClientEngine,
-          inMemoryDataSource =
-            AudiusHostsInMemoryDataSource().apply { host = "https://audius-nodes.com" },
+          inMemoryDataSource = AudiusHostsInMemoryDataSource().apply { host = "audius-nodes.com" },
         )
         .getPlaylistsForMood("Energizing")
 
@@ -109,13 +107,28 @@ class AudiusPlaylistsRepositoryTest {
       playlistsRepository(
           hostsEngine = hostsClientEngine,
           dataStore =
-            FakeDataStorePreferences(
-              AudiusHostsRepository.HOST_PREF_KEY to "https://audius-nodes.com"
-            ),
+            FakeDataStorePreferences(AudiusHostsRepository.HOST_PREF_KEY to "audius-nodes.com"),
         )
         .getPlaylistsForMood("Energizing")
 
       assertTrue(hostsClientEngine.requestHistory.isEmpty())
+    }
+
+  @Test
+  fun `given host stored in preferences - when call to getPlaylistsForMood - then host is stored in memory`() =
+    runTest {
+      val hostsClientEngine = hostsEngine()
+      val inMemoryDataSource = AudiusHostsInMemoryDataSource()
+
+      playlistsRepository(
+          hostsEngine = hostsClientEngine,
+          inMemoryDataSource = inMemoryDataSource,
+          dataStore =
+            FakeDataStorePreferences(AudiusHostsRepository.HOST_PREF_KEY to "audius-nodes.com"),
+        )
+        .getPlaylistsForMood("Energizing")
+
+      assertTrue(inMemoryDataSource.host == "audius-nodes.com")
     }
 
   private fun playlistsRepository(
@@ -159,7 +172,7 @@ class AudiusPlaylistsRepositoryTest {
     status: HttpStatusCode = HttpStatusCode.OK,
   ): HttpResponseData =
     respond(
-      content = ByteReadChannel(json),
+      content = json,
       status = status,
       headers = headersOf(HttpHeaders.ContentType, "application/json"),
     )
