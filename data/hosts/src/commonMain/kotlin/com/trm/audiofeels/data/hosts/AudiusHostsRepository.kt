@@ -29,7 +29,8 @@ class AudiusHostsRepository(
   override suspend fun retrieveHost(): String =
     inMemoryDataSource.host
       ?: mutex.withLock {
-        dataStore.get(hostPreferenceKey)?.also(::storeHostInMemory)
+        inMemoryDataSource.host
+          ?: dataStore.get(hostPreferenceKey)?.also(::storeHostInMemory)
           ?: fetchHosts()?.firstSuccessfulOrNull()?.also { storeHost(it) }
           ?: throw NoHostAvailableException
       }

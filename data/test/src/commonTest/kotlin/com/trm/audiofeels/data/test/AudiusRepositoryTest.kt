@@ -12,6 +12,9 @@ import com.trm.audiofeels.core.preferences.hostPreferenceKey
 import com.trm.audiofeels.data.hosts.AudiusHostsInMemoryDataSource
 import com.trm.audiofeels.data.hosts.AudiusHostsRepository
 import com.trm.audiofeels.data.playlists.AudiusPlaylistsRepository
+import dev.mokkery.spy
+import dev.mokkery.verify
+import dev.mokkery.verify.VerifyMode.Companion.exactly
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.mock.MockEngine
@@ -30,8 +33,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 
@@ -70,7 +72,7 @@ class AudiusRepositoryTest {
       val hostsEngine =
         defaultHostsEngine(
           (0..<firstSuccessHostIndex).associate {
-            "${hostAtIndex(it)}/v1" to MockResponse("{}", HttpStatusCode.NotFound)
+            pingHostAtIndexUrl(it) to MockResponse(status = HttpStatusCode.NotFound)
           }
         )
 
@@ -96,6 +98,20 @@ class AudiusRepositoryTest {
         actual =
           hostsEngine.requestHistory.map { it.url.host }.count { it == hostAtIndex(0).trimHttps() },
       )
+    }
+
+  @Test
+  fun `given no host stored locally - when multiple calls to getPlaylistsForMood - then after host is stored it always retrieved from memory for subsequent calls `() =
+    runTest {
+      val hostsEngine =
+        defaultHostsEngine(mapOf(pingHostAtIndexUrl(0) to MockResponse(delayMillis = 1_000L)))
+      val dataStore = spy<DataStore<Preferences>>(FakeDataStorePreferences())
+      val playlistsRepository =
+        playlistsRepository(hostsEngine = hostsEngine, dataStore = dataStore)
+
+      List(5) { async { playlistsRepository.getPlaylistsForMood("Energizing") } }.awaitAll()
+
+      verify(mode = exactly(1)) { dataStore.data }
     }
 
   @Test
@@ -202,9 +218,12 @@ class AudiusRepositoryTest {
   private fun defaultHostsEngine(urlResponses: Map<String, MockResponse> = emptyMap()): MockEngine =
     MockEngine { request ->
       val url = request.url.toString()
-      urlResponses[url]?.let { (json, status) -> respondWithJson(json, status) }
+      urlResponses[url]?.let { (json, status, delayMillis) ->
+        delayMillis.takeIf { it > 0 }?.let { delay(it) }
+        respondWithJson(json, status)
+      }
         ?: respondWithJson(
-          if (HostsEndpoints.HOSTS_URL == url) {
+          if (url == HostsEndpoints.HOSTS_URL) {
             HOSTS_RESPONSE_JSON
           } else {
             "{}"
@@ -212,7 +231,11 @@ class AudiusRepositoryTest {
         )
     }
 
-  private data class MockResponse(val json: String, val status: HttpStatusCode = HttpStatusCode.OK)
+  private data class MockResponse(
+    val json: String = "{}",
+    val status: HttpStatusCode = HttpStatusCode.OK,
+    val delayMillis: Long = 0L,
+  )
 
   private fun MockRequestHandleScope.respondWithJson(
     json: String,
@@ -234,6 +257,8 @@ class AudiusRepositoryTest {
 
     private val hostsResponse = Json.decodeFromString<HostsResponse>(HOSTS_RESPONSE_JSON)
 
-    fun hostAtIndex(index: Int): String = hostsResponse.hosts!![index]
+    private fun hostAtIndex(index: Int): String = hostsResponse.hosts!![index]
+
+    private fun pingHostAtIndexUrl(index: Int): String = "${hostAtIndex(index)}/v1"
   }
 }

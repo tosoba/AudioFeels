@@ -1,6 +1,7 @@
 plugins {
   id("com.trm.audiofeels.android.library")
   id("com.trm.audiofeels.kotlin.multiplatform")
+  alias(libs.plugins.mokkery)
 }
 
 kotlin {
