@@ -10,9 +10,7 @@ kotlin {
         implementation(projects.api.hosts)
         implementation(projects.core.base)
         implementation(projects.core.network)
-
-        implementation(libs.androidx.datastore)
-        implementation(libs.androidx.datastore.preferences)
+        implementation(projects.core.preferences)
 
         implementation(libs.kotlin.stdlib)
         implementation(libs.kotlininject.runtime)

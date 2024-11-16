@@ -9,8 +9,8 @@ kotlin {
       dependencies {
         implementation(projects.core.base)
 
-        implementation(libs.androidx.datastore)
-        implementation(libs.androidx.datastore.preferences)
+        api(libs.androidx.datastore)
+        api(libs.androidx.datastore.preferences)
 
         implementation(libs.kotlin.stdlib)
         implementation(libs.kotlininject.runtime)

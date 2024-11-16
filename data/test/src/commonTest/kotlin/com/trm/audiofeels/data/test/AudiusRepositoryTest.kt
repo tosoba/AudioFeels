@@ -7,6 +7,8 @@ import com.trm.audiofeels.api.hosts.HostsEndpoints
 import com.trm.audiofeels.api.hosts.model.HostsResponse
 import com.trm.audiofeels.core.base.util.trimHttps
 import com.trm.audiofeels.core.network.hostInterceptor
+import com.trm.audiofeels.core.preferences.get
+import com.trm.audiofeels.core.preferences.hostPreferenceKey
 import com.trm.audiofeels.data.hosts.AudiusHostsInMemoryDataSource
 import com.trm.audiofeels.data.hosts.AudiusHostsRepository
 import com.trm.audiofeels.data.playlists.AudiusPlaylistsRepository
@@ -23,15 +25,15 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class AudiusRepositoryTest {
   @Test
@@ -122,7 +124,7 @@ class AudiusRepositoryTest {
 
       assertEquals(
         expected = hostsEngine.requestHistory.last().url.host,
-        actual = dataStore.data.map { it[AudiusHostsRepository.HOST_PREF_KEY] }.first(),
+        actual = dataStore.get(hostPreferenceKey),
       )
     }
 
@@ -148,10 +150,7 @@ class AudiusRepositoryTest {
 
       playlistsRepository(
           hostsEngine = hostsEngine,
-          dataStore =
-            FakeDataStorePreferences(
-              AudiusHostsRepository.HOST_PREF_KEY to hostAtIndex(0).trimHttps()
-            ),
+          dataStore = FakeDataStorePreferences(hostPreferenceKey to hostAtIndex(0).trimHttps()),
         )
         .getPlaylistsForMood("Energizing")
 
@@ -167,10 +166,7 @@ class AudiusRepositoryTest {
       playlistsRepository(
           hostsEngine = hostsEngine,
           inMemoryDataSource = inMemoryDataSource,
-          dataStore =
-            FakeDataStorePreferences(
-              AudiusHostsRepository.HOST_PREF_KEY to hostAtIndex(0).trimHttps()
-            ),
+          dataStore = FakeDataStorePreferences(hostPreferenceKey to hostAtIndex(0).trimHttps()),
         )
         .getPlaylistsForMood("Energizing")
 

@@ -2,16 +2,15 @@ package com.trm.audiofeels.data.hosts
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
 import com.trm.audiofeels.api.hosts.HostsEndpoints
 import com.trm.audiofeels.core.base.di.ApplicationScope
 import com.trm.audiofeels.core.base.util.trimHttps
 import com.trm.audiofeels.core.network.HostFetcher
 import com.trm.audiofeels.core.network.HostRetriever
+import com.trm.audiofeels.core.preferences.get
+import com.trm.audiofeels.core.preferences.hostPreferenceKey
+import com.trm.audiofeels.core.preferences.set
 import com.trm.audiofeels.data.hosts.exception.NoHostAvailableException
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import me.tatarka.inject.annotations.Inject
@@ -30,7 +29,7 @@ class AudiusHostsRepository(
   override suspend fun retrieveHost(): String =
     inMemoryDataSource.host
       ?: mutex.withLock {
-        getHostFromPreferences()?.also(::storeHostInMemory)
+        dataStore.get(hostPreferenceKey)?.also(::storeHostInMemory)
           ?: fetchHosts()?.firstSuccessfulOrNull()?.also { storeHost(it) }
           ?: throw NoHostAvailableException
       }
@@ -45,14 +44,11 @@ class AudiusHostsRepository(
         ?: throw NoHostAvailableException
     }
 
-  private suspend fun getHostFromPreferences() =
-    dataStore.data.map { preferences -> preferences[HOST_PREF_KEY] }.firstOrNull()
-
   private suspend fun fetchHosts(): List<String>? = endpoints.getHosts().hosts
 
   private suspend fun storeHost(host: String) {
     val trimmed = host.trimHttps()
-    dataStore.edit { it[HOST_PREF_KEY] = trimmed }
+    dataStore.set(hostPreferenceKey, trimmed)
     storeHostInMemory(trimmed)
   }
 
@@ -62,9 +58,5 @@ class AudiusHostsRepository(
 
   private suspend fun List<String>.firstSuccessfulOrNull(): String? = firstOrNull {
     endpoints.pingHost(it)
-  }
-
-  companion object {
-    val HOST_PREF_KEY = stringPreferencesKey("host")
   }
 }
