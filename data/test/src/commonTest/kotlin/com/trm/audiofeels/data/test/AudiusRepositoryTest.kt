@@ -35,7 +35,7 @@ class AudiusRepositoryTest {
   @Test
   fun `given no host stored locally - when call to getPlaylistsForMood - then hosts are fetched`() =
     runTest {
-      val hostsClientEngine = hostsEngine()
+      val hostsClientEngine = defaultHostsEngine()
 
       playlistsRepository(hostsEngine = hostsClientEngine).getPlaylistsForMood("Energizing")
 
@@ -48,7 +48,7 @@ class AudiusRepositoryTest {
   @Test
   fun `given no host stored locally - when call to getPlaylistsForMood - then first fetched host is pinged`() =
     runTest {
-      val hostsClientEngine = hostsEngine()
+      val hostsClientEngine = defaultHostsEngine()
 
       playlistsRepository(hostsEngine = hostsClientEngine).getPlaylistsForMood("Energizing")
 
@@ -59,9 +59,30 @@ class AudiusRepositoryTest {
     }
 
   @Test
+  fun `given no host stored locally - when call to getPlaylistsForMood - then hosts are pinged until success`() =
+    runTest {
+      val firstSuccessHostIndex = 5
+
+      val hostsClientEngine =
+        defaultHostsEngine(
+          (0..<firstSuccessHostIndex).associate {
+            "${hostAtIndex(it)}/v1" to MockResponse("{}", HttpStatusCode.NotFound)
+          }
+        )
+
+      playlistsRepository(hostsEngine = hostsClientEngine).getPlaylistsForMood("Energizing")
+
+      assertTrue(
+        hostsClientEngine.requestHistory
+          .map { it.url.host }
+          .containsAll((0..firstSuccessHostIndex).map { hostAtIndex(it).trimHttps() })
+      )
+    }
+
+  @Test
   fun `given no host stored locally - when call to getPlaylistsForMood - then fetched host is stored in memory`() =
     runTest {
-      val hostsClientEngine = hostsEngine()
+      val hostsClientEngine = defaultHostsEngine()
       val inMemoryDataSource = AudiusHostsInMemoryDataSource()
 
       playlistsRepository(hostsEngine = hostsClientEngine, inMemoryDataSource = inMemoryDataSource)
@@ -76,7 +97,7 @@ class AudiusRepositoryTest {
   @Test
   fun `given no host stored locally - when call to getPlaylistsForMood - then fetched host is stored in preferences`() =
     runTest {
-      val hostsClientEngine = hostsEngine()
+      val hostsClientEngine = defaultHostsEngine()
       val dataStore = FakeDataStorePreferences()
 
       playlistsRepository(hostsEngine = hostsClientEngine, dataStore = dataStore)
@@ -91,7 +112,7 @@ class AudiusRepositoryTest {
   @Test
   fun `given host stored in memory - when call to getPlaylistsForMood - then hosts are not fetched`() =
     runTest {
-      val hostsClientEngine = hostsEngine()
+      val hostsClientEngine = defaultHostsEngine()
 
       playlistsRepository(
           hostsEngine = hostsClientEngine,
@@ -106,7 +127,7 @@ class AudiusRepositoryTest {
   @Test
   fun `given host stored in preferences - when call to getPlaylistsForMood - then hosts are not fetched`() =
     runTest {
-      val hostsClientEngine = hostsEngine()
+      val hostsClientEngine = defaultHostsEngine()
 
       playlistsRepository(
           hostsEngine = hostsClientEngine,
@@ -123,7 +144,7 @@ class AudiusRepositoryTest {
   @Test
   fun `given host stored in preferences - when call to getPlaylistsForMood - then host is stored in memory`() =
     runTest {
-      val hostsClientEngine = hostsEngine()
+      val hostsClientEngine = defaultHostsEngine()
       val inMemoryDataSource = AudiusHostsInMemoryDataSource()
 
       playlistsRepository(
@@ -165,15 +186,20 @@ class AudiusRepositoryTest {
     )
   }
 
-  private fun hostsEngine(): MockEngine = MockEngine { request ->
-    respondWithJson(
-      if (HostsEndpoints.HOSTS_URL == request.url.toString()) {
-        HOSTS_RESPONSE_JSON
-      } else {
-        "{}"
-      }
-    )
-  }
+  private fun defaultHostsEngine(urlResponses: Map<String, MockResponse> = emptyMap()): MockEngine =
+    MockEngine { request ->
+      val url = request.url.toString()
+      urlResponses[url]?.let { (json, status) -> respondWithJson(json, status) }
+        ?: respondWithJson(
+          if (HostsEndpoints.HOSTS_URL == url) {
+            HOSTS_RESPONSE_JSON
+          } else {
+            "{}"
+          }
+        )
+    }
+
+  private data class MockResponse(val json: String, val status: HttpStatusCode = HttpStatusCode.OK)
 
   private fun MockRequestHandleScope.respondWithJson(
     json: String,
