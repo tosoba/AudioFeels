@@ -23,13 +23,15 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class AudiusRepositoryTest {
   @Test
@@ -76,6 +78,21 @@ class AudiusRepositoryTest {
         hostsEngine.requestHistory
           .map { it.url.host }
           .containsAll((0..firstSuccessHostIndex).map { hostAtIndex(it).trimHttps() })
+      )
+    }
+
+  @Test
+  fun `given no host stored locally - when multiple calls to getPlaylistsForMood - then host is pinged only by first call`() =
+    runTest {
+      val hostsEngine = defaultHostsEngine()
+      val playlistsRepository = playlistsRepository(hostsEngine = hostsEngine)
+
+      List(5) { async { playlistsRepository.getPlaylistsForMood("Energizing") } }.awaitAll()
+
+      assertEquals(
+        expected = 1,
+        actual =
+          hostsEngine.requestHistory.map { it.url.host }.count { it == hostAtIndex(0).trimHttps() },
       )
     }
 
