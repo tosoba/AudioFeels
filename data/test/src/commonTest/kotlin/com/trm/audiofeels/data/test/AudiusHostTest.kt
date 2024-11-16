@@ -37,7 +37,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 
-class AudiusRepositoryTest {
+class AudiusHostTest {
   @Test
   fun `given no host stored locally - when call to getPlaylistsForMood - then hosts are fetched`() =
     runTest {
@@ -45,10 +45,7 @@ class AudiusRepositoryTest {
 
       playlistsRepository(hostsEngine = hostsEngine).getPlaylistsForMood("Energizing")
 
-      assertEquals(
-        expected = HostsEndpoints.HOSTS_URL,
-        actual = hostsEngine.requestHistory.first().url.toString(),
-      )
+      hostsEngine.assertHostsWereFetchedFirst()
     }
 
   @Test
@@ -86,12 +83,23 @@ class AudiusRepositoryTest {
     }
 
   @Test
+  fun `given no host stored locally - when multiple calls to getPlaylistsForMood - then hosts are fetched only once`() =
+    runTest {
+      val hostsEngine = defaultHostsEngine()
+      val repository = playlistsRepository(hostsEngine = hostsEngine)
+
+      List(5) { async { repository.getPlaylistsForMood("Energizing") } }.awaitAll()
+
+      hostsEngine.assertHostsWereFetchedOnlyOnce()
+    }
+
+  @Test
   fun `given no host stored locally - when multiple calls to getPlaylistsForMood - then host is pinged only by first call`() =
     runTest {
       val hostsEngine = defaultHostsEngine()
-      val playlistsRepository = playlistsRepository(hostsEngine = hostsEngine)
+      val repository = playlistsRepository(hostsEngine = hostsEngine)
 
-      List(5) { async { playlistsRepository.getPlaylistsForMood("Energizing") } }.awaitAll()
+      List(5) { async { repository.getPlaylistsForMood("Energizing") } }.awaitAll()
 
       assertEquals(
         expected = 1,
@@ -101,15 +109,14 @@ class AudiusRepositoryTest {
     }
 
   @Test
-  fun `given no host stored locally - when multiple calls to getPlaylistsForMood - then after host is stored it always retrieved from memory for subsequent calls `() =
+  fun `given no host stored locally - when multiple calls to getPlaylistsForMood - then after host is stored it always retrieved from memory for subsequent calls`() =
     runTest {
       val hostsEngine =
         defaultHostsEngine(mapOf(pingHostAtIndexUrl(0) to MockResponse(delayMillis = 1_000L)))
       val dataStore = spy<DataStore<Preferences>>(FakeDataStorePreferences())
-      val playlistsRepository =
-        playlistsRepository(hostsEngine = hostsEngine, dataStore = dataStore)
+      val repository = playlistsRepository(hostsEngine = hostsEngine, dataStore = dataStore)
 
-      List(5) { async { playlistsRepository.getPlaylistsForMood("Energizing") } }.awaitAll()
+      List(5) { async { repository.getPlaylistsForMood("Energizing") } }.awaitAll()
 
       verify(mode = exactly(1)) { dataStore.data }
     }
@@ -145,7 +152,7 @@ class AudiusRepositoryTest {
     }
 
   @Test
-  fun `given host stored in memory - when call to getPlaylistsForMood - then hosts are not fetched`() =
+  fun `given valid host stored in memory - when call to getPlaylistsForMood - then hosts are not fetched`() =
     runTest {
       val hostsEngine = defaultHostsEngine()
 
@@ -160,7 +167,7 @@ class AudiusRepositoryTest {
     }
 
   @Test
-  fun `given host stored in preferences - when call to getPlaylistsForMood - then hosts are not fetched`() =
+  fun `given valid host stored in preferences - when call to getPlaylistsForMood - then hosts are not fetched`() =
     runTest {
       val hostsEngine = defaultHostsEngine()
 
@@ -174,7 +181,7 @@ class AudiusRepositoryTest {
     }
 
   @Test
-  fun `given host stored in preferences - when call to getPlaylistsForMood - then host is stored in memory`() =
+  fun `given valid host stored in preferences - when call to getPlaylistsForMood - then host is stored in memory`() =
     runTest {
       val hostsEngine = defaultHostsEngine()
       val inMemoryDataSource = AudiusHostsInMemoryDataSource()
@@ -189,9 +196,99 @@ class AudiusRepositoryTest {
       assertEquals(expected = hostAtIndex(0).trimHttps(), actual = inMemoryDataSource.host)
     }
 
+  @Test
+  fun `given invalid host stored in preferences - when call to getPlaylistsForMood - then hosts are fetched`() =
+    runTest {
+      val invalidHost = "audius-invalid-host.com"
+      val hostsEngine = defaultHostsEngine()
+
+      playlistsRepository(
+          hostsEngine = hostsEngine,
+          playlistsEngine = defaultPlaylistsEngine(invalidHost),
+          dataStore = FakeDataStorePreferences(hostPreferenceKey to invalidHost),
+        )
+        .getPlaylistsForMood("Energizing")
+
+      hostsEngine.assertHostsWereFetchedFirst()
+    }
+
+  @Test
+  fun `given invalid host stored in preferences - when call to getPlaylistsForMood - then fetched valid host is stored in memory`() =
+    runTest {
+      val invalidHost = "audius-invalid-host.com"
+      val hostsEngine = defaultHostsEngine()
+      val inMemoryDataSource = AudiusHostsInMemoryDataSource()
+
+      playlistsRepository(
+          hostsEngine = hostsEngine,
+          playlistsEngine = defaultPlaylistsEngine(invalidHost),
+          inMemoryDataSource = inMemoryDataSource,
+          dataStore = FakeDataStorePreferences(hostPreferenceKey to invalidHost),
+        )
+        .getPlaylistsForMood("Energizing")
+
+      assertEquals(expected = hostAtIndex(0).trimHttps(), actual = inMemoryDataSource.host)
+    }
+
+  @Test
+  fun `given invalid host stored in preferences - when call to getPlaylistsForMood - then fetched valid host is stored in preferences`() =
+    runTest {
+      val invalidHost = "audius-invalid-host.com"
+      val hostsEngine = defaultHostsEngine()
+      val dataStore = FakeDataStorePreferences(hostPreferenceKey to invalidHost)
+      val repository =
+        playlistsRepository(
+          hostsEngine = hostsEngine,
+          playlistsEngine = defaultPlaylistsEngine(invalidHost),
+          dataStore = dataStore,
+        )
+
+      List(5) { async { repository.getPlaylistsForMood("Energizing") } }.awaitAll()
+
+      assertEquals(expected = hostAtIndex(0).trimHttps(), actual = dataStore.get(hostPreferenceKey))
+    }
+
+  @Test
+  fun `given invalid host stored in preferences - when multiple calls to getPlaylistsForMood - then hosts are fetched only once`() =
+    runTest {
+      val invalidHost = "audius-invalid-host.com"
+      val hostsEngine = defaultHostsEngine()
+      val repository =
+        playlistsRepository(
+          hostsEngine = hostsEngine,
+          playlistsEngine = defaultPlaylistsEngine(invalidHost),
+          dataStore = FakeDataStorePreferences(hostPreferenceKey to invalidHost),
+        )
+
+      List(5) { async { repository.getPlaylistsForMood("Energizing") } }.awaitAll()
+
+      hostsEngine.assertHostsWereFetchedOnlyOnce()
+    }
+
+  @Test
+  fun `given invalid host stored in preferences - when multiple calls to getPlaylistsForMood - then host is pinged only by first call`() =
+    runTest {
+      val invalidHost = "audius-invalid-host.com"
+      val hostsEngine = defaultHostsEngine()
+      val repository =
+        playlistsRepository(
+          hostsEngine = hostsEngine,
+          playlistsEngine = defaultPlaylistsEngine(invalidHost),
+          dataStore = FakeDataStorePreferences(hostPreferenceKey to invalidHost),
+        )
+
+      List(5) { async { repository.getPlaylistsForMood("Energizing") } }.awaitAll()
+
+      assertEquals(
+        expected = 1,
+        actual =
+          hostsEngine.requestHistory.map { it.url.host }.count { it == hostAtIndex(0).trimHttps() },
+      )
+    }
+
   private fun playlistsRepository(
     hostsEngine: MockEngine,
-    playlistsEngine: MockEngine = MockEngine { respondWithJson("""{"data":[]}""") },
+    playlistsEngine: MockEngine = defaultPlaylistsEngine(),
     inMemoryDataSource: AudiusHostsInMemoryDataSource = AudiusHostsInMemoryDataSource(),
     dataStore: DataStore<Preferences> = FakeDataStorePreferences(),
   ): AudiusPlaylistsRepository {
@@ -231,6 +328,12 @@ class AudiusRepositoryTest {
         )
     }
 
+  private fun defaultPlaylistsEngine(vararg invalidHosts: String): MockEngine =
+    MockEngine { request ->
+      if (request.url.host in invalidHosts) respondWithJson(status = HttpStatusCode.NotFound)
+      else respondWithJson("""{"data":[]}""")
+    }
+
   private data class MockResponse(
     val json: String = "{}",
     val status: HttpStatusCode = HttpStatusCode.OK,
@@ -238,7 +341,7 @@ class AudiusRepositoryTest {
   )
 
   private fun MockRequestHandleScope.respondWithJson(
-    json: String,
+    json: String = "{}",
     status: HttpStatusCode = HttpStatusCode.OK,
   ): HttpResponseData =
     respond(
@@ -249,6 +352,20 @@ class AudiusRepositoryTest {
 
   private fun contentNegotiationClientConfig(): HttpClientConfig<*>.() -> Unit = {
     install(ContentNegotiation) { json() }
+  }
+
+  private fun MockEngine.assertHostsWereFetchedFirst() {
+    assertEquals(
+      expected = HostsEndpoints.HOSTS_URL,
+      actual = requestHistory.first().url.toString(),
+    )
+  }
+
+  private fun MockEngine.assertHostsWereFetchedOnlyOnce() {
+    assertEquals(
+      expected = 1,
+      actual = requestHistory.count { it.url.toString() == HostsEndpoints.HOSTS_URL },
+    )
   }
 
   companion object {
