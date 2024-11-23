@@ -4,7 +4,6 @@ import com.trm.audiofeels.core.cache.util.FaultHidingSink
 import com.trm.audiofeels.core.cache.util.createFile
 import com.trm.audiofeels.core.cache.util.deleteContents
 import io.ktor.utils.io.core.Closeable
-import io.ktor.utils.io.errors.IOException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.InternalCoroutinesApi
@@ -13,6 +12,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.internal.SynchronizedObject
 import kotlinx.coroutines.internal.synchronized
 import kotlinx.coroutines.launch
+import kotlinx.io.IOException
 import okio.BufferedSink
 import okio.EOFException
 import okio.FileSystem
