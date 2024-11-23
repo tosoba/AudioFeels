@@ -27,13 +27,13 @@ class AudiusEndpoints(private val client: HttpClient) {
     }
   )
 
-  suspend fun getPlaylists(mood: String): PlaylistsResponse =
+  suspend fun getPlaylists(mood: String?): PlaylistsResponse =
     client
       .get {
         url {
           appendPathSegments("v1", "full", "playlists", "top")
           parameter("type", "playlist")
-          parameter("mood", mood)
+          mood?.let { parameter("mood", it) }
         }
       }
       .body()
