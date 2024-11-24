@@ -18,7 +18,7 @@ kotlin {
 
   targets.withType<KotlinNativeTarget>().forEach { nativeTarget ->
     nativeTarget.binaries.framework {
-      baseName = "AudioFeels"
+      baseName = "ComposeApp"
       isStatic = true
     }
   }

@@ -26,8 +26,7 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
           androidTarget()
         }
 
-        // We don't need to build an iOS x64 framework
-        // iosX64()
+        iosX64()
         iosArm64()
         iosSimulatorArm64()
 
