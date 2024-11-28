@@ -39,6 +39,8 @@ include(
   ":core:cache",
   ":core:network",
   ":core:preferences",
+  ":core:ui:compose",
+  ":core:ui:resources",
   ":data:hosts",
   ":data:playlists",
   ":data:test",
