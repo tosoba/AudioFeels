@@ -40,6 +40,7 @@ kotlin {
       implementation(projects.data.hosts)
       implementation(projects.data.playlists)
       implementation(projects.domain)
+      implementation(projects.ui.recommended)
 
       implementation(compose.runtime)
       implementation(compose.foundation)

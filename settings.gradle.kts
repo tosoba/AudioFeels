@@ -43,4 +43,5 @@ include(
   ":data:playlists",
   ":data:test",
   ":domain",
+  ":ui:recommended",
 )
