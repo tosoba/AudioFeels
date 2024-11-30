@@ -19,6 +19,7 @@ kotlin {
         implementation(compose.material)
         implementation(compose.materialIconsExtended)
         api(compose.material3)
+        implementation(compose.material3AdaptiveNavigationSuite)
 
         implementation(libs.material3.windowSizeClass)
       }
