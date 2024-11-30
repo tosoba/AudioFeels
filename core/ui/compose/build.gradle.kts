@@ -6,6 +6,13 @@ plugins {
 
 kotlin {
   sourceSets {
+    androidMain {
+      dependencies {
+        implementation(libs.accompanist.adaptive)
+        implementation(libs.androidx.window)
+      }
+    }
+
     commonMain {
       dependencies {
         implementation(compose.foundation)
