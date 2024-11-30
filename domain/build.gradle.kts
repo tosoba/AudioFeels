@@ -1,4 +1,7 @@
-plugins { id("com.trm.audiofeels.kotlin.multiplatform") }
+plugins {
+  id("com.trm.audiofeels.android.library")
+  id("com.trm.audiofeels.kotlin.multiplatform")
+}
 
 kotlin {
   sourceSets {
@@ -11,3 +14,5 @@ kotlin {
     }
   }
 }
+
+android { namespace = "com.trm.audiofeels.domain" }
