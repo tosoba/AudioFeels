@@ -2,7 +2,6 @@ package com.trm.audiofeels.gradle
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.configurationcache.extensions.capitalized
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.getByType
@@ -101,7 +100,13 @@ private fun Project.addKspDependencyForAllTargets(
         target.platformType != KotlinPlatformType.common
       }
       .forEach { target ->
-        add("ksp${target.targetName.capitalized()}$configurationNameSuffix", dependencyNotation)
+        add(
+          "ksp${
+          target.targetName
+            .replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+        }$configurationNameSuffix",
+          dependencyNotation,
+        )
       }
   }
 }
