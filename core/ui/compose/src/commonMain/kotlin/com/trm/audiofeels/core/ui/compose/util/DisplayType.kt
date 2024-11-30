@@ -1,8 +1,6 @@
 package com.trm.audiofeels.core.ui.compose.util
 
-import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
-import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 
 enum class DisplayType {
@@ -10,10 +8,9 @@ enum class DisplayType {
   DUAL_PANE,
 }
 
-@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
-fun calculateDisplayType(displayFeaturesManager: DisplayFeaturesManager): DisplayType =
-  when (calculateWindowSizeClass().widthSizeClass) {
+fun calculateDisplayType(displayFeaturesManager: DisplayManager): DisplayType =
+  when (displayFeaturesManager.windowSizeClass().widthSizeClass) {
     WindowWidthSizeClass.Compact -> {
       DisplayType.SINGLE_PANE
     }
