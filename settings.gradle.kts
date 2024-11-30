@@ -46,6 +46,6 @@ include(
   ":data:test",
   ":domain",
   ":ui:favourites",
-  ":ui:recommended",
+  ":ui:discover",
   ":ui:search",
 )

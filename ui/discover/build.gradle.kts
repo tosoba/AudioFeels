@@ -18,4 +18,4 @@ kotlin {
   }
 }
 
-android { namespace = "com.trm.audiofeels.ui.recommended" }
+android { namespace = "com.trm.audiofeels.ui.discover" }
