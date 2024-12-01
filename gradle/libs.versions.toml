@@ -1,5 +1,6 @@
 [versions]
 accompanist = "0.36.0"
+adaptive = "1.0.1"
 agp = "8.7.2"
 android-compileSdk = "35"
 android-minSdk = "24"
@@ -59,6 +60,9 @@ ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version
 ktor-client-mock = { group = "io.ktor", name = "ktor-client-mock", version.ref = "ktor" }
 ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
+material3-adaptive = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version.ref = "adaptive" }
+material3-adaptive-layout = { module = "org.jetbrains.compose.material3.adaptive:adaptive-layout", version.ref = "adaptive" }
+material3-adaptive-navigation = { module = "org.jetbrains.compose.material3.adaptive:adaptive-navigation", version.ref = "adaptive" }
 material3-windowSizeClass = { module = "org.jetbrains.compose.material3:material3-window-size-class", version.ref = "compose-multiplatform" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 tools-desugarjdklibs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugarjdklibs" }
