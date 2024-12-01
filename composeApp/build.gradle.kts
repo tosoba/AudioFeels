@@ -8,6 +8,7 @@ plugins {
   id("com.trm.audiofeels.android.application")
   id("com.trm.audiofeels.compose")
   alias(libs.plugins.ksp)
+  alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
@@ -55,6 +56,8 @@ kotlin {
       implementation(libs.androidx.lifecycle.runtime.compose)
 
       implementation(libs.kotlininject.runtime)
+
+      implementation(libs.kotlinx.serialization.json)
 
       implementation(libs.material3.adaptive)
       implementation(libs.material3.adaptive.layout)
