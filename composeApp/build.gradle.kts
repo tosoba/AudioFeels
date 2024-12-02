@@ -44,6 +44,8 @@ kotlin {
       implementation(projects.data.playlists)
       implementation(projects.domain)
       implementation(projects.ui.discover)
+      implementation(projects.ui.favourites)
+      implementation(projects.ui.search)
 
       implementation(compose.runtime)
       implementation(compose.foundation)
@@ -63,6 +65,8 @@ kotlin {
       implementation(libs.material3.adaptive.layout)
       implementation(libs.material3.adaptive.navigation)
       implementation(compose.material3AdaptiveNavigationSuite)
+
+      implementation(libs.navigation.compose)
     }
   }
 }
@@ -88,8 +92,6 @@ android {
     targetCompatibility = JavaVersion.VERSION_17
   }
 }
-
-dependencies { debugImplementation(compose.uiTooling) }
 
 ksp { arg("me.tatarka.inject.generateCompanionExtensions", "true") }
 

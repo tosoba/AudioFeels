@@ -18,7 +18,7 @@ kotlin {
       dependencies {
         implementation(compose.foundation)
         implementation(compose.material)
-        implementation(compose.materialIconsExtended)
+        api(compose.materialIconsExtended)
         api(compose.material3)
 
         implementation(libs.material3.adaptive)
