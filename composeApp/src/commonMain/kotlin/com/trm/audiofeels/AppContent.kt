@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -12,12 +14,17 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.trm.audiofeels.core.ui.compose.util.NavigationContentPosition
+import com.trm.audiofeels.core.ui.compose.util.NavigationType
+import com.trm.audiofeels.core.ui.compose.util.calculateWindowSize
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -26,6 +33,12 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Preview
 fun AppContent() {
   MaterialTheme {
+    val adaptiveInfo = currentWindowAdaptiveInfo()
+    val navigationType =
+      NavigationType(adaptiveInfo = adaptiveInfo, windowSize = calculateWindowSize())
+    val navigationContentPosition =
+      NavigationContentPosition(adaptiveInfo.windowSizeClass.windowHeightSizeClass)
+
     val scope = rememberCoroutineScope()
     val scaffoldState =
       rememberBottomSheetScaffoldState(
@@ -33,7 +46,14 @@ fun AppContent() {
       )
     BottomSheetScaffold(
       modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),
-      sheetContent = { Box(contentAlignment = Alignment.Center) { Text("TEST") } },
+      sheetContent = {
+        Box(
+          contentAlignment = Alignment.Center,
+          modifier = Modifier.fillMaxWidth().height(100.dp),
+        ) {
+          Text("TEST")
+        }
+      },
       scaffoldState = scaffoldState,
     ) {
       Column(
