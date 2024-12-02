@@ -1,6 +1,6 @@
 package com.trm.audiofeels.core.ui.compose.util
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.unit.DpSize
 
-@Composable expect fun calculateWindowSize(): Size
+@Composable expect fun calculateWindowSize(): DpSize

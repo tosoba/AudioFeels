@@ -37,7 +37,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
@@ -64,10 +63,7 @@ fun AppContent() {
   MaterialTheme {
     val adaptiveInfo = currentWindowAdaptiveInfo()
     val navigationType =
-      NavigationType(
-        adaptiveInfo = adaptiveInfo,
-        windowSize = with(LocalDensity.current) { calculateWindowSize().toDpSize() },
-      )
+      NavigationType(adaptiveInfo = adaptiveInfo, windowSize = calculateWindowSize())
     val navigationContentPosition =
       NavigationContentPosition(adaptiveInfo.windowSizeClass.windowHeightSizeClass)
 
