@@ -27,6 +27,7 @@ import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.PermanentDrawerSheet
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldLayout
 import androidx.compose.material3.rememberBottomSheetScaffoldState
@@ -76,25 +77,26 @@ fun AppContent() {
         layoutType = navigationType.suiteType,
         navigationSuite = {
           when (navigationType) {
-            NavigationType.NAVIGATION_BAR ->
+            NavigationType.NAVIGATION_BAR -> {
               AppBottomNavigationBar(
                 currentDestination = currentDestination,
                 navigatePageDestination = navController::navigateToPageDestination,
               )
-
-            NavigationType.NAVIGATION_RAIL ->
+            }
+            NavigationType.NAVIGATION_RAIL -> {
               AppNavigationRail(
                 currentDestination = currentDestination,
                 navigationContentPosition = navigationContentPosition,
                 navigatePageDestination = navController::navigateToPageDestination,
               )
-
-            NavigationType.PERMANENT_NAVIGATION_DRAWER ->
+            }
+            NavigationType.PERMANENT_NAVIGATION_DRAWER -> {
               AppPermanentNavigationDrawer(
                 currentDestination = currentDestination,
                 navigationContentPosition = navigationContentPosition,
                 navigatePageDestination = navController::navigateToPageDestination,
               )
+            }
           }
         },
       ) {
@@ -220,7 +222,10 @@ private fun AppNavHost(navController: NavHostController, modifier: Modifier = Mo
     navController = navController,
     startDestination = AppRoute.Discover,
   ) {
-    composable<AppRoute.Discover> { DiscoverPage(modifier = Modifier.fillMaxSize()) }
+    composable<AppRoute.Discover> {
+      @OptIn(ExperimentalMaterial3AdaptiveApi::class)
+      DiscoverPage(modifier = Modifier.fillMaxSize(), onPlayerPaneValueChange = { println(it) })
+    }
     composable<AppRoute.Favourites> { FavouritesPage(modifier = Modifier.fillMaxSize()) }
     composable<AppRoute.Search> { SearchPage(modifier = Modifier.fillMaxSize()) }
   }
