@@ -11,8 +11,6 @@ import androidx.compose.material3.adaptive.navigation.rememberSupportingPaneScaf
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import com.trm.audiofeels.core.ui.compose.util.DisplayManager
-import com.trm.audiofeels.core.ui.compose.util.rememberDisplayManager
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.discover
 import org.jetbrains.compose.resources.stringResource
@@ -21,7 +19,6 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun DiscoverPage(
   modifier: Modifier = Modifier,
-  displayManager: DisplayManager = rememberDisplayManager(),
   onPlayerPaneValueChange: (PaneAdaptedValue) -> Unit,
 ) {
   val navigator = rememberSupportingPaneScaffoldNavigator()
