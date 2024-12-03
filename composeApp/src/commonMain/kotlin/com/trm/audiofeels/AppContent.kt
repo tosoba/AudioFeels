@@ -208,31 +208,29 @@ private fun AppPermanentNavigationDrawer(
     modifier = Modifier.sizeIn(minWidth = 200.dp, maxWidth = 300.dp),
     drawerContainerColor = androidx.compose.material3.MaterialTheme.colorScheme.surfaceContainerHigh,
   ) {
-    Surface(modifier = Modifier.padding(16.dp)) {
-      Column(
-        modifier = Modifier.verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally,
-      ) {
-        PAGE_NAVIGATION_DESTINATIONS.forEach { destination ->
-          NavigationDrawerItem(
-            selected = currentDestination?.hasRoute(destination.route::class) == true,
-            label = {
-              Text(
-                text = stringResource(destination.labelResource),
-                modifier = Modifier.padding(horizontal = 16.dp),
-              )
-            },
-            icon = {
-              Icon(
-                imageVector = destination.icon,
-                contentDescription = stringResource(destination.labelResource),
-              )
-            },
-            colors =
-              NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
-            onClick = { navigatePageDestination(destination) },
-          )
-        }
+    Column(
+      modifier = Modifier.verticalScroll(rememberScrollState()).padding(16.dp),
+      horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+      PAGE_NAVIGATION_DESTINATIONS.forEach { destination ->
+        NavigationDrawerItem(
+          selected = currentDestination?.hasRoute(destination.route::class) == true,
+          label = {
+            Text(
+              text = stringResource(destination.labelResource),
+              modifier = Modifier.padding(horizontal = 16.dp),
+            )
+          },
+          icon = {
+            Icon(
+              imageVector = destination.icon,
+              contentDescription = stringResource(destination.labelResource),
+            )
+          },
+          colors =
+            NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
+          onClick = { navigatePageDestination(destination) },
+        )
       }
     }
   }
