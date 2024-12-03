@@ -29,12 +29,14 @@ import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.PermanentDrawerSheet
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldLayout
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -54,6 +56,7 @@ import com.trm.audiofeels.core.ui.compose.util.calculateWindowSize
 import com.trm.audiofeels.ui.discover.DiscoverPage
 import com.trm.audiofeels.ui.favourites.FavouritesPage
 import com.trm.audiofeels.ui.search.SearchPage
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -100,6 +103,8 @@ fun AppContent() {
           }
         },
       ) {
+        val playerState = rememberSaveable(saver = AppPlayerState.Saver) { AppPlayerState(true) }
+
         val scope = rememberCoroutineScope()
         val scaffoldState =
           rememberBottomSheetScaffoldState(
@@ -117,7 +122,25 @@ fun AppContent() {
           },
           scaffoldState = scaffoldState,
         ) {
-          AppNavHost(navController = navController, modifier = Modifier.fillMaxSize().padding(it))
+          @OptIn(ExperimentalMaterial3AdaptiveApi::class)
+          AppNavHost(
+            navController = navController,
+            modifier = Modifier.fillMaxSize().padding(it),
+            onPlayerPaneValueChange = { paneValue ->
+              when (paneValue) {
+                PaneAdaptedValue.Hidden -> {
+                  if (playerState.isPlaying) {
+                    scope.launch { scaffoldState.bottomSheetState.show() }
+                  }
+                }
+                PaneAdaptedValue.Expanded -> {
+                  if (playerState.isPlaying) {
+                    scope.launch { scaffoldState.bottomSheetState.hide() }
+                  }
+                }
+              }
+            },
+          )
         }
       }
     }
@@ -215,16 +238,23 @@ private fun AppPermanentNavigationDrawer(
   }
 }
 
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
-private fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) {
+private fun AppNavHost(
+  navController: NavHostController,
+  modifier: Modifier = Modifier,
+  onPlayerPaneValueChange: (PaneAdaptedValue) -> Unit,
+) {
   NavHost(
     modifier = modifier,
     navController = navController,
     startDestination = AppRoute.Discover,
   ) {
     composable<AppRoute.Discover> {
-      @OptIn(ExperimentalMaterial3AdaptiveApi::class)
-      DiscoverPage(modifier = Modifier.fillMaxSize(), onPlayerPaneValueChange = { println(it) })
+      DiscoverPage(
+        modifier = Modifier.fillMaxSize(),
+        onPlayerPaneValueChange = onPlayerPaneValueChange,
+      )
     }
     composable<AppRoute.Favourites> { FavouritesPage(modifier = Modifier.fillMaxSize()) }
     composable<AppRoute.Search> { SearchPage(modifier = Modifier.fillMaxSize()) }
