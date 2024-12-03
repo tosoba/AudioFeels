@@ -12,3 +12,5 @@ actual class DisplayPlatformManager : DisplayManager {
   @Composable
   override fun windowSizeClass(): WindowSizeClass = calculateWindowSizeClass()
 }
+
+@Composable actual fun rememberDisplayManager(): DisplayManager = DisplayPlatformManager()

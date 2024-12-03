@@ -11,6 +11,8 @@ kotlin {
         implementation(projects.core.ui.compose)
         implementation(projects.core.ui.resources)
 
+        implementation(libs.accompanist.adaptive)
+
         implementation(libs.kotlin.stdlib)
         implementation(libs.kotlininject.runtime)
       }

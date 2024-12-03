@@ -6,13 +6,15 @@ import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSiz
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.window.layout.FoldingFeature
 import com.google.accompanist.adaptive.calculateDisplayFeatures
+import com.trm.audiofeels.core.base.util.findActivity
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
-actual class DisplayPlatformManager(private val activity: Activity) :
-  DisplayManager {
+actual class DisplayPlatformManager(private val activity: Activity) : DisplayManager {
   @Composable
   override fun isNormalDevicePosture(): Boolean {
     val foldingFeature =
@@ -55,4 +57,10 @@ private fun isBookPosture(foldFeature: FoldingFeature?): Boolean {
 private fun isSeparating(foldFeature: FoldingFeature?): Boolean {
   contract { returns(true) implies (foldFeature != null) }
   return foldFeature?.state == FoldingFeature.State.FLAT && foldFeature.isSeparating
+}
+
+@Composable
+actual fun rememberDisplayManager(): DisplayManager {
+  val activity = LocalContext.current.findActivity()
+  return remember { DisplayPlatformManager(activity) }
 }
