@@ -1,5 +1,4 @@
 [versions]
-accompanist = "0.36.0"
 adaptive = "1.0.1"
 agp = "8.7.2"
 android-compileSdk = "35"
@@ -31,7 +30,6 @@ navigation = "2.8.0-alpha10"
 okio = "3.9.1"
 
 [libraries]
-accompanist-adaptive = { module = "com.google.accompanist:accompanist-adaptive", version.ref = "accompanist" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidx-appcompat" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "androidx-constraintlayout" }

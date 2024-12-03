@@ -8,7 +8,6 @@ kotlin {
   sourceSets {
     androidMain {
       dependencies {
-        implementation(libs.accompanist.adaptive)
         implementation(libs.androidx.activity.compose)
         implementation(libs.androidx.window)
       }
