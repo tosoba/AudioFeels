@@ -35,6 +35,7 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -76,8 +77,17 @@ fun AppContent() {
     val playerState = rememberSaveable(saver = AppPlayerState.Saver) { AppPlayerState(true) }
     val playerScaffoldState =
       rememberBottomSheetScaffoldState(
-        bottomSheetState = rememberStandardBottomSheetState(skipHiddenState = false)
+        bottomSheetState =
+          rememberStandardBottomSheetState(
+            initialValue = SheetValue.Hidden,
+            skipHiddenState = false,
+          )
       )
+    LaunchedEffect(playerScaffoldState.bottomSheetState.currentValue) {
+      if (playerScaffoldState.bottomSheetState.currentValue != SheetValue.Hidden) {
+        playerState.lastVisibleSheetValue = playerScaffoldState.bottomSheetState.currentValue
+      }
+    }
 
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -140,7 +150,15 @@ fun AppContent() {
               when (paneValue) {
                 PaneAdaptedValue.Hidden -> {
                   if (playerState.isPlaying) {
-                    scope.launch { playerScaffoldState.bottomSheetState.show() }
+                    scope.launch {
+                      playerScaffoldState.bottomSheetState.run {
+                        when (playerState.lastVisibleSheetValue) {
+                          SheetValue.Expanded -> expand()
+                          SheetValue.PartiallyExpanded -> partialExpand()
+                          SheetValue.Hidden -> return@launch
+                        }
+                      }
+                    }
                   }
                 }
                 PaneAdaptedValue.Expanded -> {
