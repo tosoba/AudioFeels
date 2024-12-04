@@ -27,6 +27,7 @@ import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.PermanentDrawerSheet
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
@@ -71,9 +72,26 @@ fun AppContent() {
     val navigationContentPosition =
       NavigationContentPosition(adaptiveInfo.windowSizeClass.windowHeightSizeClass)
 
+    val scope = rememberCoroutineScope()
+    val playerState = rememberSaveable(saver = AppPlayerState.Saver) { AppPlayerState(true) }
+    val playerScaffoldState =
+      rememberBottomSheetScaffoldState(
+        bottomSheetState = rememberStandardBottomSheetState(skipHiddenState = false)
+      )
+
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
+
+    fun navigateToPageDestination(destination: AppPageNavigationDestination) {
+      if (
+        playerState.isPlaying &&
+          playerScaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
+      ) {
+        scope.launch { playerScaffoldState.bottomSheetState.partialExpand() }
+      }
+      navController.navigateToPageDestination(destination)
+    }
 
     Surface(modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing)) {
       NavigationSuiteScaffoldLayout(
@@ -83,34 +101,26 @@ fun AppContent() {
             NavigationType.NAVIGATION_BAR -> {
               AppBottomNavigationBar(
                 currentDestination = currentDestination,
-                navigatePageDestination = navController::navigateToPageDestination,
+                navigatePageDestination = ::navigateToPageDestination,
               )
             }
             NavigationType.NAVIGATION_RAIL -> {
               AppNavigationRail(
                 currentDestination = currentDestination,
                 navigationContentPosition = navigationContentPosition,
-                navigatePageDestination = navController::navigateToPageDestination,
+                navigatePageDestination = ::navigateToPageDestination,
               )
             }
             NavigationType.PERMANENT_NAVIGATION_DRAWER -> {
               AppPermanentNavigationDrawer(
                 currentDestination = currentDestination,
                 navigationContentPosition = navigationContentPosition,
-                navigatePageDestination = navController::navigateToPageDestination,
+                navigatePageDestination = ::navigateToPageDestination,
               )
             }
           }
         },
       ) {
-        val playerState = rememberSaveable(saver = AppPlayerState.Saver) { AppPlayerState(true) }
-
-        val scope = rememberCoroutineScope()
-        val scaffoldState =
-          rememberBottomSheetScaffoldState(
-            bottomSheetState = rememberStandardBottomSheetState(skipHiddenState = false)
-          )
-
         BottomSheetScaffold(
           sheetContent = {
             Box(
@@ -120,7 +130,7 @@ fun AppContent() {
               Text("TEST")
             }
           },
-          scaffoldState = scaffoldState,
+          scaffoldState = playerScaffoldState,
         ) {
           @OptIn(ExperimentalMaterial3AdaptiveApi::class)
           AppNavHost(
@@ -130,12 +140,12 @@ fun AppContent() {
               when (paneValue) {
                 PaneAdaptedValue.Hidden -> {
                   if (playerState.isPlaying) {
-                    scope.launch { scaffoldState.bottomSheetState.show() }
+                    scope.launch { playerScaffoldState.bottomSheetState.show() }
                   }
                 }
                 PaneAdaptedValue.Expanded -> {
                   if (playerState.isPlaying) {
-                    scope.launch { scaffoldState.bottomSheetState.hide() }
+                    scope.launch { playerScaffoldState.bottomSheetState.hide() }
                   }
                 }
               }
@@ -254,8 +264,18 @@ private fun AppNavHost(
         onPlayerPaneValueChange = onPlayerPaneValueChange,
       )
     }
-    composable<AppRoute.Favourites> { FavouritesPage(modifier = Modifier.fillMaxSize()) }
-    composable<AppRoute.Search> { SearchPage(modifier = Modifier.fillMaxSize()) }
+    composable<AppRoute.Favourites> {
+      FavouritesPage(
+        modifier = Modifier.fillMaxSize(),
+        onPlayerPaneValueChange = onPlayerPaneValueChange,
+      )
+    }
+    composable<AppRoute.Search> {
+      SearchPage(
+        modifier = Modifier.fillMaxSize(),
+        onPlayerPaneValueChange = onPlayerPaneValueChange,
+      )
+    }
   }
 }
 
