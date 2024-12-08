@@ -21,6 +21,7 @@ kotlin {
 
         implementation(libs.kotlin.stdlib)
         implementation(libs.kotlinx.coroutines.core)
+        implementation(libs.kotlinx.coroutines.guava)
         implementation(libs.kotlininject.runtime)
       }
     }
