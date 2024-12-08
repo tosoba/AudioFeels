@@ -1,11 +1,17 @@
 package com.trm.audiofeels.core.player
 
 import android.content.Context
+import com.trm.audiofeels.core.base.util.ApplicationCoroutineScope
+import com.trm.audiofeels.core.network.HostRetriever
 import com.trm.audiofeels.core.player.model.PlayerState
 import com.trm.audiofeels.domain.model.Track
 import kotlinx.coroutines.flow.StateFlow
 
-actual class PlayerPlatformConnection(private val context: Context) : PlayerConnection {
+actual class PlayerPlatformConnection(
+  private val context: Context,
+  private val hostRetriever: HostRetriever,
+  private val scope: ApplicationCoroutineScope,
+) : PlayerConnection {
   override val playerStateFlow: StateFlow<PlayerState>
     get() = TODO("Not yet implemented")
 

@@ -5,9 +5,18 @@ plugins {
 
 kotlin {
   sourceSets {
+    androidMain {
+      dependencies {
+        implementation(libs.androidx.media3.exoplayer)
+        implementation(libs.androidx.media3.session)
+        implementation(libs.androidx.media3.ui)
+      }
+    }
+
     commonMain {
       dependencies {
         implementation(projects.core.base)
+        implementation(projects.core.network)
         implementation(projects.domain)
 
         implementation(libs.kotlin.stdlib)
