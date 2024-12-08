@@ -11,6 +11,7 @@ kotlin {
         implementation(projects.domain)
 
         implementation(libs.kotlin.stdlib)
+        implementation(libs.kotlinx.coroutines.core)
         implementation(libs.kotlininject.runtime)
       }
     }
