@@ -43,6 +43,7 @@ kotlin {
       implementation(projects.data.hosts)
       implementation(projects.data.playlists)
       implementation(projects.domain)
+      implementation(projects.player)
       implementation(projects.ui.discover)
       implementation(projects.ui.favourites)
       implementation(projects.ui.search)

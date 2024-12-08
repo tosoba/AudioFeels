@@ -45,6 +45,7 @@ include(
   ":data:playlists",
   ":data:test",
   ":domain",
+  ":player",
   ":ui:favourites",
   ":ui:discover",
   ":ui:search",
