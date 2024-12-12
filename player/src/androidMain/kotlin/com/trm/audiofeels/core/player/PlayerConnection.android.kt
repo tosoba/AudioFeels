@@ -2,6 +2,8 @@ package com.trm.audiofeels.core.player
 
 import android.content.ComponentName
 import android.content.Context
+import androidx.media3.common.C
+import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.Player.EVENT_MEDIA_METADATA_CHANGED
@@ -25,9 +27,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 actual class PlayerPlatformConnection(
   private val context: Context,
@@ -35,6 +39,23 @@ actual class PlayerPlatformConnection(
   scope: ApplicationCoroutineScope,
 ) : PlayerConnection {
   private val mediaBrowser = CompletableDeferred<MediaBrowser>()
+
+  private val _playerStateFlow = MutableStateFlow<PlayerState>(PlayerState.Idle)
+  override val playerStateFlow: StateFlow<PlayerState> = _playerStateFlow.asStateFlow()
+
+  override val currentPositionMsFlow: StateFlow<Long> =
+    flow {
+        while (currentCoroutineContext().isActive) {
+          val currentPosition = mediaBrowser.await().currentPosition
+          emit(currentPosition)
+          delay(100L)
+        }
+      }
+      .stateIn(
+        scope = scope,
+        started = SharingStarted.Lazily,
+        initialValue = PlayerConstants.DEFAULT_START_POSITION_MS,
+      )
 
   init {
     scope.launch {
@@ -60,7 +81,7 @@ actual class PlayerPlatformConnection(
                       EVENT_PLAY_WHEN_READY_CHANGED,
                     )
                   ) {
-                    // TODO: updateMusicState(player)
+                    updateMusicState(player)
                   }
                 }
               }
@@ -69,19 +90,6 @@ actual class PlayerPlatformConnection(
       )
     }
   }
-
-  private val _playerStateFlow = MutableStateFlow<PlayerState>(PlayerState.Idle)
-  override val playerStateFlow: StateFlow<PlayerState> = _playerStateFlow.asStateFlow()
-
-  override val currentPositionMsFlow: StateFlow<Long> =
-    flow {
-        while (currentCoroutineContext().isActive) {
-          val currentPosition = mediaBrowser.await().currentPosition
-          emit(currentPosition)
-          delay(100L)
-        }
-      }
-      .stateIn(scope, SharingStarted.Lazily, PlayerConstants.DEFAULT_START_POSITION_MS)
 
   override fun toggleIsPlaying() {
     val playerState = _playerStateFlow.value as? PlayerState.Initialized ?: return
@@ -123,15 +131,38 @@ actual class PlayerPlatformConnection(
     startPositionMs: Long,
   ) {
     mediaBrowser.onCompletion {
-      // TODO: setMediaItems(tracks.asMediaItems(), startIndex, startPositionMs)
+      setMediaItems(tracks.toMediaItems(), startIndex, startPositionMs)
       prepare()
       if (autoPlay) play()
       repeatMode = REPEAT_MODE_ALL
     }
   }
 
+  private fun Iterable<Track>.toMediaItems(): List<MediaItem> {
+    val host = "https://${runBlocking { hostRetriever.retrieveHost() }}"
+    return map { track -> track.toMediaItem(host) }
+  }
+
   override fun reset() {
     mediaBrowser.onCompletion(MediaBrowser::clearMediaItems)
     _playerStateFlow.value = PlayerState.Idle
+  }
+
+  private fun updateMusicState(player: Player) {
+    _playerStateFlow.update {
+      with(player) {
+        currentMediaItem?.let { item ->
+          PlayerState.Initialized(
+            currentTrack = item.toTrack(),
+            currentTrackIndex = currentMediaItemIndex,
+            tracksCount = mediaItemCount,
+            playbackState = enumPlaybackStateOf(playbackState),
+            isPlaying = isPlaying,
+            trackDurationMs =
+              duration.takeIf { it != C.TIME_UNSET } ?: PlayerConstants.DEFAULT_DURATION_MS,
+          )
+        } ?: PlayerState.Idle
+      }
+    }
   }
 }
