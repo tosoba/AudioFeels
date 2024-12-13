@@ -1,6 +1,7 @@
 package com.trm.audiofeels.di
 
 import android.app.Application
+import android.content.Context
 import com.trm.audiofeels.core.base.di.ApplicationScope
 import me.tatarka.inject.annotations.Component
 import me.tatarka.inject.annotations.Provides
@@ -11,3 +12,6 @@ abstract class AndroidApplicationComponent(@get:Provides val application: Applic
   ApplicationComponent {
   companion object
 }
+
+val Context.applicationComponent: ApplicationComponent
+  get() = (applicationContext as ApplicationComponentProvider).component

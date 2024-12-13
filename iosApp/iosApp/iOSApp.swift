@@ -3,11 +3,11 @@ import ComposeApp
 
 @main
 struct iOSApp: App {
-    private let component = IosApplicationComponent.companion.create()
+    private let applicationComponent = IosApplicationComponent.companion.create()
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(applicationComponent: applicationComponent)
         }
     }
 }

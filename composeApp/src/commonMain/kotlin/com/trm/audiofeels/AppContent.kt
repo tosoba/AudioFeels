@@ -55,6 +55,7 @@ import androidx.navigation.compose.rememberNavController
 import com.trm.audiofeels.core.ui.compose.util.NavigationContentPosition
 import com.trm.audiofeels.core.ui.compose.util.NavigationType
 import com.trm.audiofeels.core.ui.compose.util.calculateWindowSize
+import com.trm.audiofeels.di.ApplicationComponent
 import com.trm.audiofeels.ui.discover.DiscoverPage
 import com.trm.audiofeels.ui.favourites.FavouritesPage
 import com.trm.audiofeels.ui.search.SearchPage
@@ -65,7 +66,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Preview
-fun AppContent() {
+fun AppContent(applicationComponent: ApplicationComponent) {
   MaterialTheme {
     val adaptiveInfo = currentWindowAdaptiveInfo()
     val navigationType =
