@@ -29,6 +29,10 @@ kotlin {
       implementation(compose.preview)
 
       implementation(libs.androidx.activity.compose)
+
+      implementation(libs.androidx.media3.exoplayer)
+      implementation(libs.androidx.media3.session)
+      implementation(libs.androidx.media3.ui)
     }
 
     commonMain.dependencies {
@@ -46,6 +50,7 @@ kotlin {
       implementation(projects.player)
       implementation(projects.ui.discover)
       implementation(projects.ui.favourites)
+      implementation(projects.ui.player)
       implementation(projects.ui.search)
 
       implementation(compose.runtime)
@@ -55,11 +60,10 @@ kotlin {
       implementation(compose.components.resources)
       implementation(compose.components.uiToolingPreview)
 
-      implementation(libs.androidx.lifecycle.viewmodel.compose)
       implementation(libs.androidx.lifecycle.runtime.compose)
+      implementation(libs.androidx.lifecycle.viewmodel.compose)
 
       implementation(libs.kotlininject.runtime)
-
       implementation(libs.kotlinx.serialization.json)
 
       implementation(libs.material3.adaptive)

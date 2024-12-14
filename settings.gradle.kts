@@ -48,5 +48,6 @@ include(
   ":player",
   ":ui:favourites",
   ":ui:discover",
+  ":ui:player",
   ":ui:search",
 )

@@ -37,12 +37,15 @@ import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -52,12 +55,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.trm.audiofeels.core.player.model.PlayerState
 import com.trm.audiofeels.core.ui.compose.util.NavigationContentPosition
 import com.trm.audiofeels.core.ui.compose.util.NavigationType
 import com.trm.audiofeels.core.ui.compose.util.calculateWindowSize
 import com.trm.audiofeels.di.ApplicationComponent
 import com.trm.audiofeels.ui.discover.DiscoverPage
 import com.trm.audiofeels.ui.favourites.FavouritesPage
+import com.trm.audiofeels.ui.player.PlayerViewModel
 import com.trm.audiofeels.ui.search.SearchPage
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -74,8 +79,12 @@ fun AppContent(applicationComponent: ApplicationComponent) {
     val navigationContentPosition =
       NavigationContentPosition(adaptiveInfo.windowSizeClass.windowHeightSizeClass)
 
+    val playerViewModel = viewModel { PlayerViewModel(applicationComponent.playerConnection) }
+    val playerState by
+      playerViewModel.playerConnection.playerStateFlow.collectAsStateWithLifecycle()
+
     val scope = rememberCoroutineScope()
-    val playerState = rememberSaveable(saver = AppPlayerState.Saver) { AppPlayerState(true) }
+    var playerSheetLastVisibleValue: SheetValue by mutableStateOf(SheetValue.PartiallyExpanded)
     val playerScaffoldState =
       rememberBottomSheetScaffoldState(
         bottomSheetState =
@@ -86,7 +95,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
       )
     LaunchedEffect(playerScaffoldState.bottomSheetState.currentValue) {
       if (playerScaffoldState.bottomSheetState.currentValue != SheetValue.Hidden) {
-        playerState.lastVisibleSheetValue = playerScaffoldState.bottomSheetState.currentValue
+        playerSheetLastVisibleValue = playerScaffoldState.bottomSheetState.currentValue
       }
     }
 
@@ -96,7 +105,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
 
     fun navigateToPageDestination(destination: AppPageNavigationDestination) {
       if (
-        playerState.isPlaying &&
+        playerState is PlayerState.Initialized &&
           playerScaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
       ) {
         scope.launch { playerScaffoldState.bottomSheetState.partialExpand() }
@@ -150,10 +159,10 @@ fun AppContent(applicationComponent: ApplicationComponent) {
             onPlayerPaneValueChange = { paneValue ->
               when (paneValue) {
                 PaneAdaptedValue.Hidden -> {
-                  if (playerState.isPlaying) {
+                  if (playerState is PlayerState.Initialized) {
                     scope.launch {
                       playerScaffoldState.bottomSheetState.run {
-                        when (playerState.lastVisibleSheetValue) {
+                        when (playerSheetLastVisibleValue) {
                           SheetValue.Expanded -> expand()
                           SheetValue.PartiallyExpanded -> partialExpand()
                           SheetValue.Hidden -> return@launch
@@ -163,7 +172,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
                   }
                 }
                 PaneAdaptedValue.Expanded -> {
-                  if (playerState.isPlaying) {
+                  if (playerState is PlayerState.Initialized) {
                     scope.launch { playerScaffoldState.bottomSheetState.hide() }
                   }
                 }

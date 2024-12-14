@@ -6,6 +6,7 @@ import com.trm.audiofeels.core.base.di.ApplicationScope
 import com.trm.audiofeels.core.base.util.AppCoroutineDispatchers
 import com.trm.audiofeels.core.base.util.ApplicationCoroutineScope
 import com.trm.audiofeels.core.cache.di.CacheCoreComponent
+import com.trm.audiofeels.core.player.PlayerConnection
 import com.trm.audiofeels.core.player.di.PlayerComponent
 import com.trm.audiofeels.core.preferences.di.PreferencesCoreComponent
 import com.trm.audiofeels.data.hosts.di.HostsDataComponent
@@ -24,6 +25,8 @@ interface ApplicationComponent :
   HostsDataComponent,
   PlayerComponent,
   PlaylistsDataComponent {
+  val playerConnection: PlayerConnection
+
   @ApplicationScope
   @Provides
   fun provideCoroutineDispatchers(): AppCoroutineDispatchers =
