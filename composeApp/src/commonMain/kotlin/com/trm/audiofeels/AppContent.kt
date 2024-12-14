@@ -84,7 +84,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
       playerViewModel.playerConnection.playerStateFlow.collectAsStateWithLifecycle()
 
     val scope = rememberCoroutineScope()
-    var playerSheetLastVisibleValue: SheetValue by mutableStateOf(SheetValue.PartiallyExpanded)
+    var playerSheetLastVisibleValue by mutableStateOf(SheetValue.PartiallyExpanded)
     val playerScaffoldState =
       rememberBottomSheetScaffoldState(
         bottomSheetState =
