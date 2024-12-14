@@ -6,6 +6,13 @@ plugins {
 
 kotlin {
   sourceSets {
+    androidMain {
+      dependencies {
+        implementation(libs.ktor.client.android)
+        implementation(libs.ktor.client.okhttp)
+      }
+    }
+
     commonMain {
       dependencies {
         implementation(projects.core.base)
@@ -19,6 +26,12 @@ kotlin {
         implementation(libs.ktor.client.core)
         implementation(libs.ktor.client.logging)
         implementation(libs.ktor.serialization.kotlinx.json)
+      }
+    }
+
+    iosMain {
+      dependencies {
+        implementation(libs.ktor.client.darwin)
       }
     }
   }
