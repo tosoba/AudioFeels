@@ -14,6 +14,7 @@ import androidx.media3.common.Player.REPEAT_MODE_ALL
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
+import co.touchlab.kermit.Logger
 import com.trm.audiofeels.core.base.util.ApplicationCoroutineScope
 import com.trm.audiofeels.core.base.util.onCompletion
 import com.trm.audiofeels.core.network.HostRetriever
@@ -73,6 +74,7 @@ actual class PlayerPlatformConnection(
             addListener(
               object : Player.Listener {
                 override fun onPlayerError(error: PlaybackException) {
+                  Logger.e("ERROR", error)
                   // TODO: connect network monitor on network exceptions
                 }
 
@@ -84,6 +86,7 @@ actual class PlayerPlatformConnection(
                       EVENT_PLAY_WHEN_READY_CHANGED,
                     )
                   ) {
+                    Logger.d("EVENTS") { events.toString() }
                     updateMusicState(player)
                   }
                 }

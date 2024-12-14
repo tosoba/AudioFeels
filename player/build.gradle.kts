@@ -23,6 +23,8 @@ kotlin {
         implementation(projects.core.network)
         implementation(projects.domain)
 
+        implementation(libs.kermit)
+
         implementation(libs.kotlin.stdlib)
         implementation(libs.kotlinx.coroutines.core)
         implementation(libs.kotlininject.runtime)
