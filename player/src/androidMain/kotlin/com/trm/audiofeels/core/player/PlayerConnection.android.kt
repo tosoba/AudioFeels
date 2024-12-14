@@ -2,6 +2,7 @@ package com.trm.audiofeels.core.player
 
 import android.content.ComponentName
 import android.content.Context
+import androidx.annotation.OptIn
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
@@ -10,6 +11,7 @@ import androidx.media3.common.Player.EVENT_MEDIA_METADATA_CHANGED
 import androidx.media3.common.Player.EVENT_PLAYBACK_STATE_CHANGED
 import androidx.media3.common.Player.EVENT_PLAY_WHEN_READY_CHANGED
 import androidx.media3.common.Player.REPEAT_MODE_ALL
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
 import com.trm.audiofeels.core.base.util.ApplicationCoroutineScope
@@ -33,6 +35,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
+@OptIn(UnstableApi::class)
 actual class PlayerPlatformConnection(
   private val context: Context,
   private val hostRetriever: HostRetriever,
