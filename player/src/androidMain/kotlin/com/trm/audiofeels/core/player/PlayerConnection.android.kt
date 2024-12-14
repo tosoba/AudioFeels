@@ -7,10 +7,6 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
-import androidx.media3.common.Player.EVENT_MEDIA_METADATA_CHANGED
-import androidx.media3.common.Player.EVENT_PLAYBACK_STATE_CHANGED
-import androidx.media3.common.Player.EVENT_PLAY_WHEN_READY_CHANGED
-import androidx.media3.common.Player.REPEAT_MODE_ALL
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
@@ -75,18 +71,18 @@ actual class PlayerPlatformConnection(
               object : Player.Listener {
                 override fun onPlayerError(error: PlaybackException) {
                   Logger.e("ERROR", error)
+                  // TODO: handle androidx.media3.exoplayer.ExoPlaybackException: Source error on track with id not found - possibly skip to next item
                   // TODO: connect network monitor on network exceptions
                 }
 
                 override fun onEvents(player: Player, events: Player.Events) {
                   if (
                     events.containsAny(
-                      EVENT_PLAYBACK_STATE_CHANGED,
-                      EVENT_MEDIA_METADATA_CHANGED,
-                      EVENT_PLAY_WHEN_READY_CHANGED,
+                      Player.EVENT_PLAYBACK_STATE_CHANGED,
+                      Player.EVENT_MEDIA_METADATA_CHANGED,
+                      Player.EVENT_PLAY_WHEN_READY_CHANGED,
                     )
                   ) {
-                    Logger.d("EVENTS") { events.toString() }
                     updateMusicState(player)
                   }
                 }
@@ -140,7 +136,7 @@ actual class PlayerPlatformConnection(
       setMediaItems(tracks.toMediaItems(), startIndex, startPositionMs)
       prepare()
       if (autoPlay) play()
-      repeatMode = REPEAT_MODE_ALL
+      repeatMode = Player.REPEAT_MODE_OFF
     }
   }
 

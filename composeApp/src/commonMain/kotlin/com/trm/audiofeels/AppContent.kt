@@ -60,6 +60,7 @@ import com.trm.audiofeels.core.ui.compose.util.NavigationContentPosition
 import com.trm.audiofeels.core.ui.compose.util.NavigationType
 import com.trm.audiofeels.core.ui.compose.util.calculateWindowSize
 import com.trm.audiofeels.di.ApplicationComponent
+import com.trm.audiofeels.domain.model.Track
 import com.trm.audiofeels.ui.discover.DiscoverPage
 import com.trm.audiofeels.ui.favourites.FavouritesPage
 import com.trm.audiofeels.ui.player.PlayerViewModel
@@ -156,7 +157,8 @@ fun AppContent(applicationComponent: ApplicationComponent) {
           AppNavHost(
             navController = navController,
             modifier = Modifier.fillMaxSize().padding(it),
-            onPlayerPaneValueChange = { paneValue ->
+            showSupportingPane = playerState is PlayerState.Initialized,
+            onSupportingPaneValueChange = { paneValue ->
               when (paneValue) {
                 PaneAdaptedValue.Hidden -> {
                   if (playerState is PlayerState.Initialized) {
@@ -177,6 +179,11 @@ fun AppContent(applicationComponent: ApplicationComponent) {
                   }
                 }
               }
+            },
+            onPlayClick = {
+              playerViewModel.playerConnection.play(
+                listOf(Track(null, null, null, null, "LWQqk", null, null, null, "Test"))
+              )
             },
           )
         }
@@ -278,8 +285,10 @@ private fun AppPermanentNavigationDrawer(
 @Composable
 private fun AppNavHost(
   navController: NavHostController,
+  showSupportingPane: Boolean,
   modifier: Modifier = Modifier,
-  onPlayerPaneValueChange: (PaneAdaptedValue) -> Unit,
+  onSupportingPaneValueChange: (PaneAdaptedValue) -> Unit,
+  onPlayClick: () -> Unit,
 ) {
   NavHost(
     modifier = modifier,
@@ -289,19 +298,23 @@ private fun AppNavHost(
     composable<AppRoute.Discover> {
       DiscoverPage(
         modifier = Modifier.fillMaxSize(),
-        onPlayerPaneValueChange = onPlayerPaneValueChange,
+        showSupportingPane = showSupportingPane,
+        onSupportingPaneValueChange = onSupportingPaneValueChange,
+        onPlayClick = onPlayClick,
       )
     }
     composable<AppRoute.Favourites> {
       FavouritesPage(
         modifier = Modifier.fillMaxSize(),
-        onPlayerPaneValueChange = onPlayerPaneValueChange,
+        showSupportingPane = showSupportingPane,
+        onSupportingPaneValueChange = onSupportingPaneValueChange,
       )
     }
     composable<AppRoute.Search> {
       SearchPage(
         modifier = Modifier.fillMaxSize(),
-        onPlayerPaneValueChange = onPlayerPaneValueChange,
+        showSupportingPane = showSupportingPane,
+        onSupportingPaneValueChange = onSupportingPaneValueChange,
       )
     }
   }

@@ -17,11 +17,15 @@ import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
-fun SearchPage(modifier: Modifier = Modifier, onPlayerPaneValueChange: (PaneAdaptedValue) -> Unit) {
+fun SearchPage(
+  modifier: Modifier = Modifier,
+  showSupportingPane: Boolean,
+  onSupportingPaneValueChange: (PaneAdaptedValue) -> Unit,
+) {
   val navigator = rememberSupportingPaneScaffoldNavigator()
 
   val playerPaneValue = navigator.scaffoldValue[SupportingPaneScaffoldRole.Supporting]
-  LaunchedEffect(playerPaneValue) { onPlayerPaneValueChange(playerPaneValue) }
+  LaunchedEffect(playerPaneValue) { onSupportingPaneValueChange(playerPaneValue) }
 
   SupportingPaneScaffold(
     modifier = modifier,

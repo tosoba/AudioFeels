@@ -19,12 +19,13 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun FavouritesPage(
   modifier: Modifier = Modifier,
-  onPlayerPaneValueChange: (PaneAdaptedValue) -> Unit,
+  showSupportingPane: Boolean,
+  onSupportingPaneValueChange: (PaneAdaptedValue) -> Unit,
 ) {
   val navigator = rememberSupportingPaneScaffoldNavigator()
 
   val playerPaneValue = navigator.scaffoldValue[SupportingPaneScaffoldRole.Supporting]
-  LaunchedEffect(playerPaneValue) { onPlayerPaneValueChange(playerPaneValue) }
+  LaunchedEffect(playerPaneValue) { onSupportingPaneValueChange(playerPaneValue) }
 
   SupportingPaneScaffold(
     modifier = modifier,

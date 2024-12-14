@@ -17,16 +17,19 @@ kotlin {
       dependencies {
         implementation(projects.core.base)
 
-        implementation(compose.foundation)
-        implementation(compose.material)
-        api(compose.materialIconsExtended)
+        api(compose.components.resources)
+        api(compose.components.uiToolingPreview)
+        api(compose.foundation)
+        api(compose.material)
         api(compose.material3)
+        api(compose.materialIconsExtended)
+        api(compose.runtime)
+        api(compose.ui)
 
+        implementation(compose.material3AdaptiveNavigationSuite)
         implementation(libs.material3.adaptive)
         implementation(libs.material3.adaptive.layout)
         implementation(libs.material3.adaptive.navigation)
-        implementation(compose.material3AdaptiveNavigationSuite)
-
         implementation(libs.material3.windowSizeClass)
       }
     }
