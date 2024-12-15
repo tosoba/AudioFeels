@@ -37,9 +37,7 @@ import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -69,7 +67,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 @Preview
 fun AppContent(applicationComponent: ApplicationComponent) {
@@ -85,18 +83,21 @@ fun AppContent(applicationComponent: ApplicationComponent) {
       playerViewModel.playerConnection.playerStateFlow.collectAsStateWithLifecycle()
 
     val scope = rememberCoroutineScope()
-    var playerSheetLastVisibleValue by mutableStateOf(SheetValue.PartiallyExpanded)
-    val playerScaffoldState =
-      rememberBottomSheetScaffoldState(
-        bottomSheetState =
-          rememberStandardBottomSheetState(
-            initialValue = SheetValue.Hidden,
-            skipHiddenState = false,
+    val playerViewState =
+      rememberAppPlayerViewState(
+        scaffoldState =
+          rememberBottomSheetScaffoldState(
+            bottomSheetState =
+              rememberStandardBottomSheetState(
+                initialValue = SheetValue.Hidden,
+                skipHiddenState = false,
+              )
           )
       )
-    LaunchedEffect(playerScaffoldState.bottomSheetState.currentValue) {
-      if (playerScaffoldState.bottomSheetState.currentValue != SheetValue.Hidden) {
-        playerSheetLastVisibleValue = playerScaffoldState.bottomSheetState.currentValue
+
+    LaunchedEffect(playerState) {
+      if (playerState is PlayerState.Initialized) {
+        playerViewState.partialExpandSheetIfPaneHidden()
       }
     }
 
@@ -107,9 +108,9 @@ fun AppContent(applicationComponent: ApplicationComponent) {
     fun navigateToPageDestination(destination: AppPageNavigationDestination) {
       if (
         playerState is PlayerState.Initialized &&
-          playerScaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
+          playerViewState.currentSheetValue == SheetValue.Expanded
       ) {
-        scope.launch { playerScaffoldState.bottomSheetState.partialExpand() }
+        scope.launch { playerViewState.scaffoldState.bottomSheetState.partialExpand() }
       }
       navController.navigateToPageDestination(destination)
     }
@@ -151,7 +152,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
               Text("TEST")
             }
           },
-          scaffoldState = playerScaffoldState,
+          scaffoldState = playerViewState.scaffoldState,
         ) {
           @OptIn(ExperimentalMaterial3AdaptiveApi::class)
           AppNavHost(
@@ -159,23 +160,17 @@ fun AppContent(applicationComponent: ApplicationComponent) {
             modifier = Modifier.fillMaxSize().padding(it),
             showSupportingPane = playerState is PlayerState.Initialized,
             onSupportingPaneValueChange = { paneValue ->
+              playerViewState.supportingPaneValue = paneValue
+
               when (paneValue) {
                 PaneAdaptedValue.Hidden -> {
                   if (playerState is PlayerState.Initialized) {
-                    scope.launch {
-                      playerScaffoldState.bottomSheetState.run {
-                        when (playerSheetLastVisibleValue) {
-                          SheetValue.Expanded -> expand()
-                          SheetValue.PartiallyExpanded -> partialExpand()
-                          SheetValue.Hidden -> return@launch
-                        }
-                      }
-                    }
+                    scope.launch { playerViewState.restoreLastVisibleSheetValue() }
                   }
                 }
                 PaneAdaptedValue.Expanded -> {
                   if (playerState is PlayerState.Initialized) {
-                    scope.launch { playerScaffoldState.bottomSheetState.hide() }
+                    scope.launch { playerViewState.scaffoldState.bottomSheetState.hide() }
                   }
                 }
               }
