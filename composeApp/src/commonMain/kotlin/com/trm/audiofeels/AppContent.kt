@@ -27,15 +27,11 @@ import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.PermanentDrawerSheet
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldLayout
-import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -83,35 +79,14 @@ fun AppContent(applicationComponent: ApplicationComponent) {
       playerViewModel.playerConnection.playerStateFlow.collectAsStateWithLifecycle()
 
     val scope = rememberCoroutineScope()
-    val playerViewState =
-      rememberAppPlayerViewState(
-        scaffoldState =
-          rememberBottomSheetScaffoldState(
-            bottomSheetState =
-              rememberStandardBottomSheetState(
-                initialValue = SheetValue.Hidden,
-                skipHiddenState = false,
-              )
-          )
-      )
-
-    LaunchedEffect(playerState) {
-      if (playerState is PlayerState.Initialized) {
-        playerViewState.partialExpandSheetIfPaneHidden()
-      }
-    }
+    val appViewState = rememberAppViewState(playerState)
 
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
     fun navigateToPageDestination(destination: AppPageNavigationDestination) {
-      if (
-        playerState is PlayerState.Initialized &&
-          playerViewState.currentSheetValue == SheetValue.Expanded
-      ) {
-        scope.launch { playerViewState.scaffoldState.bottomSheetState.partialExpand() }
-      }
+      scope.launch { appViewState.onNavigateToPageDestination() }
       navController.navigateToPageDestination(destination)
     }
 
@@ -152,7 +127,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
               Text("TEST")
             }
           },
-          scaffoldState = playerViewState.scaffoldState,
+          scaffoldState = appViewState.playerViewState.scaffoldState,
         ) {
           @OptIn(ExperimentalMaterial3AdaptiveApi::class)
           AppNavHost(
@@ -160,20 +135,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
             modifier = Modifier.fillMaxSize().padding(it),
             showSupportingPane = playerState is PlayerState.Initialized,
             onSupportingPaneValueChange = { paneValue ->
-              playerViewState.supportingPaneValue = paneValue
-
-              when (paneValue) {
-                PaneAdaptedValue.Hidden -> {
-                  if (playerState is PlayerState.Initialized) {
-                    scope.launch { playerViewState.restoreLastVisibleSheetValue() }
-                  }
-                }
-                PaneAdaptedValue.Expanded -> {
-                  if (playerState is PlayerState.Initialized) {
-                    scope.launch { playerViewState.scaffoldState.bottomSheetState.hide() }
-                  }
-                }
-              }
+              scope.launch { appViewState.onSupportingPaneValueChange(paneValue) }
             },
             onPlayClick = {
               playerViewModel.playerConnection.play(
