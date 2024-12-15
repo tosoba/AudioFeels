@@ -7,6 +7,7 @@ import com.trm.audiofeels.core.base.di.ApplicationScope
 import com.trm.audiofeels.core.base.util.trimHttps
 import com.trm.audiofeels.core.network.HostFetcher
 import com.trm.audiofeels.core.network.HostRetriever
+import com.trm.audiofeels.core.network.HostValidator
 import com.trm.audiofeels.core.preferences.get
 import com.trm.audiofeels.core.preferences.hostPreferenceKey
 import com.trm.audiofeels.core.preferences.set
@@ -21,8 +22,10 @@ class AudiusHostsRepository(
   private val inMemoryDataSource: AudiusHostsInMemoryDataSource,
   private val dataStore: DataStore<Preferences>,
   endpoints: Lazy<HostsEndpoints>,
+  validator: Lazy<HostValidator>,
 ) : HostRetriever, HostFetcher {
   private val endpoints by endpoints
+  private val validator by validator
 
   private val mutex = Mutex()
 
@@ -58,6 +61,6 @@ class AudiusHostsRepository(
   }
 
   private suspend fun List<String>.firstSuccessfulOrNull(): String? = firstOrNull {
-    endpoints.pingHost(it)
+    validator.isValid(it)
   }
 }

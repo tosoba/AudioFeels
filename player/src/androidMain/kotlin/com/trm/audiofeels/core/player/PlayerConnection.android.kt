@@ -70,8 +70,9 @@ actual class PlayerPlatformConnection(
             addListener(
               object : Player.Listener {
                 override fun onPlayerError(error: PlaybackException) {
-                  Logger.e("ERROR", error)
-                  // TODO: handle androidx.media3.exoplayer.ExoPlaybackException: Source error on track with id not found - possibly skip to next item
+                  Logger.e(messageString = "ERROR", throwable = error, tag = javaClass.simpleName)
+                  // TODO: handle androidx.media3.exoplayer.ExoPlaybackException: Source error on
+                  // track with id not found - possibly skip to next item
                   // TODO: connect network monitor on network exceptions
                 }
 
@@ -141,6 +142,23 @@ actual class PlayerPlatformConnection(
   }
 
   private fun Iterable<Track>.toMediaItems(): List<MediaItem> {
+    // TODO: this technically has a chance of failing due to redirect response on pingHost - add
+    // error handling (no error handling causes a crash)
+
+    // io.ktor.client.plugins.RedirectResponseException: Unhandled redirect: GET
+    // https://blockchange-audius-discovery-04.bdnodes.net/v1. Status: 308 PERMANENT REDIRECT. Text:
+    // "<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+    //
+    //      <title>Redirecting...</title>
+    //
+    //      <h1>Redirecting...</h1>
+    //
+    //      <p>You should be redirected automatically to target URL: <a
+    // href="http://blockchange-audius-discovery-04.bdnodes.net/v1/">http://blockchange-audius-discovery-04.bdnodes.net/v1/</a>.  If not click the link."
+
+    // TODO: It could also fail on getHosts call - add error handling (no error handling causes a
+    // crash)
+
     val host = "https://${runBlocking { hostRetriever.retrieveHost() }}"
     return map { track -> track.toMediaItem(host) }
   }

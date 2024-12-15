@@ -15,6 +15,7 @@ fun httpClient(config: HttpClientConfig<*>.() -> Unit): HttpClient = HttpClient(
 
 fun HttpClientConfig<*>.configureDefault(
   logLevel: LogLevel? = null,
+  expectSuccess: Boolean = true,
   cacheStorage: CacheStorage? = null,
   maxRetries: Int? = null,
 ) {
@@ -42,5 +43,5 @@ fun HttpClientConfig<*>.configureDefault(
     }
   }
 
-  expectSuccess = true
+  this.expectSuccess = expectSuccess
 }

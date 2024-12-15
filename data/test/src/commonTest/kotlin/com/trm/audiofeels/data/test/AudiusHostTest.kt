@@ -6,6 +6,7 @@ import com.trm.audiofeels.api.audius.AudiusEndpoints
 import com.trm.audiofeels.api.hosts.HostsEndpoints
 import com.trm.audiofeels.api.hosts.model.HostsResponse
 import com.trm.audiofeels.core.base.util.trimHttps
+import com.trm.audiofeels.core.network.HostValidator
 import com.trm.audiofeels.core.network.hostInterceptor
 import com.trm.audiofeels.core.preferences.get
 import com.trm.audiofeels.core.preferences.hostPreferenceKey
@@ -298,6 +299,8 @@ class AudiusHostTest {
         dataStore = dataStore,
         endpoints =
           lazy { HostsEndpoints(HttpClient(hostsEngine, contentNegotiationClientConfig())) },
+        validator =
+          lazy { HostValidator(HttpClient(hostsEngine, contentNegotiationClientConfig())) },
       )
     return AudiusPlaylistsRepository(
       audiusEndpoints =

@@ -6,6 +6,7 @@ import com.trm.audiofeels.core.base.di.ApplicationScope
 import com.trm.audiofeels.core.base.util.AppCoroutineDispatchers
 import com.trm.audiofeels.core.base.util.ApplicationCoroutineScope
 import com.trm.audiofeels.core.cache.di.CacheCoreComponent
+import com.trm.audiofeels.core.network.di.NetworkCoreComponent
 import com.trm.audiofeels.core.player.PlayerConnection
 import com.trm.audiofeels.core.player.di.PlayerComponent
 import com.trm.audiofeels.core.preferences.di.PreferencesCoreComponent
@@ -21,10 +22,11 @@ interface ApplicationComponent :
   AudiusApiComponent,
   HostsApiComponent,
   CacheCoreComponent,
+  NetworkCoreComponent,
   PreferencesCoreComponent,
   HostsDataComponent,
-  PlayerComponent,
-  PlaylistsDataComponent {
+  PlaylistsDataComponent,
+  PlayerComponent {
   val playerConnection: PlayerConnection
 
   @ApplicationScope
