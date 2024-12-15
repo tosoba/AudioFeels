@@ -8,6 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.AnimatedPane
+import androidx.compose.material3.adaptive.layout.AnimatedPaneScope
 import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
 import androidx.compose.material3.adaptive.layout.SupportingPaneScaffold
 import androidx.compose.material3.adaptive.layout.SupportingPaneScaffoldRole
@@ -17,9 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.trm.audiofeels.core.ui.resources.Res
-import com.trm.audiofeels.core.ui.resources.discover
-import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
@@ -28,6 +26,7 @@ fun DiscoverPage(
   showSupportingPane: Boolean,
   onSupportingPaneValueChange: (PaneAdaptedValue) -> Unit,
   onPlayClick: () -> Unit,
+  supportingPaneContent: @Composable AnimatedPaneScope.() -> Unit,
 ) {
   val navigator =
     rememberSupportingPaneScaffoldNavigator(
@@ -52,9 +51,7 @@ fun DiscoverPage(
       }
     },
     supportingPane = {
-      AnimatedPane(modifier = Modifier.safeContentPadding()) {
-        Text(stringResource(Res.string.discover))
-      }
+      AnimatedPane(modifier = Modifier.safeContentPadding(), content = supportingPaneContent)
     },
   )
 }

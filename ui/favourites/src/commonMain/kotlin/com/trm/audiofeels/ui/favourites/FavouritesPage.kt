@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.layout.AnimatedPane
+import androidx.compose.material3.adaptive.layout.AnimatedPaneScope
 import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
 import androidx.compose.material3.adaptive.layout.SupportingPaneScaffold
 import androidx.compose.material3.adaptive.layout.SupportingPaneScaffoldRole
@@ -21,6 +22,7 @@ fun FavouritesPage(
   modifier: Modifier = Modifier,
   showSupportingPane: Boolean,
   onSupportingPaneValueChange: (PaneAdaptedValue) -> Unit,
+  supportingPaneContent: @Composable AnimatedPaneScope.() -> Unit,
 ) {
   val navigator = rememberSupportingPaneScaffoldNavigator()
 
@@ -37,9 +39,7 @@ fun FavouritesPage(
       }
     },
     supportingPane = {
-      AnimatedPane(modifier = Modifier.safeContentPadding()) {
-        Text(stringResource(Res.string.favourites))
-      }
+      AnimatedPane(modifier = Modifier.safeContentPadding(), content = supportingPaneContent)
     },
   )
 }

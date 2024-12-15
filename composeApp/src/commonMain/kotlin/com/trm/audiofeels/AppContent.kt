@@ -57,6 +57,7 @@ import com.trm.audiofeels.di.ApplicationComponent
 import com.trm.audiofeels.domain.model.Track
 import com.trm.audiofeels.ui.discover.DiscoverPage
 import com.trm.audiofeels.ui.favourites.FavouritesPage
+import com.trm.audiofeels.ui.player.PlayerPage
 import com.trm.audiofeels.ui.player.PlayerViewModel
 import com.trm.audiofeels.ui.search.SearchPage
 import kotlinx.coroutines.launch
@@ -258,21 +259,27 @@ private fun AppNavHost(
         showSupportingPane = showSupportingPane,
         onSupportingPaneValueChange = onSupportingPaneValueChange,
         onPlayClick = onPlayClick,
-      )
+      ) {
+        PlayerPage(modifier = Modifier.fillMaxSize())
+      }
     }
     composable<AppRoute.Favourites> {
       FavouritesPage(
         modifier = Modifier.fillMaxSize(),
         showSupportingPane = showSupportingPane,
         onSupportingPaneValueChange = onSupportingPaneValueChange,
-      )
+      ) {
+        PlayerPage(modifier = Modifier.fillMaxSize())
+      }
     }
     composable<AppRoute.Search> {
       SearchPage(
         modifier = Modifier.fillMaxSize(),
         showSupportingPane = showSupportingPane,
         onSupportingPaneValueChange = onSupportingPaneValueChange,
-      )
+      ) {
+        PlayerPage(modifier = Modifier.fillMaxSize())
+      }
     }
   }
 }
