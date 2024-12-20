@@ -4,28 +4,31 @@ import com.trm.audiofeels.api.audius.model.PlaylistResponse
 import com.trm.audiofeels.api.audius.model.PlaylistsResponse
 import com.trm.audiofeels.core.network.HostFetcher
 import com.trm.audiofeels.core.network.HostRetriever
+import com.trm.audiofeels.core.network.configureDefault
 import com.trm.audiofeels.core.network.hostInterceptor
 import com.trm.audiofeels.core.network.httpClient
-import io.ktor.client.HttpClient
-import io.ktor.client.HttpClientConfig
 import io.ktor.client.call.body
+import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.HttpSend
+import io.ktor.client.plugins.cache.storage.CacheStorage
+import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.plugin
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.http.appendPathSegments
 import io.ktor.http.path
 
-class AudiusEndpoints(private val client: HttpClient) {
-  constructor(
-    hostRetriever: HostRetriever,
-    hostFetcher: HostFetcher,
-    config: HttpClientConfig<*>.() -> Unit,
-  ) : this(
-    httpClient(config = config).apply {
-      plugin(HttpSend).intercept(hostInterceptor(hostRetriever, hostFetcher))
-    }
-  )
+class AudiusEndpoints(
+  hostRetriever: HostRetriever,
+  hostFetcher: HostFetcher,
+  engine: HttpClientEngine? = null,
+  cacheStorage: CacheStorage? = null,
+) {
+  private val client =
+    httpClient(engine = engine) {
+        configureDefault(logLevel = LogLevel.ALL, cacheStorage = cacheStorage, maxRetries = 2)
+      }
+      .apply { plugin(HttpSend).intercept(hostInterceptor(hostRetriever, hostFetcher)) }
 
   suspend fun getPlaylists(mood: String?): PlaylistsResponse =
     client

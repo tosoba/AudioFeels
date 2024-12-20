@@ -7,7 +7,6 @@ import com.trm.audiofeels.api.hosts.HostsEndpoints
 import com.trm.audiofeels.api.hosts.model.HostsResponse
 import com.trm.audiofeels.core.base.util.trimHttps
 import com.trm.audiofeels.core.network.HostValidator
-import com.trm.audiofeels.core.network.hostInterceptor
 import com.trm.audiofeels.core.preferences.get
 import com.trm.audiofeels.core.preferences.hostPreferenceKey
 import com.trm.audiofeels.data.hosts.AudiusHostsInMemoryDataSource
@@ -16,19 +15,13 @@ import com.trm.audiofeels.data.playlists.AudiusPlaylistsRepository
 import dev.mokkery.spy
 import dev.mokkery.verify
 import dev.mokkery.verify.VerifyMode.Companion.exactly
-import io.ktor.client.HttpClient
-import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
 import io.ktor.client.engine.mock.respond
-import io.ktor.client.plugins.HttpSend
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.plugin
 import io.ktor.client.request.HttpResponseData
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
-import io.ktor.serialization.kotlinx.json.json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -322,21 +315,15 @@ class AudiusHostTest {
       AudiusHostsRepository(
         inMemoryDataSource = inMemoryDataSource,
         dataStore = dataStore,
-        endpoints =
-          lazy(LazyThreadSafetyMode.NONE) {
-            HostsEndpoints(HttpClient(hostsEngine, contentNegotiationClientConfig()))
-          },
+        endpoints = lazy(LazyThreadSafetyMode.NONE) { HostsEndpoints(hostsEngine) },
         validator = lazy(LazyThreadSafetyMode.NONE) { HostValidator(hostsEngine) },
       )
     return AudiusPlaylistsRepository(
       audiusEndpoints =
         AudiusEndpoints(
-          HttpClient(playlistsEngine, contentNegotiationClientConfig()).apply {
-            plugin(HttpSend)
-              .intercept(
-                hostInterceptor(hostRetriever = hostsRepository, hostFetcher = hostsRepository)
-              )
-          }
+          hostRetriever = hostsRepository,
+          hostFetcher = hostsRepository,
+          engine = playlistsEngine,
         )
     )
   }
@@ -378,10 +365,6 @@ class AudiusHostTest {
       status = status,
       headers = headersOf(HttpHeaders.ContentType, "application/json"),
     )
-
-  private fun contentNegotiationClientConfig(): HttpClientConfig<*>.() -> Unit = {
-    install(ContentNegotiation) { json() }
-  }
 
   private fun MockEngine.assertHostsWereFetchedFirst() {
     assertEquals(

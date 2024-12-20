@@ -1,11 +1,17 @@
 package com.trm.audiofeels.api.hosts
 
 import com.trm.audiofeels.api.hosts.model.HostsResponse
-import io.ktor.client.HttpClient
+import com.trm.audiofeels.core.network.configureDefault
+import com.trm.audiofeels.core.network.httpClient
 import io.ktor.client.call.body
+import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.request.get
 
-class HostsEndpoints(private val client: HttpClient) {
+class HostsEndpoints(engine: HttpClientEngine? = null) {
+  private val client =
+    httpClient(engine) { configureDefault(logLevel = LogLevel.ALL, maxRetries = 2) }
+
   suspend fun getHosts(): HostsResponse = client.get(HOSTS_URL).body<HostsResponse>()
 
   companion object {
