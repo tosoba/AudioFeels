@@ -22,7 +22,7 @@ class AudiusEndpoints(private val client: HttpClient) {
     hostFetcher: HostFetcher,
     config: HttpClientConfig<*>.() -> Unit,
   ) : this(
-    httpClient(config).apply {
+    httpClient(config = config).apply {
       plugin(HttpSend).intercept(hostInterceptor(hostRetriever, hostFetcher))
     }
   )

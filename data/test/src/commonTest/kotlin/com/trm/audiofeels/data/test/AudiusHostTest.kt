@@ -50,7 +50,7 @@ class AudiusHostTest {
     }
 
   @Test
-  fun `given no host stored locally - when call to getPlaylistsForMood - then first fetched host is pinged`() =
+  fun `given no host stored locally - when call to getPlaylistsForMood - then first fetched host is validated`() =
     runTest {
       val hostsEngine = defaultHostsEngine()
 
@@ -63,14 +63,14 @@ class AudiusHostTest {
     }
 
   @Test
-  fun `given no host stored locally - when call to getPlaylistsForMood - then hosts are pinged until success`() =
+  fun `given no host stored locally - when call to getPlaylistsForMood - then hosts are validated until success response`() =
     runTest {
-      val firstSuccessHostIndex = 5
+      val successHostIndex = 5
 
       val hostsEngine =
         defaultHostsEngine(
-          (0..<firstSuccessHostIndex).associate {
-            pingHostAtIndexUrl(it) to MockResponse(status = HttpStatusCode.NotFound)
+          (0..<successHostIndex).associate {
+            validateHostAtIndexUrl(it) to MockResponse(status = HttpStatusCode.NotFound)
           }
         )
 
@@ -79,7 +79,32 @@ class AudiusHostTest {
       assertTrue(
         hostsEngine.requestHistory
           .map { it.url.host }
-          .containsAll((0..firstSuccessHostIndex).map { hostAtIndex(it).trimHttps() })
+          .containsAll((0..successHostIndex).map { hostAtIndex(it).trimHttps() })
+      )
+    }
+
+  @Test
+  fun `given no host stored locally - when call to getPlaylistsForMood - then hosts are validated until redirect response`() =
+    runTest {
+      val redirectHostIndex = 5
+
+      val hostsEngine =
+        defaultHostsEngine(
+          (0..<redirectHostIndex).associate {
+            validateHostAtIndexUrl(it) to MockResponse(status = HttpStatusCode.NotFound)
+          } +
+            mapOf(
+              validateHostAtIndexUrl(redirectHostIndex) to
+                MockResponse(status = HttpStatusCode.PermanentRedirect)
+            )
+        )
+
+      playlistsRepository(hostsEngine = hostsEngine).getPlaylistsForMood("Energizing")
+
+      assertTrue(
+        hostsEngine.requestHistory
+          .map { it.url.host }
+          .containsAll((0..redirectHostIndex).map { hostAtIndex(it).trimHttps() })
       )
     }
 
@@ -95,7 +120,7 @@ class AudiusHostTest {
     }
 
   @Test
-  fun `given no host stored locally - when multiple calls to getPlaylistsForMood - then host is pinged only by first call`() =
+  fun `given no host stored locally - when multiple calls to getPlaylistsForMood - then host is validated only by first call`() =
     runTest {
       val hostsEngine = defaultHostsEngine()
       val repository = playlistsRepository(hostsEngine = hostsEngine)
@@ -113,7 +138,7 @@ class AudiusHostTest {
   fun `given no host stored locally - when multiple calls to getPlaylistsForMood - then after host is stored it always retrieved from memory for subsequent calls`() =
     runTest {
       val hostsEngine =
-        defaultHostsEngine(mapOf(pingHostAtIndexUrl(0) to MockResponse(delayMillis = 1_000L)))
+        defaultHostsEngine(mapOf(validateHostAtIndexUrl(0) to MockResponse(delayMillis = 1_000L)))
       val dataStore = spy<DataStore<Preferences>>(FakeDataStorePreferences())
       val repository = playlistsRepository(hostsEngine = hostsEngine, dataStore = dataStore)
 
@@ -267,7 +292,7 @@ class AudiusHostTest {
     }
 
   @Test
-  fun `given invalid host stored in preferences - when multiple calls to getPlaylistsForMood - then host is pinged only by first call`() =
+  fun `given invalid host stored in preferences - when multiple calls to getPlaylistsForMood - then host is validated only by first call`() =
     runTest {
       val invalidHost = "audius-invalid-host.com"
       val hostsEngine = defaultHostsEngine()
@@ -298,9 +323,10 @@ class AudiusHostTest {
         inMemoryDataSource = inMemoryDataSource,
         dataStore = dataStore,
         endpoints =
-          lazy { HostsEndpoints(HttpClient(hostsEngine, contentNegotiationClientConfig())) },
-        validator =
-          lazy { HostValidator(HttpClient(hostsEngine, contentNegotiationClientConfig())) },
+          lazy(LazyThreadSafetyMode.NONE) {
+            HostsEndpoints(HttpClient(hostsEngine, contentNegotiationClientConfig()))
+          },
+        validator = lazy(LazyThreadSafetyMode.NONE) { HostValidator(hostsEngine) },
       )
     return AudiusPlaylistsRepository(
       audiusEndpoints =
@@ -379,6 +405,6 @@ class AudiusHostTest {
 
     private fun hostAtIndex(index: Int): String = hostsResponse.hosts!![index]
 
-    private fun pingHostAtIndexUrl(index: Int): String = "${hostAtIndex(index)}/v1"
+    private fun validateHostAtIndexUrl(index: Int): String = "${hostAtIndex(index)}/v1"
   }
 }

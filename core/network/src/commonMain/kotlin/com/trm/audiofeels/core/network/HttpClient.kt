@@ -2,6 +2,7 @@ package com.trm.audiofeels.core.network
 
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
+import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.cache.HttpCache
 import io.ktor.client.plugins.cache.storage.CacheStorage
@@ -11,11 +12,15 @@ import io.ktor.client.plugins.logging.Logging
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
-fun httpClient(config: HttpClientConfig<*>.() -> Unit): HttpClient = HttpClient(config)
+fun httpClient(
+  engine: HttpClientEngine? = null,
+  config: HttpClientConfig<*>.() -> Unit,
+): HttpClient = engine?.let { HttpClient(it, config) } ?: HttpClient(config)
 
 fun HttpClientConfig<*>.configureDefault(
   logLevel: LogLevel? = null,
   expectSuccess: Boolean = true,
+  followRedirects: Boolean = true,
   cacheStorage: CacheStorage? = null,
   maxRetries: Int? = null,
 ) {
@@ -44,4 +49,5 @@ fun HttpClientConfig<*>.configureDefault(
   }
 
   this.expectSuccess = expectSuccess
+  this.followRedirects = followRedirects
 }
