@@ -6,7 +6,7 @@ import androidx.media3.common.util.UnstableApi
 import com.trm.audiofeels.core.base.di.ApplicationScope
 import com.trm.audiofeels.core.base.util.AppCoroutineDispatchers
 import com.trm.audiofeels.core.base.util.ApplicationCoroutineScope
-import com.trm.audiofeels.core.network.HostRetriever
+import com.trm.audiofeels.core.network.host.HostRetriever
 import com.trm.audiofeels.core.player.PlayerConnection
 import com.trm.audiofeels.core.player.PlayerNotificationProvider
 import com.trm.audiofeels.core.player.PlayerPlatformConnection

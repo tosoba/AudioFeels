@@ -1,4 +1,4 @@
-package com.trm.audiofeels.core.network
+package com.trm.audiofeels.core.network.host
 
 import io.ktor.client.plugins.HttpSendInterceptor
 import io.ktor.http.HttpStatusCode

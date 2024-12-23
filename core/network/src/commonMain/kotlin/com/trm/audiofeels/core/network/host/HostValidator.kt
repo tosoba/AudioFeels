@@ -1,5 +1,7 @@
-package com.trm.audiofeels.core.network
+package com.trm.audiofeels.core.network.host
 
+import com.trm.audiofeels.core.network.configureDefault
+import com.trm.audiofeels.core.network.httpClient
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.request.get

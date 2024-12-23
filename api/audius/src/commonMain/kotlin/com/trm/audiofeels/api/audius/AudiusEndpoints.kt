@@ -2,10 +2,10 @@ package com.trm.audiofeels.api.audius
 
 import com.trm.audiofeels.api.audius.model.PlaylistResponse
 import com.trm.audiofeels.api.audius.model.PlaylistsResponse
-import com.trm.audiofeels.core.network.HostFetcher
-import com.trm.audiofeels.core.network.HostRetriever
+import com.trm.audiofeels.core.network.host.HostFetcher
+import com.trm.audiofeels.core.network.host.HostRetriever
 import com.trm.audiofeels.core.network.configureDefault
-import com.trm.audiofeels.core.network.hostInterceptor
+import com.trm.audiofeels.core.network.host.hostInterceptor
 import com.trm.audiofeels.core.network.httpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.HttpClientEngine

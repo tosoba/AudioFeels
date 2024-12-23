@@ -6,7 +6,7 @@ import com.trm.audiofeels.api.audius.AudiusEndpoints
 import com.trm.audiofeels.api.hosts.HostsEndpoints
 import com.trm.audiofeels.api.hosts.model.HostsResponse
 import com.trm.audiofeels.core.base.util.trimHttps
-import com.trm.audiofeels.core.network.HostValidator
+import com.trm.audiofeels.core.network.host.HostValidator
 import com.trm.audiofeels.core.preferences.get
 import com.trm.audiofeels.core.preferences.hostPreferenceKey
 import com.trm.audiofeels.data.hosts.AudiusHostsInMemoryDataSource

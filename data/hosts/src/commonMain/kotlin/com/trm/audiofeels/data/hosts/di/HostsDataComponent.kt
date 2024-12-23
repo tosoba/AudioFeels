@@ -1,7 +1,7 @@
 package com.trm.audiofeels.data.hosts.di
 
-import com.trm.audiofeels.core.network.HostFetcher
-import com.trm.audiofeels.core.network.HostRetriever
+import com.trm.audiofeels.core.network.host.HostFetcher
+import com.trm.audiofeels.core.network.host.HostRetriever
 import com.trm.audiofeels.data.hosts.AudiusHostsRepository
 import me.tatarka.inject.annotations.Provides
 

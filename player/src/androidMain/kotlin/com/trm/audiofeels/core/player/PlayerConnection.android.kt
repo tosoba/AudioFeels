@@ -13,7 +13,7 @@ import androidx.media3.session.SessionToken
 import co.touchlab.kermit.Logger
 import com.trm.audiofeels.core.base.util.ApplicationCoroutineScope
 import com.trm.audiofeels.core.base.util.onCompletion
-import com.trm.audiofeels.core.network.HostRetriever
+import com.trm.audiofeels.core.network.host.HostRetriever
 import com.trm.audiofeels.core.player.model.PlayerConstants
 import com.trm.audiofeels.core.player.model.PlayerState
 import com.trm.audiofeels.domain.model.Track

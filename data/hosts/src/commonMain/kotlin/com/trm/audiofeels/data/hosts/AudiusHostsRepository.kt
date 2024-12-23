@@ -5,9 +5,9 @@ import androidx.datastore.preferences.core.Preferences
 import com.trm.audiofeels.api.hosts.HostsEndpoints
 import com.trm.audiofeels.core.base.di.ApplicationScope
 import com.trm.audiofeels.core.base.util.trimHttps
-import com.trm.audiofeels.core.network.HostFetcher
-import com.trm.audiofeels.core.network.HostRetriever
-import com.trm.audiofeels.core.network.HostValidator
+import com.trm.audiofeels.core.network.host.HostFetcher
+import com.trm.audiofeels.core.network.host.HostRetriever
+import com.trm.audiofeels.core.network.host.HostValidator
 import com.trm.audiofeels.core.preferences.get
 import com.trm.audiofeels.core.preferences.hostPreferenceKey
 import com.trm.audiofeels.core.preferences.set

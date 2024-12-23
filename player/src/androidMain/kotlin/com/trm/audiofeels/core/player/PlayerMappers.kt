@@ -6,17 +6,15 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaItem.RequestMetadata
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
-import com.trm.audiofeels.core.network.buildTrackStreamUrl
 import com.trm.audiofeels.core.player.model.PlaybackState
+import com.trm.audiofeels.core.player.util.buildStreamUrl
 import com.trm.audiofeels.domain.model.Track
 
 internal fun Track.toMediaItem(host: String): MediaItem =
   MediaItem.Builder()
     .setMediaId(id)
     .setRequestMetadata(
-      RequestMetadata.Builder()
-        .setMediaUri(Uri.parse(buildTrackStreamUrl(id = id, host = host)))
-        .build()
+      RequestMetadata.Builder().setMediaUri(Uri.parse(buildStreamUrl(host = host))).build()
     )
     .setMediaMetadata(
       MediaMetadata.Builder()

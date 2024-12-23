@@ -1,8 +1,8 @@
 package com.trm.audiofeels.api.audius.di
 
 import com.trm.audiofeels.api.audius.AudiusEndpoints
-import com.trm.audiofeels.core.network.HostFetcher
-import com.trm.audiofeels.core.network.HostRetriever
+import com.trm.audiofeels.core.network.host.HostFetcher
+import com.trm.audiofeels.core.network.host.HostRetriever
 import io.ktor.client.plugins.cache.storage.CacheStorage
 import me.tatarka.inject.annotations.Provides
 
