@@ -14,6 +14,7 @@ import co.touchlab.kermit.Logger
 import com.trm.audiofeels.core.base.util.ApplicationCoroutineScope
 import com.trm.audiofeels.core.base.util.onCompletion
 import com.trm.audiofeels.core.network.host.HostRetriever
+import com.trm.audiofeels.core.network.monitor.NetworkMonitor
 import com.trm.audiofeels.core.player.model.PlayerConstants
 import com.trm.audiofeels.core.player.model.PlayerState
 import com.trm.audiofeels.domain.model.Track
@@ -37,6 +38,7 @@ actual class PlayerPlatformConnection(
   private val context: Context,
   private val hostRetriever: HostRetriever,
   scope: ApplicationCoroutineScope,
+  networkMonitor: NetworkMonitor,
 ) : PlayerConnection {
   private val mediaBrowser = CompletableDeferred<MediaBrowser>()
 

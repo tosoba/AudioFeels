@@ -7,6 +7,7 @@ import com.trm.audiofeels.core.base.di.ApplicationScope
 import com.trm.audiofeels.core.base.util.AppCoroutineDispatchers
 import com.trm.audiofeels.core.base.util.ApplicationCoroutineScope
 import com.trm.audiofeels.core.network.host.HostRetriever
+import com.trm.audiofeels.core.network.monitor.NetworkMonitor
 import com.trm.audiofeels.core.player.PlayerConnection
 import com.trm.audiofeels.core.player.PlayerNotificationProvider
 import com.trm.audiofeels.core.player.PlayerPlatformConnection
@@ -34,10 +35,12 @@ actual interface PlayerPlatformComponent {
     application: Application,
     hostRetriever: HostRetriever,
     applicationCoroutineScope: ApplicationCoroutineScope,
+    networkMonitor: NetworkMonitor,
   ): PlayerConnection =
     PlayerPlatformConnection(
       context = application,
       hostRetriever = hostRetriever,
       scope = applicationCoroutineScope,
+      networkMonitor = networkMonitor,
     )
 }
