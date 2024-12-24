@@ -73,9 +73,15 @@ actual class PlayerPlatformConnection(
               object : Player.Listener {
                 override fun onPlayerError(error: PlaybackException) {
                   Logger.e(messageString = "ERROR", throwable = error, tag = javaClass.simpleName)
-                  // TODO: handle androidx.media3.exoplayer.ExoPlaybackException: Source error on
-                  // track with id not found - possibly skip to next item
-                  // TODO: connect network monitor on network exceptions
+                  // TODO: handle androidx.media3.exoplayer.ExoPlaybackException: Source error
+                  // Caused by:
+                  // androidx.media3.datasource.HttpDataSource$InvalidResponseCodeException:
+                  // Response code: 525
+                  // can happen for invalid host - recover by reinitializing playback (using
+                  // previously saved parameters) and host fetcher instead of host retriever?
+
+                  // TODO: connect network monitor on network exceptions (see exactly which
+                  // exception occurs on no internet connection)
                 }
 
                 override fun onEvents(player: Player, events: Player.Events) {
@@ -144,23 +150,11 @@ actual class PlayerPlatformConnection(
   }
 
   private fun Iterable<Track>.toMediaItems(): List<MediaItem> {
-    // TODO: this technically has a chance of failing due to redirect response on pingHost - add
-    // error handling (no error handling causes a crash)
-
-    // io.ktor.client.plugins.RedirectResponseException: Unhandled redirect: GET
-    // https://blockchange-audius-discovery-04.bdnodes.net/v1. Status: 308 PERMANENT REDIRECT. Text:
-    // "<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
-    //
-    //      <title>Redirecting...</title>
-    //
-    //      <h1>Redirecting...</h1>
-    //
-    //      <p>You should be redirected automatically to target URL: <a
-    // href="http://blockchange-audius-discovery-04.bdnodes.net/v1/">http://blockchange-audius-discovery-04.bdnodes.net/v1/</a>.  If not click the link."
-
-    // TODO: It could also fail on getHosts call - add error handling (no error handling causes a
-    // crash)
-
+    // TODO: retrieveHost could fail on getHosts network call - add error handling
+    // (no error handling may cause a crash)
+    // Consider making play function suspending since there might be a need to fetch a host here...
+    // Rethink edge cases carefully (even if host is fetched by a previous call a user could clear
+    // app data before pressing play - rare case).
     val host = "https://${runBlocking { hostRetriever.retrieveHost() }}"
     return map { track -> track.toMediaItem(host) }
   }
