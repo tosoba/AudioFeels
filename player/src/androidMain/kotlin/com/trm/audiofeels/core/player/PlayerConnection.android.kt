@@ -72,7 +72,12 @@ actual class PlayerPlatformConnection(
             addListener(
               object : Player.Listener {
                 override fun onPlayerError(error: PlaybackException) {
-                  Logger.e(messageString = "ERROR", throwable = error, tag = javaClass.simpleName)
+                  Logger.e(
+                    messageString =
+                      "Error code: ${error.errorCode}\nMessage:${error.localizedMessage}",
+                    throwable = error,
+                    tag = PlaybackException::class.java.simpleName,
+                  )
                   // TODO: handle androidx.media3.exoplayer.ExoPlaybackException: Source error
                   // Caused by:
                   // androidx.media3.datasource.HttpDataSource$InvalidResponseCodeException:
