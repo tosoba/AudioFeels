@@ -46,7 +46,6 @@ include(
   ":data:test",
   ":domain",
   ":player",
-  ":shared",
   ":ui:favourites",
   ":ui:discover",
   ":ui:player",
