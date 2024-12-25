@@ -14,7 +14,7 @@ import me.tatarka.inject.annotations.Inject
 @Inject
 class AudiusPlaylistsRepository(private val audiusEndpoints: AudiusEndpoints) :
   PlaylistsRepository {
-  override suspend fun getPlaylistsForMood(mood: String): List<Playlist> =
+  override suspend fun getPlaylists(mood: String?): List<Playlist> =
     audiusEndpoints
       .getPlaylists(mood)
       .items

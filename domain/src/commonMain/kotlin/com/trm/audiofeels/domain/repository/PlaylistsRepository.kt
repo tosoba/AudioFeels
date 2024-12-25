@@ -4,7 +4,7 @@ import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.model.Track
 
 interface PlaylistsRepository {
-  suspend fun getPlaylistsForMood(mood: String): List<Playlist>
+  suspend fun getPlaylists(mood: String?): List<Playlist>
 
   suspend fun getPlaylistTracks(playlistId: String): List<Track>
 }
