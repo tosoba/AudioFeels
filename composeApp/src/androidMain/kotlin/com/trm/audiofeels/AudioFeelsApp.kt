@@ -1,12 +1,14 @@
 package com.trm.audiofeels
 
 import android.app.Application
-import com.trm.audiofeels.core.base.di.AndroidComponentProvider
+import com.trm.audiofeels.core.base.di.ComponentProvider
 import com.trm.audiofeels.di.AndroidApplicationComponent
 import com.trm.audiofeels.di.ApplicationComponentProvider
 import com.trm.audiofeels.di.create
+import kotlin.reflect.KClass
+import kotlin.reflect.cast
 
-class AudioFeelsApp : Application(), ApplicationComponentProvider, AndroidComponentProvider {
+class AudioFeelsApp : Application(), ApplicationComponentProvider, ComponentProvider {
   override lateinit var component: AndroidApplicationComponent
 
   override fun onCreate() {
@@ -14,6 +16,6 @@ class AudioFeelsApp : Application(), ApplicationComponentProvider, AndroidCompon
     component = AndroidApplicationComponent.create(this)
   }
 
-  override fun <T> provideComponent(clazz: Class<T>): T =
-    requireNotNull(clazz.cast(component)) { "Invalid component type." }
+  override fun <T : Any> provideComponent(`class`: KClass<T>): T =
+    requireNotNull(`class`.cast(component)) { "Invalid component type." }
 }
