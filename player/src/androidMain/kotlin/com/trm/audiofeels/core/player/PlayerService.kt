@@ -6,29 +6,28 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
-import com.trm.audiofeels.core.base.di.ComponentProvider
-import com.trm.audiofeels.core.player.di.PlayerPlatformComponent
+import com.trm.audiofeels.core.base.di.ServiceComponentFactory
+import com.trm.audiofeels.core.player.di.PlayerServiceComponent
 
 @UnstableApi
 class PlayerService : MediaLibraryService() {
   private var mediaLibrarySession: MediaLibrarySession? = null
-  private val playerNotificationProvider: PlayerNotificationProvider by
+
+  private val component: PlayerServiceComponent by
     lazy(LazyThreadSafetyMode.NONE) {
-      (application as ComponentProvider)
-        .provideComponent(PlayerPlatformComponent::class)
-        .playerNotificationProvider
+      (application as ServiceComponentFactory).create(this, PlayerServiceComponent::class)
     }
 
   override fun onCreate() {
     super.onCreate()
     mediaLibrarySession = buildMediaLibrarySession(buildExoPlayer(buildAudioAttributes()))
-    setMediaNotificationProvider(playerNotificationProvider)
+    setMediaNotificationProvider(component.playerNotificationProvider)
   }
 
   override fun onDestroy() {
     super.onDestroy()
     releaseSession()
-    playerNotificationProvider.cancelCoroutineScope()
+    component.playerNotificationProvider.cancelCoroutineScope()
   }
 
   override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? =

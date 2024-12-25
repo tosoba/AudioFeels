@@ -18,11 +18,14 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaStyleNotificationHelper.MediaStyle
 import com.google.common.collect.ImmutableList
 import com.trm.audiofeels.core.base.di.ApplicationScope
+import com.trm.audiofeels.core.base.di.ServiceScope
 import com.trm.audiofeels.core.base.util.AppCoroutineDispatchers
 import kotlinx.coroutines.*
+import me.tatarka.inject.annotations.Inject
 
 @UnstableApi
-@ApplicationScope
+@ServiceScope
+@Inject
 class PlayerNotificationProvider(
   private val context: Context,
 //  private val mainActivityIntent: Intent,
