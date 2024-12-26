@@ -28,7 +28,7 @@ class PlayerService : LifecycleMediaLibraryService() {
   }
 
   private fun buildMediaLibrarySession(player: ExoPlayer) =
-    MediaLibrarySession.Builder(this, player, PlayerSessionCallback).build()
+    MediaLibrarySession.Builder(this, player, component.playerSessionCallback).build()
 
   private fun buildAudioAttributes(): AudioAttributes =
     AudioAttributes.Builder()

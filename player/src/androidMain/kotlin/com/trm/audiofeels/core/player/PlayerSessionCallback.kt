@@ -5,8 +5,12 @@ import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaSession
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
+import com.trm.audiofeels.core.base.di.ServiceScope
+import me.tatarka.inject.annotations.Inject
 
-internal object PlayerSessionCallback : MediaLibrarySession.Callback {
+@ServiceScope
+@Inject
+class PlayerSessionCallback : MediaLibrarySession.Callback {
   override fun onAddMediaItems(
     mediaSession: MediaSession,
     controller: MediaSession.ControllerInfo,
