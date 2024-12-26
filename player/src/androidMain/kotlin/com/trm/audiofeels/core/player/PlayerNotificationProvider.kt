@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
+import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.CommandButton
 import androidx.media3.session.MediaNotification
@@ -16,6 +17,7 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaStyleNotificationHelper.MediaStyle
 import com.google.common.collect.ImmutableList
 import com.trm.audiofeels.core.base.di.ServiceContext
+import com.trm.audiofeels.core.base.di.ServiceLifecycleScope
 import com.trm.audiofeels.core.base.di.ServiceScope
 import com.trm.audiofeels.core.base.util.AppCoroutineDispatchers
 import kotlinx.coroutines.*
@@ -27,10 +29,10 @@ import me.tatarka.inject.annotations.Inject
 class PlayerNotificationProvider(
   @ServiceContext private val context: Context,
   //  private val mainActivityIntent: Intent,
+  @ServiceLifecycleScope private val scope: LifecycleCoroutineScope,
   private val appCoroutineDispatchers: AppCoroutineDispatchers,
 ) : MediaNotification.Provider {
   private val notificationManager = requireNotNull(context.getSystemService<NotificationManager>())
-  private val coroutineScope = CoroutineScope(appCoroutineDispatchers.main + SupervisorJob())
 
   override fun createNotification(
     session: MediaSession,
@@ -79,8 +81,6 @@ class PlayerNotificationProvider(
   override fun handleCustomCommand(session: MediaSession, action: String, extras: Bundle): Boolean =
     true
 
-  fun cancelCoroutineScope() = coroutineScope.cancel()
-
   private fun ensureNotificationChannel() {
     if (
       Build.VERSION.SDK_INT < Build.VERSION_CODES.O ||
@@ -114,7 +114,7 @@ class PlayerNotificationProvider(
     setLargeIcon: (Bitmap?) -> Unit,
     updateNotification: () -> Unit,
   ) {
-    coroutineScope.launch {
+    scope.launch {
       //      val bitmap = loadArtworkBitmap(uri)
       //      setLargeIcon(bitmap)
       updateNotification()

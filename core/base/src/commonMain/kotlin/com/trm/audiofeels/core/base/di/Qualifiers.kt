@@ -10,3 +10,12 @@ import me.tatarka.inject.annotations.Qualifier
   AnnotationTarget.TYPE,
 )
 annotation class ServiceContext
+
+@Qualifier
+@Target(
+  AnnotationTarget.PROPERTY_GETTER,
+  AnnotationTarget.FUNCTION,
+  AnnotationTarget.VALUE_PARAMETER,
+  AnnotationTarget.TYPE,
+)
+annotation class ServiceLifecycleScope

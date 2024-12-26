@@ -24,7 +24,6 @@ class PlayerService : LifecycleMediaLibraryService() {
   override fun onDestroy() {
     super.onDestroy()
     releaseSession()
-    component.playerNotificationProvider.cancelCoroutineScope()
   }
 
   private fun buildMediaLibrarySession(player: ExoPlayer) =
