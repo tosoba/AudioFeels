@@ -6,7 +6,7 @@ import androidx.media3.session.MediaSession
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 
-object PlayerSessionCallback : MediaLibrarySession.Callback {
+internal object PlayerSessionCallback : MediaLibrarySession.Callback {
   override fun onAddMediaItems(
     mediaSession: MediaSession,
     controller: MediaSession.ControllerInfo,
