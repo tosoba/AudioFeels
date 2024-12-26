@@ -2,9 +2,7 @@ package com.trm.audiofeels.core.player
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
@@ -17,7 +15,7 @@ import androidx.media3.session.MediaNotification
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaStyleNotificationHelper.MediaStyle
 import com.google.common.collect.ImmutableList
-import com.trm.audiofeels.core.base.di.ApplicationScope
+import com.trm.audiofeels.core.base.di.ServiceContext
 import com.trm.audiofeels.core.base.di.ServiceScope
 import com.trm.audiofeels.core.base.util.AppCoroutineDispatchers
 import kotlinx.coroutines.*
@@ -27,8 +25,8 @@ import me.tatarka.inject.annotations.Inject
 @ServiceScope
 @Inject
 class PlayerNotificationProvider(
-  private val context: Context,
-//  private val mainActivityIntent: Intent,
+  @ServiceContext private val context: Context,
+  //  private val mainActivityIntent: Intent,
   private val appCoroutineDispatchers: AppCoroutineDispatchers,
 ) : MediaNotification.Provider {
   private val notificationManager = requireNotNull(context.getSystemService<NotificationManager>())
@@ -50,21 +48,21 @@ class PlayerNotificationProvider(
         .setContentTitle(metadata.title)
         .setContentText(metadata.artist)
         .setStyle(MediaStyle(session))
-//        .setContentIntent(
-//          PendingIntent.getActivity(
-//            context,
-//            MAIN_ACTIVITY_REQUEST_CODE,
-//            mainActivityIntent,
-//            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-//          )
-//        )
+    //        .setContentIntent(
+    //          PendingIntent.getActivity(
+    //            context,
+    //            MAIN_ACTIVITY_REQUEST_CODE,
+    //            mainActivityIntent,
+    //            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+    //          )
+    //        )
 
-//    getNotificationActions(
-//        mediaSession = session,
-//        actionFactory = actionFactory,
-//        playWhenReady = player.playWhenReady,
-//      )
-//      .forEach(builder::addAction)
+    //    getNotificationActions(
+    //        mediaSession = session,
+    //        actionFactory = actionFactory,
+    //        playWhenReady = player.playWhenReady,
+    //      )
+    //      .forEach(builder::addAction)
 
     //    setupArtwork(
     //      uri = metadata.artworkUri,
@@ -100,16 +98,16 @@ class PlayerNotificationProvider(
     )
   }
 
-//  private fun getNotificationActions(
-//    mediaSession: MediaSession,
-//    actionFactory: MediaNotification.ActionFactory,
-//    playWhenReady: Boolean,
-//  ): List<NotificationCompat.Action> =
-//    listOf(
-//      PlayerActions.getPlayPreviousAction(context, mediaSession, actionFactory),
-//      PlayerActions.getPlayPauseAction(context, mediaSession, actionFactory, playWhenReady),
-//      PlayerActions.getPlayNextAction(context, mediaSession, actionFactory),
-//    )
+  //  private fun getNotificationActions(
+  //    mediaSession: MediaSession,
+  //    actionFactory: MediaNotification.ActionFactory,
+  //    playWhenReady: Boolean,
+  //  ): List<NotificationCompat.Action> =
+  //    listOf(
+  //      PlayerActions.getPlayPreviousAction(context, mediaSession, actionFactory),
+  //      PlayerActions.getPlayPauseAction(context, mediaSession, actionFactory, playWhenReady),
+  //      PlayerActions.getPlayNextAction(context, mediaSession, actionFactory),
+  //    )
 
   private fun setupArtwork(
     uri: Uri?,
