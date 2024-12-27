@@ -75,7 +75,8 @@ fun AppContent(applicationComponent: ApplicationComponent) {
     val navigationContentPosition =
       NavigationContentPosition(adaptiveInfo.windowSizeClass.windowHeightSizeClass)
 
-    val playerViewModel = viewModel { PlayerViewModel(applicationComponent.playerConnection) }
+    val playerViewModel =
+      viewModel<PlayerViewModel>(factory = applicationComponent.playerViewModelFactory)
     val playerState by
       playerViewModel.playerConnection.playerStateFlow.collectAsStateWithLifecycle()
 
