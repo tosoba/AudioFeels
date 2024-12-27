@@ -34,7 +34,7 @@ private fun DiskLruCache.Editor.abortQuietly() {
  * @param maxSize maximum cache size
  * @param dispatcher dispatcher to use for file operations.
  */
-internal class DiskCacheStorage(
+class DiskCacheStorage(
   private val fileSystem: FileSystem,
   directory: Path,
   maxSize: Long,
@@ -102,7 +102,7 @@ internal class DiskCacheStorage(
       expires = expirationTime,
       headers = headers.build(),
       varyKeys = varyKeys,
-      body = body
+      body = body,
     )
   }
 

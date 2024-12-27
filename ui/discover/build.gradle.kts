@@ -10,14 +10,18 @@ kotlin {
       dependencies {
         implementation(projects.core.ui.compose)
         implementation(projects.core.ui.resources)
+        implementation(projects.domain)
+
+        implementation(libs.androidx.lifecycle.runtime.compose)
+        implementation(libs.androidx.lifecycle.viewmodel.compose)
+
+        implementation(libs.kotlin.stdlib)
+        implementation(libs.kotlininject.runtime)
 
         implementation(libs.material3.adaptive)
         implementation(libs.material3.adaptive.layout)
         implementation(libs.material3.adaptive.navigation)
         implementation(compose.material3AdaptiveNavigationSuite)
-
-        implementation(libs.kotlin.stdlib)
-        implementation(libs.kotlininject.runtime)
       }
     }
   }

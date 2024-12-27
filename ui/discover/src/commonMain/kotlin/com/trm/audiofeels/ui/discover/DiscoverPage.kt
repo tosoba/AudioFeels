@@ -23,9 +23,10 @@ import androidx.compose.ui.Modifier
 @Composable
 fun DiscoverPage(
   modifier: Modifier = Modifier,
+  viewModel: DiscoverViewModel,
+  onPlayClick: () -> Unit,
   showSupportingPane: Boolean,
   onSupportingPaneValueChange: (PaneAdaptedValue) -> Unit,
-  onPlayClick: () -> Unit,
   supportingPaneContent: @Composable AnimatedPaneScope.() -> Unit,
 ) {
   val navigator =

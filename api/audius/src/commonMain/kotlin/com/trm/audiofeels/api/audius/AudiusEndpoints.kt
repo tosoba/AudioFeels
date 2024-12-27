@@ -2,15 +2,15 @@ package com.trm.audiofeels.api.audius
 
 import com.trm.audiofeels.api.audius.model.PlaylistResponse
 import com.trm.audiofeels.api.audius.model.PlaylistsResponse
+import com.trm.audiofeels.core.cache.disk.DiskCacheStorage
+import com.trm.audiofeels.core.network.configureDefault
 import com.trm.audiofeels.core.network.host.HostFetcher
 import com.trm.audiofeels.core.network.host.HostRetriever
-import com.trm.audiofeels.core.network.configureDefault
 import com.trm.audiofeels.core.network.host.hostInterceptor
 import com.trm.audiofeels.core.network.httpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.HttpSend
-import io.ktor.client.plugins.cache.storage.CacheStorage
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.plugin
 import io.ktor.client.request.get
@@ -22,7 +22,7 @@ class AudiusEndpoints(
   hostRetriever: HostRetriever,
   hostFetcher: HostFetcher,
   engine: HttpClientEngine? = null,
-  cacheStorage: CacheStorage? = null,
+  cacheStorage: DiskCacheStorage? = null,
 ) {
   private val client =
     httpClient(engine = engine) {

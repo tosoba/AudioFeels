@@ -2,7 +2,6 @@ package com.trm.audiofeels.core.cache.di
 
 import com.trm.audiofeels.core.base.di.ApplicationScope
 import com.trm.audiofeels.core.cache.disk.DiskCacheStorage
-import io.ktor.client.plugins.cache.storage.CacheStorage
 import me.tatarka.inject.annotations.Provides
 import okio.FileSystem
 import okio.Path.Companion.toPath
@@ -13,7 +12,7 @@ import platform.Foundation.NSUserDomainMask
 actual interface CachePlatformComponent {
   @Provides
   @ApplicationScope
-  fun cacheStorage(): CacheStorage =
+  fun cacheStorage(): DiskCacheStorage =
     DiskCacheStorage(
       fileSystem = FileSystem.SYSTEM,
       directory =

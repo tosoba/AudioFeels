@@ -11,7 +11,7 @@ import okio.Path.Companion.toOkioPath
 actual interface CachePlatformComponent {
   @Provides
   @ApplicationScope
-  fun cacheStorage(application: Application): CacheStorage =
+  fun cacheStorage(application: Application): DiskCacheStorage =
     DiskCacheStorage(
       fileSystem = FileSystem.SYSTEM,
       directory = application.cacheDir.toOkioPath(),

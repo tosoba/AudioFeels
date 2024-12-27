@@ -133,7 +133,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
           @OptIn(ExperimentalMaterial3AdaptiveApi::class)
           AppNavHost(
             navController = navController,
-            modifier = Modifier.fillMaxSize().padding(it),
+            applicationComponent = applicationComponent,
             showSupportingPane = playerState is PlayerState.Initialized,
             onSupportingPaneValueChange = { paneValue ->
               scope.launch { appViewState.onSupportingPaneValueChange(paneValue) }
@@ -143,6 +143,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
                 listOf(Track(null, null, null, null, "LWQqk", null, null, null, "Test"))
               )
             },
+            modifier = Modifier.fillMaxSize().padding(it),
           )
         }
       }
@@ -243,10 +244,11 @@ private fun AppPermanentNavigationDrawer(
 @Composable
 private fun AppNavHost(
   navController: NavHostController,
+  applicationComponent: ApplicationComponent,
   showSupportingPane: Boolean,
-  modifier: Modifier = Modifier,
   onSupportingPaneValueChange: (PaneAdaptedValue) -> Unit,
   onPlayClick: () -> Unit,
+  modifier: Modifier = Modifier,
 ) {
   NavHost(
     modifier = modifier,
@@ -256,6 +258,7 @@ private fun AppNavHost(
     composable<AppRoute.Discover> {
       DiscoverPage(
         modifier = Modifier.fillMaxSize(),
+        viewModel = viewModel(factory = applicationComponent.discoverViewModelFactory),
         showSupportingPane = showSupportingPane,
         onSupportingPaneValueChange = onSupportingPaneValueChange,
         onPlayClick = onPlayClick,
