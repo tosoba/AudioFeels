@@ -29,9 +29,14 @@ import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.PermanentDrawerSheet
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
-import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
+import androidx.compose.material3.adaptive.layout.AnimatedPane
+import androidx.compose.material3.adaptive.layout.SupportingPaneScaffold
+import androidx.compose.material3.adaptive.layout.SupportingPaneScaffoldRole
+import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
+import androidx.compose.material3.adaptive.navigation.rememberSupportingPaneScaffoldNavigator
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldLayout
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -54,7 +59,6 @@ import com.trm.audiofeels.core.ui.compose.util.NavigationContentPosition
 import com.trm.audiofeels.core.ui.compose.util.NavigationType
 import com.trm.audiofeels.core.ui.compose.util.calculateWindowSize
 import com.trm.audiofeels.di.ApplicationComponent
-import com.trm.audiofeels.domain.model.Track
 import com.trm.audiofeels.ui.discover.DiscoverPage
 import com.trm.audiofeels.ui.favourites.FavouritesPage
 import com.trm.audiofeels.ui.player.PlayerPage
@@ -131,20 +135,33 @@ fun AppContent(applicationComponent: ApplicationComponent) {
           },
           scaffoldState = appViewState.playerViewState.scaffoldState,
         ) {
-          @OptIn(ExperimentalMaterial3AdaptiveApi::class)
-          AppNavHost(
-            navController = navController,
-            applicationComponent = applicationComponent,
-            showSupportingPane = playerState is PlayerState.Initialized,
-            onSupportingPaneValueChange = { paneValue ->
-              scope.launch { appViewState.onSupportingPaneValueChange(paneValue) }
-            },
-            onPlayClick = {
-              playerViewModel.playerConnection.play(
-                listOf(Track(null, null, null, null, "LWQqk", null, null, null, "Test"))
-              )
-            },
+          val navigator =
+            rememberSupportingPaneScaffoldNavigator(
+              scaffoldDirective =
+                calculatePaneScaffoldDirective(currentWindowAdaptiveInfo()).let {
+                  if (playerState is PlayerState.Initialized) it
+                  else it.copy(maxHorizontalPartitions = 1, maxVerticalPartitions = 1)
+                }
+            )
+          val supportingPaneValue = navigator.scaffoldValue[SupportingPaneScaffoldRole.Supporting]
+          LaunchedEffect(supportingPaneValue) {
+            scope.launch { appViewState.onSupportingPaneValueChange(supportingPaneValue) }
+          }
+
+          SupportingPaneScaffold(
             modifier = Modifier.fillMaxSize(),
+            directive = navigator.scaffoldDirective,
+            value = navigator.scaffoldValue,
+            mainPane = {
+              AnimatedPane {
+                AppNavHost(
+                  navController = navController,
+                  applicationComponent = applicationComponent,
+                  modifier = Modifier.fillMaxSize(),
+                )
+              }
+            },
+            supportingPane = { AnimatedPane { PlayerPage(modifier = Modifier.fillMaxSize()) } },
           )
         }
       }
@@ -241,14 +258,10 @@ private fun AppPermanentNavigationDrawer(
   }
 }
 
-@OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 private fun AppNavHost(
   navController: NavHostController,
   applicationComponent: ApplicationComponent,
-  showSupportingPane: Boolean,
-  onSupportingPaneValueChange: (PaneAdaptedValue) -> Unit,
-  onPlayClick: () -> Unit,
   modifier: Modifier = Modifier,
 ) {
   NavHost(
@@ -260,31 +273,10 @@ private fun AppNavHost(
       DiscoverPage(
         modifier = Modifier.fillMaxSize(),
         viewModel = viewModel(factory = applicationComponent.discoverViewModelFactory),
-        showSupportingPane = showSupportingPane,
-        onSupportingPaneValueChange = onSupportingPaneValueChange,
-        onPlayClick = onPlayClick,
-      ) {
-        PlayerPage(modifier = Modifier.fillMaxSize())
-      }
+      )
     }
-    composable<AppRoute.Favourites> {
-      FavouritesPage(
-        modifier = Modifier.fillMaxSize(),
-        showSupportingPane = showSupportingPane,
-        onSupportingPaneValueChange = onSupportingPaneValueChange,
-      ) {
-        PlayerPage(modifier = Modifier.fillMaxSize())
-      }
-    }
-    composable<AppRoute.Search> {
-      SearchPage(
-        modifier = Modifier.fillMaxSize(),
-        showSupportingPane = showSupportingPane,
-        onSupportingPaneValueChange = onSupportingPaneValueChange,
-      ) {
-        PlayerPage(modifier = Modifier.fillMaxSize())
-      }
-    }
+    composable<AppRoute.Favourites> { FavouritesPage(modifier = Modifier.fillMaxSize()) }
+    composable<AppRoute.Search> { SearchPage(modifier = Modifier.fillMaxSize()) }
   }
 }
 

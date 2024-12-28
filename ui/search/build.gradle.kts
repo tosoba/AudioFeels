@@ -13,11 +13,6 @@ kotlin {
 
         implementation(libs.kotlin.stdlib)
         implementation(libs.kotlininject.runtime)
-
-        implementation(libs.material3.adaptive)
-        implementation(libs.material3.adaptive.layout)
-        implementation(libs.material3.adaptive.navigation)
-        implementation(compose.material3AdaptiveNavigationSuite)
       }
     }
   }
