@@ -15,6 +15,7 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.plugin
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
+import io.ktor.http.URLProtocol
 import io.ktor.http.appendPathSegments
 import io.ktor.http.path
 
@@ -34,6 +35,7 @@ class AudiusEndpoints(
     client
       .get {
         url {
+          protocol = URLProtocol.HTTPS
           appendPathSegments("v1", "full", "playlists", "top")
           parameter("type", "playlist")
           mood?.let { parameter("mood", it) }
@@ -42,5 +44,12 @@ class AudiusEndpoints(
       .body()
 
   suspend fun getPlaylistById(id: String): PlaylistResponse =
-    client.get { url { path("v1", "full", "playlists", id) } }.body()
+    client
+      .get {
+        url {
+          protocol = URLProtocol.HTTPS
+          path("v1", "full", "playlists", id)
+        }
+      }
+      .body()
 }

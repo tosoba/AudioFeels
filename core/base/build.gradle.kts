@@ -17,6 +17,8 @@ kotlin {
 
     commonMain {
       dependencies {
+        implementation(libs.kermit)
+
         implementation(libs.kotlin.stdlib)
         implementation(libs.kotlininject.runtime)
         implementation(libs.kotlinx.coroutines.core)
