@@ -4,7 +4,6 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
@@ -54,7 +53,7 @@ fun DiscoverPage(
     directive = navigator.scaffoldDirective,
     value = navigator.scaffoldValue,
     mainPane = {
-      AnimatedPane(modifier = Modifier.safeContentPadding()) {
+      AnimatedPane {
         val playlists by viewModel.playlists.collectAsStateWithLifecycle()
         Crossfade(playlists) {
           when (it) {
@@ -80,8 +79,6 @@ fun DiscoverPage(
         }
       }
     },
-    supportingPane = {
-      AnimatedPane(modifier = Modifier.safeContentPadding(), content = supportingPaneContent)
-    },
+    supportingPane = { AnimatedPane(content = supportingPaneContent) },
   )
 }

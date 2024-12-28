@@ -1,6 +1,5 @@
 package com.trm.audiofeels.ui.favourites
 
-import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.layout.AnimatedPane
@@ -33,13 +32,7 @@ fun FavouritesPage(
     modifier = modifier,
     directive = navigator.scaffoldDirective,
     value = navigator.scaffoldValue,
-    mainPane = {
-      AnimatedPane(modifier = Modifier.safeContentPadding()) {
-        Text(stringResource(Res.string.favourites))
-      }
-    },
-    supportingPane = {
-      AnimatedPane(modifier = Modifier.safeContentPadding(), content = supportingPaneContent)
-    },
+    mainPane = { AnimatedPane { Text(stringResource(Res.string.favourites)) } },
+    supportingPane = { AnimatedPane(content = supportingPaneContent) },
   )
 }

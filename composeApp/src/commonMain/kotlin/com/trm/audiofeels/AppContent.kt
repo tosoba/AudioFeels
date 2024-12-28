@@ -144,7 +144,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
                 listOf(Track(null, null, null, null, "LWQqk", null, null, null, "Test"))
               )
             },
-            modifier = Modifier.fillMaxSize().padding(it),
+            modifier = Modifier.fillMaxSize(),
           )
         }
       }
