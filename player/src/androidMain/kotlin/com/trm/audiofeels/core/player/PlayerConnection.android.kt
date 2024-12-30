@@ -11,7 +11,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
 import co.touchlab.kermit.Logger
-import com.trm.audiofeels.core.base.util.ApplicationCoroutineScope
+import com.trm.audiofeels.core.base.util.AppCoroutineScope
 import com.trm.audiofeels.core.base.util.onCompletion
 import com.trm.audiofeels.core.network.host.HostRetriever
 import com.trm.audiofeels.core.network.monitor.NetworkMonitor
@@ -37,7 +37,7 @@ import kotlinx.coroutines.runBlocking
 actual class PlayerPlatformConnection(
   private val context: Context,
   private val hostRetriever: HostRetriever,
-  scope: ApplicationCoroutineScope,
+  scope: AppCoroutineScope,
   networkMonitor: NetworkMonitor,
 ) : PlayerConnection {
   private val mediaBrowser = CompletableDeferred<MediaBrowser>()

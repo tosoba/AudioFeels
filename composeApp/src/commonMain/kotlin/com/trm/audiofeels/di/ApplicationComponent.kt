@@ -4,7 +4,7 @@ import com.trm.audiofeels.api.audius.di.AudiusApiComponent
 import com.trm.audiofeels.api.hosts.di.HostsApiComponent
 import com.trm.audiofeels.core.base.di.ApplicationScope
 import com.trm.audiofeels.core.base.util.AppCoroutineDispatchers
-import com.trm.audiofeels.core.base.util.ApplicationCoroutineScope
+import com.trm.audiofeels.core.base.util.AppCoroutineScope
 import com.trm.audiofeels.core.cache.di.CacheCoreComponent
 import com.trm.audiofeels.core.network.di.NetworkCoreComponent
 import com.trm.audiofeels.core.player.di.PlayerComponent
@@ -43,5 +43,5 @@ interface ApplicationComponent :
   @Provides
   fun provideApplicationCoroutineScope(
     dispatchers: AppCoroutineDispatchers
-  ): ApplicationCoroutineScope = CoroutineScope(dispatchers.main + SupervisorJob())
+  ): AppCoroutineScope = CoroutineScope(dispatchers.main + SupervisorJob())
 }
