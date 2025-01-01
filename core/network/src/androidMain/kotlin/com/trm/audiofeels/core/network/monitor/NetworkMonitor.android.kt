@@ -1,20 +1,21 @@
 package com.trm.audiofeels.core.network.monitor
 
-import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import androidx.core.content.getSystemService
+import com.trm.audiofeels.core.base.util.PlatformContext
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.conflate
 
-actual class NetworkPlatformMonitor(private val context: Context) : NetworkMonitor {
+actual class NetworkPlatformMonitor actual constructor(platformContext: PlatformContext) :
+  NetworkMonitor {
   override val connectivity: Flow<NetworkStatus> =
     callbackFlow {
-        val connectivityManager = context.getSystemService<ConnectivityManager>()
+        val connectivityManager = platformContext.getSystemService<ConnectivityManager>()
         val callback =
           object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) {
