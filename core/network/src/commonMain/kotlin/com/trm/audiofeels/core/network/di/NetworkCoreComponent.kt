@@ -1,8 +1,12 @@
 package com.trm.audiofeels.core.network.di
 
+import co.touchlab.kermit.Logger
+import co.touchlab.kermit.Severity
 import coil3.ImageLoader
 import coil3.disk.DiskCache
 import coil3.memory.MemoryCache
+import coil3.request.crossfade
+import coil3.util.Logger.Level
 import com.trm.audiofeels.core.base.di.ApplicationScope
 import com.trm.audiofeels.core.base.util.PlatformContext
 import com.trm.audiofeels.core.base.util.cachePath
@@ -33,5 +37,25 @@ interface NetworkCoreComponent : NetworkPlatformComponent {
       .diskCache {
         DiskCache.Builder().directory(platformContext.cachePath.resolve("coil_cache")).build()
       }
+      .crossfade(true)
+      .logger(Logger.asCoilLogger())
       .build()
 }
+
+private fun Logger.asCoilLogger(): coil3.util.Logger =
+  object : coil3.util.Logger {
+    override var minLevel: Level = Level.Debug
+
+    override fun log(tag: String, level: Level, message: String?, throwable: Throwable?) {
+      this@asCoilLogger.log(level.toSeverity(), "Coil", throwable, message.orEmpty())
+    }
+  }
+
+private fun Level.toSeverity(): Severity =
+  when (this) {
+    Level.Verbose -> Severity.Verbose
+    Level.Debug -> Severity.Debug
+    Level.Info -> Severity.Info
+    Level.Warn -> Severity.Warn
+    Level.Error -> Severity.Error
+  }

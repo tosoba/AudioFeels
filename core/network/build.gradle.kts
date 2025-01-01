@@ -11,8 +11,8 @@ kotlin {
       dependencies {
         implementation(projects.core.base)
 
-        implementation(libs.coil.core)
-        implementation(libs.coil.network)
+        api(libs.coil.core)
+        api(libs.coil.network)
 
         implementation(libs.kotlin.stdlib)
         implementation(libs.kotlininject.runtime)
