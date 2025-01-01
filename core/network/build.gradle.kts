@@ -11,12 +11,17 @@ kotlin {
       dependencies {
         implementation(projects.core.base)
 
+        implementation(libs.coil.core)
+        implementation(libs.coil.network)
+
         implementation(libs.kotlin.stdlib)
         implementation(libs.kotlininject.runtime)
+
         implementation(libs.ktor.client.core)
         implementation(libs.ktor.client.logging)
         implementation(libs.ktor.client.content.negotiation)
         implementation(libs.ktor.serialization.kotlinx.json)
+
         implementation(libs.okio)
       }
     }

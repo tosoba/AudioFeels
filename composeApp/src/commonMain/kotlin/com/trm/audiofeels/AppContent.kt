@@ -54,6 +54,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import coil3.compose.setSingletonImageLoaderFactory
 import com.trm.audiofeels.core.player.model.PlayerState
 import com.trm.audiofeels.core.ui.compose.util.NavigationContentPosition
 import com.trm.audiofeels.core.ui.compose.util.NavigationType
@@ -73,6 +74,8 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Preview
 fun AppContent(applicationComponent: ApplicationComponent) {
   MaterialTheme {
+    setSingletonImageLoaderFactory { applicationComponent.imageLoader }
+
     val adaptiveInfo = currentWindowAdaptiveInfo()
     val navigationType =
       NavigationType(adaptiveInfo = adaptiveInfo, windowSize = calculateWindowSize())
