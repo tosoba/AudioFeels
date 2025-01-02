@@ -66,6 +66,8 @@ kotlin {
       implementation(libs.material3.adaptive.navigation)
       implementation(compose.material3AdaptiveNavigationSuite)
 
+      implementation(libs.materialyou)
+
       implementation(libs.navigation.compose)
     }
   }

@@ -28,6 +28,7 @@ kotlinx-serialization-json = "1.7.3"
 kotlininject = "0.7.2"
 ksp = "2.0.21-1.0.27"
 ktor = "3.0.1"
+materialyou = "0.2.6"
 media3 = "1.5.0"
 mokkkery = "2.5.1"
 navigation = "2.8.0-alpha10"
@@ -78,6 +79,7 @@ material3-adaptive = { module = "org.jetbrains.compose.material3.adaptive:adapti
 material3-adaptive-layout = { module = "org.jetbrains.compose.material3.adaptive:adaptive-layout", version.ref = "adaptive" }
 material3-adaptive-navigation = { module = "org.jetbrains.compose.material3.adaptive:adaptive-navigation", version.ref = "adaptive" }
 material3-windowSizeClass = { module = "org.jetbrains.compose.material3:material3-window-size-class", version.ref = "compose-multiplatform" }
+materialyou = {group = "dev.zwander", name = "materialyou", version.ref = "materialyou"}
 navigation-compose = { group = "org.jetbrains.androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 tools-desugarjdklibs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugarjdklibs" }

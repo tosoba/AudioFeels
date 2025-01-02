@@ -65,6 +65,7 @@ import com.trm.audiofeels.ui.favourites.FavouritesPage
 import com.trm.audiofeels.ui.player.PlayerPage
 import com.trm.audiofeels.ui.player.PlayerViewModel
 import com.trm.audiofeels.ui.search.SearchPage
+import dev.zwander.compose.DynamicMaterialTheme
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -73,7 +74,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
 @Preview
 fun AppContent(applicationComponent: ApplicationComponent) {
-  MaterialTheme {
+  DynamicMaterialTheme {
     setSingletonImageLoaderFactory { applicationComponent.imageLoader }
 
     val adaptiveInfo = currentWindowAdaptiveInfo()
