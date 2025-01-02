@@ -28,7 +28,7 @@ class DiscoverViewModel(private val playlistsRepository: PlaylistsRepository) : 
       .flatMapLatest { loadableStateFlowOf { playlistsRepository.getPlaylists(null) } }
       .stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000L),
+        started = SharingStarted.Lazily,
         initialValue = LoadableState.Loading,
       )
 
