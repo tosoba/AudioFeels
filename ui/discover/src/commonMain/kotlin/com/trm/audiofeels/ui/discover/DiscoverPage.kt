@@ -41,7 +41,7 @@ fun DiscoverPage(modifier: Modifier = Modifier, viewModel: DiscoverViewModel) {
       }
       is LoadableState.Error -> {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-          Button(onClick = viewModel::loadPlaylists) { Text("Retry") }
+          Button(onClick = viewModel.playlists::restart) { Text("Retry") }
         }
       }
     }
