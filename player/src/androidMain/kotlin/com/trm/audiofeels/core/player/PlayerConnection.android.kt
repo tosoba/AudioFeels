@@ -12,13 +12,14 @@ import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
 import co.touchlab.kermit.Logger
 import com.trm.audiofeels.core.base.util.AppCoroutineScope
+import com.trm.audiofeels.core.base.util.lazyAsync
 import com.trm.audiofeels.core.base.util.onCompletion
 import com.trm.audiofeels.core.network.host.HostRetriever
 import com.trm.audiofeels.core.network.monitor.NetworkMonitor
 import com.trm.audiofeels.core.player.model.PlayerConstants
 import com.trm.audiofeels.core.player.model.PlayerState
 import com.trm.audiofeels.domain.model.Track
-import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,7 +31,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 @OptIn(UnstableApi::class)
@@ -40,7 +40,50 @@ actual class PlayerPlatformConnection(
   scope: AppCoroutineScope,
   networkMonitor: NetworkMonitor,
 ) : PlayerConnection {
-  private val mediaBrowser = CompletableDeferred<MediaBrowser>()
+  private val mediaBrowser: Deferred<MediaBrowser> by
+    scope.lazyAsync {
+      MediaBrowser.Builder(
+          context,
+          SessionToken(context, ComponentName(context, PlayerService::class.java)),
+        )
+        .buildAsync()
+        .await()
+        .apply {
+          addListener(
+            object : Player.Listener {
+              override fun onPlayerError(error: PlaybackException) {
+                Logger.e(
+                  messageString =
+                    "Error code: ${error.errorCode}\nMessage:${error.localizedMessage}",
+                  throwable = error,
+                  tag = PlaybackException::class.java.simpleName,
+                )
+                // TODO: handle androidx.media3.exoplayer.ExoPlaybackException: Source error
+                // Caused by:
+                // androidx.media3.datasource.HttpDataSource$InvalidResponseCodeException:
+                // Response code: 525
+                // can happen for invalid host - recover by reinitializing playback (using
+                // previously saved parameters) and host fetcher instead of host retriever?
+
+                // TODO: connect network monitor on network exceptions (see exactly which
+                // exception occurs on no internet connection)
+              }
+
+              override fun onEvents(player: Player, events: Player.Events) {
+                if (
+                  events.containsAny(
+                    Player.EVENT_PLAYBACK_STATE_CHANGED,
+                    Player.EVENT_MEDIA_METADATA_CHANGED,
+                    Player.EVENT_PLAY_WHEN_READY_CHANGED,
+                  )
+                ) {
+                  updateMusicState(player)
+                }
+              }
+            }
+          )
+        }
+    }
 
   private val _playerStateFlow = MutableStateFlow<PlayerState>(PlayerState.Idle)
   override val playerStateFlow: StateFlow<PlayerState> = _playerStateFlow.asStateFlow()
@@ -58,54 +101,6 @@ actual class PlayerPlatformConnection(
         started = SharingStarted.Lazily,
         initialValue = PlayerConstants.DEFAULT_START_POSITION_MS,
       )
-
-  init {
-    scope.launch {
-      mediaBrowser.complete(
-        MediaBrowser.Builder(
-            context,
-            SessionToken(context, ComponentName(context, PlayerService::class.java)),
-          )
-          .buildAsync()
-          .await()
-          .apply {
-            addListener(
-              object : Player.Listener {
-                override fun onPlayerError(error: PlaybackException) {
-                  Logger.e(
-                    messageString =
-                      "Error code: ${error.errorCode}\nMessage:${error.localizedMessage}",
-                    throwable = error,
-                    tag = PlaybackException::class.java.simpleName,
-                  )
-                  // TODO: handle androidx.media3.exoplayer.ExoPlaybackException: Source error
-                  // Caused by:
-                  // androidx.media3.datasource.HttpDataSource$InvalidResponseCodeException:
-                  // Response code: 525
-                  // can happen for invalid host - recover by reinitializing playback (using
-                  // previously saved parameters) and host fetcher instead of host retriever?
-
-                  // TODO: connect network monitor on network exceptions (see exactly which
-                  // exception occurs on no internet connection)
-                }
-
-                override fun onEvents(player: Player, events: Player.Events) {
-                  if (
-                    events.containsAny(
-                      Player.EVENT_PLAYBACK_STATE_CHANGED,
-                      Player.EVENT_MEDIA_METADATA_CHANGED,
-                      Player.EVENT_PLAY_WHEN_READY_CHANGED,
-                    )
-                  ) {
-                    updateMusicState(player)
-                  }
-                }
-              }
-            )
-          }
-      )
-    }
-  }
 
   override fun toggleIsPlaying() {
     val playerState = _playerStateFlow.value as? PlayerState.Initialized ?: return

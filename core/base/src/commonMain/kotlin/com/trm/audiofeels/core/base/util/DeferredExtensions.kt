@@ -1,8 +1,8 @@
 package com.trm.audiofeels.core.base.util
 
-import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
-fun <T> CompletableDeferred<T>.onCompletion(action: T.() -> Unit) {
+fun <T> Deferred<T>.onCompletion(action: T.() -> Unit) {
   invokeOnCompletion { @OptIn(ExperimentalCoroutinesApi::class) getCompleted().apply(action) }
 }
