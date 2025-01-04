@@ -8,9 +8,13 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.LibraryResult
 import androidx.media3.session.MediaBrowser
+import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.SessionToken
 import co.touchlab.kermit.Logger
+import com.google.common.collect.ImmutableList
+import com.google.common.util.concurrent.ListenableFuture
 import com.trm.audiofeels.core.base.util.AppCoroutineScope
 import com.trm.audiofeels.core.base.util.lazyAsync
 import com.trm.audiofeels.core.base.util.onCompletion
@@ -19,32 +23,85 @@ import com.trm.audiofeels.core.network.monitor.NetworkMonitor
 import com.trm.audiofeels.core.player.model.PlayerConstants
 import com.trm.audiofeels.core.player.model.PlayerState
 import com.trm.audiofeels.domain.model.Track
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.runBlocking
 
-@OptIn(UnstableApi::class)
 actual class PlayerPlatformConnection(
   private val context: Context,
   private val hostRetriever: HostRetriever,
   scope: AppCoroutineScope,
   networkMonitor: NetworkMonitor,
 ) : PlayerConnection {
+  private val _playerState = MutableStateFlow<PlayerState>(PlayerState.Idle)
+  override val playerState: StateFlow<PlayerState> = _playerState.asStateFlow()
+
+  private val children =
+    Channel<ListenableFuture<LibraryResult<ImmutableList<MediaItem>>>>(
+      capacity = Channel.BUFFERED,
+      onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
+
+  @kotlin.OptIn(ExperimentalCoroutinesApi::class)
+  override val tracks: StateFlow<List<Track>> =
+    children
+      .receiveAsFlow()
+      .mapLatest { it.await().value.orEmpty().map(MediaItem::toTrack) }
+      .stateIn(
+        scope = scope,
+        started = SharingStarted.WhileSubscribed(5.seconds),
+        initialValue = emptyList(),
+      )
+
+  override val currentPositionMs: StateFlow<Long> =
+    flow {
+        while (currentCoroutineContext().isActive) {
+          val currentPosition = mediaBrowser.await().currentPosition
+          emit(currentPosition)
+          delay(100L)
+        }
+      }
+      .stateIn(
+        scope = scope,
+        started = SharingStarted.WhileSubscribed(5.seconds),
+        initialValue = PlayerConstants.DEFAULT_START_POSITION_MS,
+      )
+
+  @OptIn(UnstableApi::class)
   private val mediaBrowser: Deferred<MediaBrowser> by
     scope.lazyAsync {
       MediaBrowser.Builder(
           context,
           SessionToken(context, ComponentName(context, PlayerService::class.java)),
+        )
+        .setListener(
+          object : MediaBrowser.Listener {
+            override fun onChildrenChanged(
+              browser: MediaBrowser,
+              parentId: String,
+              itemCount: Int,
+              params: MediaLibraryService.LibraryParams?,
+            ) {
+              children.trySend(browser.getChildren(parentId, 0, Int.MAX_VALUE, params))
+            }
+          }
         )
         .buildAsync()
         .await()
@@ -58,12 +115,20 @@ actual class PlayerPlatformConnection(
                   throwable = error,
                   tag = PlaybackException::class.java.simpleName,
                 )
+
                 // TODO: handle androidx.media3.exoplayer.ExoPlaybackException: Source error
                 // Caused by:
                 // androidx.media3.datasource.HttpDataSource$InvalidResponseCodeException:
                 // Response code: 525
-                // can happen for invalid host - recover by reinitializing playback (using
-                // previously saved parameters) and host fetcher instead of host retriever?
+                // can happen for invalid host - recover (automatically like for network errors?)
+                // by reinitializing playback (using previously saved parameters)
+                // and host fetcher instead of host retriever?
+
+                // when (val cause = error.cause) {
+                //                  is InvalidResponseCodeException -> {
+                //                    scope.launch {}
+                //                  }
+                //                }
 
                 // TODO: connect network monitor on network exceptions (see exactly which
                 // exception occurs on no internet connection)
@@ -85,25 +150,8 @@ actual class PlayerPlatformConnection(
         }
     }
 
-  private val _playerStateFlow = MutableStateFlow<PlayerState>(PlayerState.Idle)
-  override val playerStateFlow: StateFlow<PlayerState> = _playerStateFlow.asStateFlow()
-
-  override val currentPositionMsFlow: StateFlow<Long> =
-    flow {
-        while (currentCoroutineContext().isActive) {
-          val currentPosition = mediaBrowser.await().currentPosition
-          emit(currentPosition)
-          delay(100L)
-        }
-      }
-      .stateIn(
-        scope = scope,
-        started = SharingStarted.Lazily,
-        initialValue = PlayerConstants.DEFAULT_START_POSITION_MS,
-      )
-
   override fun toggleIsPlaying() {
-    val playerState = _playerStateFlow.value as? PlayerState.Initialized ?: return
+    val playerState = _playerState.value as? PlayerState.Initialized ?: return
     mediaBrowser.onCompletion { if (playerState.isPlaying) pause() else play() }
   }
 
@@ -161,11 +209,11 @@ actual class PlayerPlatformConnection(
 
   override fun reset() {
     mediaBrowser.onCompletion(MediaBrowser::clearMediaItems)
-    _playerStateFlow.value = PlayerState.Idle
+    _playerState.value = PlayerState.Idle
   }
 
   private fun updateMusicState(player: Player) {
-    _playerStateFlow.update {
+    _playerState.update {
       with(player) {
         currentMediaItem?.let { item ->
           PlayerState.Initialized(

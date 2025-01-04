@@ -6,9 +6,11 @@ import com.trm.audiofeels.domain.model.Track
 import kotlinx.coroutines.flow.StateFlow
 
 interface PlayerConnection {
-  val playerStateFlow: StateFlow<PlayerState>
+  val playerState: StateFlow<PlayerState>
 
-  val currentPositionMsFlow: StateFlow<Long>
+  val tracks: StateFlow<List<Track>>
+
+  val currentPositionMs: StateFlow<Long>
 
   fun toggleIsPlaying()
 

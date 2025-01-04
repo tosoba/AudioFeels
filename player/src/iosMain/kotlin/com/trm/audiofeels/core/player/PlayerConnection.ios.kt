@@ -8,9 +8,11 @@ import kotlinx.coroutines.flow.asStateFlow
 
 actual class PlayerPlatformConnection : PlayerConnection {
   private val _playerStateFlow = MutableStateFlow<PlayerState>(PlayerState.Idle)
-  override val playerStateFlow: StateFlow<PlayerState> = _playerStateFlow.asStateFlow()
+  override val playerState: StateFlow<PlayerState> = _playerStateFlow.asStateFlow()
 
-  override val currentPositionMsFlow: StateFlow<Long> = MutableStateFlow(0L)
+  override val currentPositionMs: StateFlow<Long> = MutableStateFlow(0L)
+
+  override val tracks: StateFlow<List<Track>> = MutableStateFlow(emptyList())
 
   override fun toggleIsPlaying() {
     TODO("Not yet implemented")
