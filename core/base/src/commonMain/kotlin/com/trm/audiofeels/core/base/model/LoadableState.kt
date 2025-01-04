@@ -16,6 +16,12 @@ sealed interface LoadableState<out T> {
   data class Error(val throwable: Throwable?) : LoadableState<Nothing>
 }
 
+fun <T, R> LoadableState<T>.map(mapper: (T) -> R): LoadableState<R> = when (this) {
+  LoadableState.Loading -> LoadableState.Loading
+  is LoadableState.Success -> LoadableState.Success(mapper(value))
+  is LoadableState.Error -> LoadableState.Error(throwable)
+}
+
 fun <T> loadableStateFlowOf(
   timeout: Duration = DefaultTimeout,
   load: suspend () -> T,

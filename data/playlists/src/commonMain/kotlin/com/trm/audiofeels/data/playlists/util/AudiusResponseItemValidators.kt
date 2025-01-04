@@ -8,8 +8,8 @@ val TrackResponseItem.isValid: Boolean
     id != null &&
       title != null &&
       isAvailable == true &&
-      isPremium == false &&
-      isDelete == false &&
+      isPremium != true &&
+      isDelete != true &&
       isStreamable == true
 
 val PlaylistsResponseItem.isValid: Boolean

@@ -12,8 +12,6 @@ actual class PlayerPlatformConnection : PlayerConnection {
 
   override val currentPositionMs: StateFlow<Long> = MutableStateFlow(0L)
 
-  override val tracks: StateFlow<List<Track>> = MutableStateFlow(emptyList())
-
   override fun toggleIsPlaying() {
     TODO("Not yet implemented")
   }
@@ -36,6 +34,7 @@ actual class PlayerPlatformConnection : PlayerConnection {
 
   override fun play(
     tracks: List<Track>,
+    host: String,
     autoPlay: Boolean,
     startIndex: Int,
     startPositionMs: Long,

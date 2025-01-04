@@ -23,7 +23,6 @@ actual interface PlayerPlatformComponent {
   ): PlayerConnection =
     PlayerPlatformConnection(
       context = application,
-      hostRetriever = hostRetriever,
       scope = appCoroutineScope,
       networkMonitor = networkMonitor,
     )

@@ -8,8 +8,6 @@ import kotlinx.coroutines.flow.StateFlow
 interface PlayerConnection {
   val playerState: StateFlow<PlayerState>
 
-  val tracks: StateFlow<List<Track>>
-
   val currentPositionMs: StateFlow<Long>
 
   fun toggleIsPlaying()
@@ -24,6 +22,7 @@ interface PlayerConnection {
 
   fun play(
     tracks: List<Track>,
+    host: String,
     autoPlay: Boolean = true,
     startIndex: Int = PlayerConstants.DEFAULT_START_INDEX,
     startPositionMs: Long = PlayerConstants.DEFAULT_START_POSITION_MS,
