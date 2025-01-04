@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material3.BottomSheetScaffold
@@ -60,7 +59,9 @@ import com.trm.audiofeels.core.ui.compose.util.NavigationContentPosition
 import com.trm.audiofeels.core.ui.compose.util.NavigationType
 import com.trm.audiofeels.core.ui.compose.util.calculateWindowSize
 import com.trm.audiofeels.di.ApplicationComponent
+import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.ui.discover.DiscoverPage
+import com.trm.audiofeels.ui.discover.DiscoverViewModelFactory
 import com.trm.audiofeels.ui.favourites.FavouritesPage
 import com.trm.audiofeels.ui.player.PlayerPage
 import com.trm.audiofeels.ui.player.PlayerViewModel
@@ -85,8 +86,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
 
     val playerViewModel =
       viewModel<PlayerViewModel>(factory = applicationComponent.playerViewModelFactory)
-    val playerState by
-      playerViewModel.playerConnection.playerStateFlow.collectAsStateWithLifecycle()
+    val playerState by playerViewModel.playerConnection.playerState.collectAsStateWithLifecycle()
 
     val scope = rememberCoroutineScope()
     val appViewState = rememberAppViewState(playerState)
@@ -160,8 +160,9 @@ fun AppContent(applicationComponent: ApplicationComponent) {
               AnimatedPane {
                 AppNavHost(
                   navController = navController,
-                  applicationComponent = applicationComponent,
+                  discoverViewModelFactory = applicationComponent.discoverViewModelFactory,
                   modifier = Modifier.fillMaxSize(),
+                  onPlaylistClick = playerViewModel::onPlaylistClick,
                 )
               }
             },
@@ -265,8 +266,9 @@ private fun AppPermanentNavigationDrawer(
 @Composable
 private fun AppNavHost(
   navController: NavHostController,
-  applicationComponent: ApplicationComponent,
+  discoverViewModelFactory: DiscoverViewModelFactory,
   modifier: Modifier = Modifier,
+  onPlaylistClick: (Playlist) -> Unit,
 ) {
   NavHost(
     modifier = modifier,
@@ -275,8 +277,9 @@ private fun AppNavHost(
   ) {
     composable<AppRoute.Discover> {
       DiscoverPage(
+        viewModel = viewModel(factory = discoverViewModelFactory),
         modifier = Modifier.fillMaxSize(),
-        viewModel = viewModel(factory = applicationComponent.discoverViewModelFactory),
+        onPlaylistClick = onPlaylistClick,
       )
     }
     composable<AppRoute.Favourites> { FavouritesPage(modifier = Modifier.fillMaxSize()) }
