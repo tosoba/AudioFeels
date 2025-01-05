@@ -1,7 +1,6 @@
 package com.trm.audiofeels.core.player
 
 import android.content.ComponentName
-import android.content.Context
 import androidx.annotation.OptIn
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -11,7 +10,9 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
 import co.touchlab.kermit.Logger
+import com.trm.audiofeels.core.base.di.ApplicationScope
 import com.trm.audiofeels.core.base.util.AppCoroutineScope
+import com.trm.audiofeels.core.base.util.PlatformContext
 import com.trm.audiofeels.core.base.util.lazyAsync
 import com.trm.audiofeels.core.network.monitor.NetworkMonitor
 import com.trm.audiofeels.core.player.model.PlayerConstants
@@ -32,9 +33,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import me.tatarka.inject.annotations.Inject
 
+@ApplicationScope
+@Inject
 actual class PlayerPlatformConnection(
-  private val context: Context, // TODO: replace with PlatformContext
+  private val context: PlatformContext,
   private val scope: AppCoroutineScope,
   networkMonitor: NetworkMonitor, // TODO: consider moving this to PlayerVM
 ) : PlayerConnection {
@@ -44,8 +48,7 @@ actual class PlayerPlatformConnection(
   override val currentPositionMs: StateFlow<Long> =
     flow {
         while (currentCoroutineContext().isActive) {
-          val currentPosition = mediaBrowser.await().currentPosition
-          emit(currentPosition)
+          emit(mediaBrowser.await().currentPosition)
           delay(100L)
         }
       }
