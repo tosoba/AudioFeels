@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Button
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material3.BottomSheetScaffold
@@ -26,6 +27,7 @@ import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.PermanentDrawerSheet
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.AnimatedPane
@@ -34,6 +36,8 @@ import androidx.compose.material3.adaptive.layout.SupportingPaneScaffoldRole
 import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
 import androidx.compose.material3.adaptive.navigation.rememberSupportingPaneScaffoldNavigator
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldLayout
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -54,7 +58,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import coil3.compose.setSingletonImageLoaderFactory
-import com.trm.audiofeels.core.player.model.PlayerState
 import com.trm.audiofeels.core.ui.compose.util.NavigationContentPosition
 import com.trm.audiofeels.core.ui.compose.util.NavigationType
 import com.trm.audiofeels.core.ui.compose.util.calculateWindowSize
@@ -86,10 +89,25 @@ fun AppContent(applicationComponent: ApplicationComponent) {
 
     val playerViewModel =
       viewModel<PlayerViewModel>(factory = applicationComponent.playerViewModelFactory)
-    val playerState by playerViewModel.playerConnection.playerState.collectAsStateWithLifecycle()
+    val playerVisible by playerViewModel.playerVisible.collectAsStateWithLifecycle()
 
     val scope = rememberCoroutineScope()
-    val appViewState = rememberAppViewState(playerState)
+    val appViewState =
+      rememberAppViewState(
+        playerVisible = playerVisible,
+        playerViewState =
+          rememberAppPlayerViewState(
+            scaffoldState =
+              rememberBottomSheetScaffoldState(
+                bottomSheetState =
+                  rememberStandardBottomSheetState(
+                    initialValue = SheetValue.Hidden,
+                    confirmValueChange = { it != SheetValue.Hidden || !playerVisible },
+                    skipHiddenState = false,
+                  )
+              )
+          ),
+      )
 
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -134,7 +152,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
               contentAlignment = Alignment.Center,
               modifier = Modifier.fillMaxWidth().height(100.dp),
             ) {
-              Text("TEST")
+              Button(onClick = playerViewModel::onCancelPlaybackClick) { Text("Cancel") }
             }
           },
           scaffoldState = appViewState.playerViewState.scaffoldState,
@@ -143,7 +161,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
             rememberSupportingPaneScaffoldNavigator(
               scaffoldDirective =
                 calculatePaneScaffoldDirective(currentWindowAdaptiveInfo()).let {
-                  if (playerState is PlayerState.Initialized) it
+                  if (playerVisible) it
                   else it.copy(maxHorizontalPartitions = 1, maxVerticalPartitions = 1)
                 }
             )
@@ -166,7 +184,14 @@ fun AppContent(applicationComponent: ApplicationComponent) {
                 )
               }
             },
-            supportingPane = { AnimatedPane { PlayerPage(modifier = Modifier.fillMaxSize()) } },
+            supportingPane = {
+              AnimatedPane {
+                PlayerPage(
+                  modifier = Modifier.fillMaxSize(),
+                  onCancelPlaybackClick = playerViewModel::onCancelPlaybackClick,
+                )
+              }
+            },
           )
         }
       }

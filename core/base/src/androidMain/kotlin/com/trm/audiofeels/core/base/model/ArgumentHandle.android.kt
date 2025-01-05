@@ -16,8 +16,4 @@ actual class ArgumentPlatformHandle<T>(
     set(value) {
       savedStateHandle[key] = value
     }
-
-  override fun clear() {
-    savedStateHandle.remove<T>(key)
-  }
 }

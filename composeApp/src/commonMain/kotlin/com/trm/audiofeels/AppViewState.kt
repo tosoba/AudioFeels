@@ -4,22 +4,16 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
-import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import com.trm.audiofeels.core.player.model.PlayerState
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
 @Immutable
-class AppViewState(private val playerState: PlayerState, val playerViewState: AppPlayerViewState) {
+class AppViewState(private val playerVisible: Boolean, val playerViewState: AppPlayerViewState) {
   suspend fun onNavigateToPageDestination() {
-    if (
-      playerState is PlayerState.Initialized &&
-        playerViewState.currentSheetValue == SheetValue.Expanded
-    ) {
+    if (playerVisible && playerViewState.currentSheetValue == SheetValue.Expanded) {
       playerViewState.scaffoldState.bottomSheetState.partialExpand()
     }
   }
@@ -29,12 +23,12 @@ class AppViewState(private val playerState: PlayerState, val playerViewState: Ap
 
     when (paneValue) {
       PaneAdaptedValue.Hidden -> {
-        if (playerState is PlayerState.Initialized) {
+        if (playerVisible) {
           playerViewState.restoreLastVisibleSheetValue()
         }
       }
       PaneAdaptedValue.Expanded -> {
-        if (playerState is PlayerState.Initialized) {
+        if (playerVisible) {
           playerViewState.scaffoldState.bottomSheetState.hide()
         }
       }
@@ -42,27 +36,19 @@ class AppViewState(private val playerState: PlayerState, val playerViewState: Ap
   }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun rememberAppViewState(
-  playerState: PlayerState,
-  playerViewState: AppPlayerViewState =
-    rememberAppPlayerViewState(
-      scaffoldState =
-        rememberBottomSheetScaffoldState(
-          bottomSheetState =
-            rememberStandardBottomSheetState(
-              initialValue = SheetValue.Hidden,
-              skipHiddenState = false,
-            )
-        )
-    ),
+  playerVisible: Boolean,
+  playerViewState: AppPlayerViewState,
 ): AppViewState {
-  val state = remember(playerState, playerViewState) { AppViewState(playerState, playerViewState) }
+  val state =
+    remember(playerVisible, playerViewState) { AppViewState(playerVisible, playerViewState) }
 
-  LaunchedEffect(playerState) {
-    if (playerState is PlayerState.Initialized) {
+  LaunchedEffect(playerVisible) {
+    if (playerVisible) {
       playerViewState.partialExpandSheetIfPaneHidden()
+    } else {
+      playerViewState.hideSheetIfPaneHidden()
     }
   }
 

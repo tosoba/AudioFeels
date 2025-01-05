@@ -5,8 +5,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
-import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -19,8 +17,8 @@ import androidx.compose.runtime.setValue
 @Stable
 class AppPlayerViewState(
   val scaffoldState: BottomSheetScaffoldState,
-  lastVisibleSheetValue: SheetValue = SheetValue.Hidden,
-  supportingPaneValue: PaneAdaptedValue = PaneAdaptedValue.Hidden,
+  lastVisibleSheetValue: SheetValue,
+  supportingPaneValue: PaneAdaptedValue,
 ) {
   var lastVisibleSheetValue: SheetValue by mutableStateOf(lastVisibleSheetValue)
   var supportingPaneValue: PaneAdaptedValue by mutableStateOf(supportingPaneValue)
@@ -45,16 +43,20 @@ class AppPlayerViewState(
       scaffoldState.bottomSheetState.partialExpand()
     }
   }
+
+  suspend fun hideSheetIfPaneHidden() {
+    if (
+      supportingPaneValue == PaneAdaptedValue.Hidden && scaffoldState.bottomSheetState.isVisible
+    ) {
+      scaffoldState.bottomSheetState.hide()
+    }
+  }
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun rememberAppPlayerViewState(
-  scaffoldState: BottomSheetScaffoldState =
-    rememberBottomSheetScaffoldState(
-      bottomSheetState =
-        rememberStandardBottomSheetState(initialValue = SheetValue.Hidden, skipHiddenState = false)
-    ),
+  scaffoldState: BottomSheetScaffoldState,
   lastVisibleSheetValue: SheetValue = SheetValue.PartiallyExpanded,
   supportingPaneValue: PaneAdaptedValue = PaneAdaptedValue.Hidden,
 ): AppPlayerViewState {

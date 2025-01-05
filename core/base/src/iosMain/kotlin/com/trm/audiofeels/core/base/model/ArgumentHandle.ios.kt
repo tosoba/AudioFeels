@@ -13,8 +13,4 @@ actual class ArgumentPlatformHandle<T>(initialValue: T? = null) : ArgumentHandle
     set(value) {
       _flow.value = value
     }
-
-  override fun clear() {
-    _flow.value = null
-  }
 }

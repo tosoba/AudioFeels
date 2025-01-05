@@ -6,8 +6,6 @@ interface ArgumentHandle<T> {
   val flow: StateFlow<T?>
 
   var value: T?
-
-  fun clear()
 }
 
 expect class ArgumentPlatformHandle<T> : ArgumentHandle<T>
