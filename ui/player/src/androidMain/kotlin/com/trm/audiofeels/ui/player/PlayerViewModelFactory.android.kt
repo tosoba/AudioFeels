@@ -4,6 +4,7 @@ import androidx.lifecycle.AbstractSavedStateViewModelFactory
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.trm.audiofeels.core.base.model.ArgumentPlatformHandle
 import com.trm.audiofeels.core.network.host.HostRetriever
 import com.trm.audiofeels.core.player.PlayerConnection
 import com.trm.audiofeels.domain.repository.PlaylistsRepository
@@ -22,8 +23,7 @@ actual class PlayerViewModelFactory(
     handle: SavedStateHandle,
   ): T =
     PlayerViewModel(
-      savedPlaylist = handle.getPlaylist(),
-      savePlaylist = handle::setPlaylist,
+      playlistHandle = ArgumentPlatformHandle(savedStateHandle = handle, key = PLAYER_PLAYLIST_KEY),
       playerConnection = playerConnection,
       repository = playlistsRepository,
       hostRetriever = hostRetriever,

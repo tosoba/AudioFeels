@@ -1,6 +1,7 @@
 plugins {
   id("com.trm.audiofeels.android.library")
   id("com.trm.audiofeels.kotlin.multiplatform")
+  alias(libs.plugins.kotlin.parcelize)
 }
 
 kotlin {
@@ -17,6 +18,9 @@ kotlin {
 
     commonMain {
       dependencies {
+        implementation(libs.androidx.lifecycle.runtime.compose)
+        implementation(libs.androidx.lifecycle.viewmodel.compose)
+
         api(libs.kermit)
 
         implementation(libs.kotlin.stdlib)
