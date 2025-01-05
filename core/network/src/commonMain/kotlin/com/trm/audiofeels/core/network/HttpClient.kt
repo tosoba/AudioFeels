@@ -1,5 +1,6 @@
 package com.trm.audiofeels.core.network
 
+import co.touchlab.kermit.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.HttpClientEngine
@@ -37,7 +38,17 @@ fun HttpClientConfig<*>.configureDefault(
     )
   }
 
-  logLevel?.let { install(Logging) { level = it } }
+  logLevel?.let {
+    install(Logging) {
+      level = it
+      logger =
+        object : io.ktor.client.plugins.logging.Logger {
+          override fun log(message: String) {
+            Logger.d(messageString = message, tag = "ktor")
+          }
+        }
+    }
+  }
 
   cacheStorage?.let { install(HttpCache) { publicStorage(it) } }
 
