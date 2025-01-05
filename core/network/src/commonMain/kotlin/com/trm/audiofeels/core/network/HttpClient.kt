@@ -19,7 +19,7 @@ fun httpClient(
 ): HttpClient = engine?.let { HttpClient(it, config) } ?: HttpClient(config)
 
 fun HttpClientConfig<*>.configureDefault(
-  logLevel: LogLevel? = null,
+  logLevel: LogLevel,
   expectSuccess: Boolean = true,
   followRedirects: Boolean = true,
   cacheStorage: CacheStorage? = null,
@@ -38,16 +38,14 @@ fun HttpClientConfig<*>.configureDefault(
     )
   }
 
-  logLevel?.let {
-    install(Logging) {
-      level = it
-      logger =
-        object : io.ktor.client.plugins.logging.Logger {
-          override fun log(message: String) {
-            Logger.d(messageString = message, tag = "ktor")
-          }
+  install(Logging) {
+    level = logLevel
+    logger =
+      object : io.ktor.client.plugins.logging.Logger {
+        override fun log(message: String) {
+          Logger.d(messageString = message, tag = "ktor")
         }
-    }
+      }
   }
 
   cacheStorage?.let { install(HttpCache) { publicStorage(it) } }

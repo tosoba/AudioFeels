@@ -8,9 +8,8 @@ import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.request.get
 
-class HostsEndpoints(engine: HttpClientEngine? = null) {
-  private val client =
-    httpClient(engine) { configureDefault(logLevel = LogLevel.ALL, maxRetries = 2) }
+class HostsEndpoints(logLevel: LogLevel, engine: HttpClientEngine? = null) {
+  private val client = httpClient(engine) { configureDefault(logLevel = logLevel, maxRetries = 2) }
 
   suspend fun getHosts(): HostsResponse = client.get(HOSTS_URL).body<HostsResponse>()
 

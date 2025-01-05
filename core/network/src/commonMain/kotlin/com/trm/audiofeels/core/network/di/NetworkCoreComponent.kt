@@ -8,6 +8,7 @@ import coil3.memory.MemoryCache
 import coil3.request.crossfade
 import coil3.util.Logger.Level
 import com.trm.audiofeels.core.base.di.ApplicationScope
+import com.trm.audiofeels.core.base.util.BuildInfo
 import com.trm.audiofeels.core.base.util.PlatformContext
 import com.trm.audiofeels.core.base.util.cachePath
 import com.trm.audiofeels.core.network.host.HostValidator
@@ -29,6 +30,7 @@ interface NetworkCoreComponent : NetworkPlatformComponent {
   fun newImageLoader(
     platformContext: PlatformContext,
     coilPlatformContext: coil3.PlatformContext,
+    buildInfo: BuildInfo,
   ): ImageLoader =
     ImageLoader.Builder(coilPlatformContext)
       .memoryCache {
@@ -38,7 +40,7 @@ interface NetworkCoreComponent : NetworkPlatformComponent {
         DiskCache.Builder().directory(platformContext.cachePath.resolve("coil_cache")).build()
       }
       .crossfade(true)
-      .logger(Logger.asCoilLogger())
+      .run { if (buildInfo.debug) logger(Logger.asCoilLogger()) else this }
       .build()
 }
 

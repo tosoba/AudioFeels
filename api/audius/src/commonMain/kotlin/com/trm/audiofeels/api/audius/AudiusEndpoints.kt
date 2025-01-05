@@ -22,12 +22,13 @@ import io.ktor.http.path
 class AudiusEndpoints(
   hostRetriever: HostRetriever,
   hostFetcher: HostFetcher,
+  logLevel: LogLevel,
   engine: HttpClientEngine? = null,
   cacheStorage: DiskCacheStorage? = null,
 ) {
   private val client =
     httpClient(engine = engine) {
-        configureDefault(logLevel = LogLevel.ALL, cacheStorage = cacheStorage, maxRetries = 2)
+        configureDefault(logLevel = logLevel, cacheStorage = cacheStorage, maxRetries = 2)
       }
       .apply { plugin(HttpSend).intercept(hostInterceptor(hostRetriever, hostFetcher)) }
 

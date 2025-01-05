@@ -18,6 +18,7 @@ import dev.mokkery.verify.VerifyMode.Companion.exactly
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
 import io.ktor.client.engine.mock.respond
+import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.request.HttpResponseData
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
@@ -314,7 +315,10 @@ class AudiusHostTest {
       AudiusHostsRepository(
         inMemoryDataSource = inMemoryDataSource,
         dataStore = dataStore,
-        endpoints = lazy(LazyThreadSafetyMode.NONE) { HostsEndpoints(hostsEngine) },
+        endpoints =
+          lazy(LazyThreadSafetyMode.NONE) {
+            HostsEndpoints(logLevel = LogLevel.NONE, engine = hostsEngine)
+          },
         validator = lazy(LazyThreadSafetyMode.NONE) { HostValidator(hostsEngine) },
       )
     return AudiusPlaylistsRepository(
@@ -322,6 +326,7 @@ class AudiusHostTest {
         AudiusEndpoints(
           hostRetriever = hostsRepository,
           hostFetcher = hostsRepository,
+          logLevel = LogLevel.NONE,
           engine = playlistsEngine,
         )
     )
