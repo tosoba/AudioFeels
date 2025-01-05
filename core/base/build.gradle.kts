@@ -21,7 +21,7 @@ kotlin {
         implementation(libs.androidx.lifecycle.runtime.compose)
         implementation(libs.androidx.lifecycle.viewmodel.compose)
 
-        api(libs.kermit)
+        api(libs.napier)
 
         implementation(libs.kotlin.stdlib)
         implementation(libs.kotlininject.runtime)

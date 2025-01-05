@@ -1,6 +1,6 @@
 package com.trm.audiofeels.core.network
 
-import co.touchlab.kermit.Logger
+import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.HttpClientEngine
@@ -9,6 +9,7 @@ import io.ktor.client.plugins.cache.HttpCache
 import io.ktor.client.plugins.cache.storage.CacheStorage
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
@@ -41,9 +42,9 @@ fun HttpClientConfig<*>.configureDefault(
   install(Logging) {
     level = logLevel
     logger =
-      object : io.ktor.client.plugins.logging.Logger {
+      object : Logger {
         override fun log(message: String) {
-          Logger.d(messageString = message, tag = "ktor")
+          Napier.d(message = message, tag = "ktor")
         }
       }
   }

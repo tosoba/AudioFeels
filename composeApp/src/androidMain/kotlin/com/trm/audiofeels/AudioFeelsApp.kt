@@ -3,6 +3,7 @@ package com.trm.audiofeels
 import android.app.Application
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
+import com.trm.audiofeels.core.base.util.initNapierDebug
 import com.trm.audiofeels.core.player.PlayerService
 import com.trm.audiofeels.core.player.di.BasePlayerServiceComponent
 import com.trm.audiofeels.core.player.di.PlayerServiceComponentFactory
@@ -16,6 +17,7 @@ class AudioFeelsApp : Application(), ApplicationComponentProvider, PlayerService
 
   override fun onCreate() {
     super.onCreate()
+    initNapierDebug()
     component = AndroidApplicationComponent.create(this)
   }
 

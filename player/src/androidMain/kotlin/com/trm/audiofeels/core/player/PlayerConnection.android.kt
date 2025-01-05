@@ -9,7 +9,6 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
-import co.touchlab.kermit.Logger
 import com.trm.audiofeels.core.base.di.ApplicationScope
 import com.trm.audiofeels.core.base.util.AppCoroutineScope
 import com.trm.audiofeels.core.base.util.PlatformContext
@@ -18,6 +17,7 @@ import com.trm.audiofeels.core.network.monitor.NetworkMonitor
 import com.trm.audiofeels.core.player.model.PlayerConstants
 import com.trm.audiofeels.core.player.model.PlayerState
 import com.trm.audiofeels.domain.model.Track
+import io.github.aakira.napier.Napier
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.currentCoroutineContext
@@ -71,11 +71,10 @@ actual class PlayerPlatformConnection(
           addListener(
             object : Player.Listener {
               override fun onPlayerError(error: PlaybackException) {
-                Logger.e(
-                  messageString =
-                    "Error code: ${error.errorCode}\nMessage:${error.localizedMessage}",
+                Napier.e(
+                  message = "Error code: ${error.errorCode}\nMessage:${error.localizedMessage}",
                   throwable = error,
-                  tag = PlaybackException::class.java.simpleName,
+                  tag = "PlayerConnection",
                 )
 
                 // TODO: handle androidx.media3.exoplayer.ExoPlaybackException: Source error
