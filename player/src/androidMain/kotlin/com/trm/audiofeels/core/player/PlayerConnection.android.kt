@@ -13,7 +13,6 @@ import androidx.media3.session.SessionToken
 import co.touchlab.kermit.Logger
 import com.trm.audiofeels.core.base.util.AppCoroutineScope
 import com.trm.audiofeels.core.base.util.lazyAsync
-import com.trm.audiofeels.core.base.util.onCompletion
 import com.trm.audiofeels.core.network.monitor.NetworkMonitor
 import com.trm.audiofeels.core.player.model.PlayerConstants
 import com.trm.audiofeels.core.player.model.PlayerState
@@ -112,32 +111,32 @@ actual class PlayerPlatformConnection(
 
   override fun toggleIsPlaying() {
     val playerState = _playerState.value as? PlayerState.Initialized ?: return
-    mediaBrowser.onCompletion { if (playerState.isPlaying) pause() else play() }
+    withMediaBrowser { if (playerState.isPlaying) pause() else play() }
   }
 
   override fun playPrevious() {
-    mediaBrowser.onCompletion {
+    withMediaBrowser {
       seekToPrevious()
       play()
     }
   }
 
   override fun playNext() {
-    mediaBrowser.onCompletion {
+    withMediaBrowser {
       seekToNext()
       play()
     }
   }
 
   override fun skipTo(positionMs: Long) {
-    mediaBrowser.onCompletion {
+    withMediaBrowser {
       seekTo(positionMs)
       play()
     }
   }
 
   override fun skipTo(itemIndex: Int, positionMs: Long) {
-    mediaBrowser.onCompletion {
+    withMediaBrowser {
       seekTo(itemIndex, positionMs)
       play()
     }
@@ -150,13 +149,11 @@ actual class PlayerPlatformConnection(
     startIndex: Int,
     startPositionMs: Long,
   ) {
-    scope.launch {
-      mediaBrowser.await().apply {
-        setMediaItems(tracks.toMediaItems(host), startIndex, startPositionMs)
-        prepare()
-        if (autoPlay) play()
-        repeatMode = Player.REPEAT_MODE_OFF
-      }
+    withMediaBrowser {
+      setMediaItems(tracks.toMediaItems(host), startIndex, startPositionMs)
+      prepare()
+      if (autoPlay) play()
+      repeatMode = Player.REPEAT_MODE_OFF
     }
   }
 
@@ -165,8 +162,12 @@ actual class PlayerPlatformConnection(
   }
 
   override fun reset() {
-    mediaBrowser.onCompletion(MediaBrowser::clearMediaItems)
+    withMediaBrowser(MediaBrowser::clearMediaItems)
     _playerState.value = PlayerState.Idle
+  }
+
+  private fun withMediaBrowser(action: MediaBrowser.() -> Unit) {
+    scope.launch { mediaBrowser.await().run(action) }
   }
 
   private fun updateMusicState(player: Player) {
