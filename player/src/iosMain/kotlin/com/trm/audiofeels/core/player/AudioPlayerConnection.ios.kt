@@ -1,8 +1,9 @@
 package com.trm.audiofeels.core.player
 
 import com.trm.audiofeels.core.base.di.ApplicationScope
-import com.trm.audiofeels.core.player.model.PlayerState
+import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Track
+import com.trm.audiofeels.domain.player.PlayerConnection
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -10,7 +11,7 @@ import me.tatarka.inject.annotations.Inject
 
 @ApplicationScope
 @Inject
-actual class PlayerPlatformConnection : PlayerConnection {
+actual class AudioPlayerConnection : PlayerConnection {
   private val _playerStateFlow = MutableStateFlow<PlayerState>(PlayerState.Idle)
   override val playerState: StateFlow<PlayerState> = _playerStateFlow.asStateFlow()
 

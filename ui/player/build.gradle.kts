@@ -13,7 +13,6 @@ kotlin {
         implementation(projects.core.ui.compose)
         implementation(projects.core.ui.resources)
         implementation(projects.domain)
-        implementation(projects.player)
 
         implementation(libs.androidx.lifecycle.runtime.compose)
         implementation(libs.androidx.lifecycle.viewmodel.compose)

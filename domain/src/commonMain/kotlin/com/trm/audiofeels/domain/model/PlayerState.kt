@@ -1,6 +1,4 @@
-package com.trm.audiofeels.core.player.model
-
-import com.trm.audiofeels.domain.model.Track
+package com.trm.audiofeels.domain.model
 
 sealed interface PlayerState {
   data object Idle : PlayerState

@@ -7,9 +7,9 @@ import com.trm.audiofeels.core.base.model.LoadableState
 import com.trm.audiofeels.core.base.model.loadableStateFlowOf
 import com.trm.audiofeels.core.base.model.map
 import com.trm.audiofeels.core.base.util.restartableStateIn
-import com.trm.audiofeels.core.player.PlayerConnection
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.model.Track
+import com.trm.audiofeels.domain.player.PlayerConnection
 import com.trm.audiofeels.domain.repository.HostsRepository
 import com.trm.audiofeels.domain.repository.PlaylistsRepository
 import kotlin.time.Duration.Companion.seconds
@@ -67,7 +67,7 @@ class PlayerViewModel(
       }
       .restartableStateIn(
         scope = viewModelScope,
-        started = SharingStarted.Eagerly, // TODO: change to lazily/while sub
+        started = SharingStarted.Eagerly, // TODO: change to lazily
         initialValue = LoadableState.Loading,
       )
 

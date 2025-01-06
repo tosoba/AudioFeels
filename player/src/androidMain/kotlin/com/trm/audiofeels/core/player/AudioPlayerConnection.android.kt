@@ -14,9 +14,13 @@ import com.trm.audiofeels.core.base.util.AppCoroutineScope
 import com.trm.audiofeels.core.base.util.PlatformContext
 import com.trm.audiofeels.core.base.util.lazyAsync
 import com.trm.audiofeels.core.network.monitor.NetworkMonitor
-import com.trm.audiofeels.core.player.model.PlayerConstants
-import com.trm.audiofeels.core.player.model.PlayerState
+import com.trm.audiofeels.core.player.mapper.enumPlaybackStateOf
+import com.trm.audiofeels.core.player.mapper.toMediaItem
+import com.trm.audiofeels.core.player.mapper.toTrack
+import com.trm.audiofeels.domain.model.PlayerConstants
+import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Track
+import com.trm.audiofeels.domain.player.PlayerConnection
 import io.github.aakira.napier.Napier
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.Deferred
@@ -37,7 +41,7 @@ import me.tatarka.inject.annotations.Inject
 
 @ApplicationScope
 @Inject
-actual class PlayerPlatformConnection(
+actual class AudioPlayerConnection(
   private val context: PlatformContext,
   private val scope: AppCoroutineScope,
   networkMonitor: NetworkMonitor, // TODO: consider moving this to PlayerVM

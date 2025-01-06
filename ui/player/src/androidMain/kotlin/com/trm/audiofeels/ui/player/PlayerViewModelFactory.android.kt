@@ -5,7 +5,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.trm.audiofeels.core.base.model.ArgumentHandle
-import com.trm.audiofeels.core.player.PlayerConnection
+import com.trm.audiofeels.domain.player.PlayerConnection
 import com.trm.audiofeels.domain.repository.HostsRepository
 import com.trm.audiofeels.domain.repository.PlaylistsRepository
 import me.tatarka.inject.annotations.Inject

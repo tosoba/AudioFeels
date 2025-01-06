@@ -1,12 +1,10 @@
-package com.trm.audiofeels.core.player
+package com.trm.audiofeels.core.player.mapper
 
 import android.net.Uri
 import androidx.core.os.bundleOf
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaItem.RequestMetadata
 import androidx.media3.common.MediaMetadata
-import androidx.media3.common.Player
-import com.trm.audiofeels.core.player.model.PlaybackState
 import com.trm.audiofeels.core.player.util.buildStreamUrl
 import com.trm.audiofeels.domain.model.Track
 
@@ -57,12 +55,3 @@ private const val GENRE_EXTRA = "GENRE_EXTRA"
 private const val MOOD_EXTRA = "MOOD_EXTRA"
 private const val PLAY_COUNT_EXTRA = "PLAY_COUNT_EXTRA"
 private const val TAGS_EXTRA = "TAGS_EXTRA"
-
-internal fun enumPlaybackStateOf(@Player.State state: Int): PlaybackState =
-  when (state) {
-    Player.STATE_IDLE -> PlaybackState.IDLE
-    Player.STATE_BUFFERING -> PlaybackState.BUFFERING
-    Player.STATE_READY -> PlaybackState.READY
-    Player.STATE_ENDED -> PlaybackState.ENDED
-    else -> throw IllegalArgumentException()
-  }

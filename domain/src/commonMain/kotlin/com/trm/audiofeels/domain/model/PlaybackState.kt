@@ -1,4 +1,4 @@
-package com.trm.audiofeels.core.player.model
+package com.trm.audiofeels.domain.model
 
 enum class PlaybackState {
   IDLE,
