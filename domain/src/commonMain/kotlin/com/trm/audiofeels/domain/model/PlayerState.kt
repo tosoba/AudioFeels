@@ -6,7 +6,6 @@ sealed interface PlayerState {
   data class Initialized(
     val currentTrack: Track,
     val currentTrackIndex: Int,
-    val tracksCount: Int,
     val playbackState: PlaybackState,
     val isPlaying: Boolean,
     val trackDurationMs: Long,

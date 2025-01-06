@@ -13,7 +13,6 @@ internal fun Player.toState(): PlayerState =
     PlayerState.Initialized(
       currentTrack = mediaItem.toTrack(),
       currentTrackIndex = currentMediaItemIndex,
-      tracksCount = mediaItemCount,
       playbackState =
         when (playbackState) {
           Player.STATE_IDLE -> PlaybackState.IDLE
