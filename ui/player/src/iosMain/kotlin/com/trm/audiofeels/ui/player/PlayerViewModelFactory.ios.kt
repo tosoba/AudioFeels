@@ -3,7 +3,7 @@ package com.trm.audiofeels.ui.player
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
-import com.trm.audiofeels.core.base.model.ArgumentPlatformHandle
+import com.trm.audiofeels.core.base.model.ArgumentHandle
 import com.trm.audiofeels.core.network.host.HostRetriever
 import com.trm.audiofeels.core.player.PlayerConnection
 import com.trm.audiofeels.domain.repository.PlaylistsRepository
@@ -20,7 +20,7 @@ actual class PlayerViewModelFactory(
   override fun <T : ViewModel> create(modelClass: KClass<T>, extras: CreationExtras): T =
     modelClass.cast(
       PlayerViewModel(
-        playlistHandle = ArgumentPlatformHandle(),
+        playlistHandle = ArgumentHandle(),
         playerConnection = playerConnection,
         repository = playlistsRepository,
         hostRetriever = hostRetriever,

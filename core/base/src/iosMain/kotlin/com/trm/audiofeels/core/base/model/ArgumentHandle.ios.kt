@@ -4,11 +4,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-actual class ArgumentPlatformHandle<T>(initialValue: T? = null) : ArgumentHandle<T> {
+actual class ArgumentHandle<T>(initialValue: T? = null) {
   private val _flow = MutableStateFlow(initialValue)
-  override val flow: StateFlow<T?> = _flow.asStateFlow()
+  actual val flow: StateFlow<T?> = _flow.asStateFlow()
 
-  override var value: T?
+  actual var value: T?
     get() = flow.value
     set(value) {
       _flow.value = value
