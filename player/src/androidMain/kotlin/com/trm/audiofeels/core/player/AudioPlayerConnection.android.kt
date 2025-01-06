@@ -16,24 +16,19 @@ import com.trm.audiofeels.core.base.util.PlatformContext
 import com.trm.audiofeels.core.base.util.lazyAsync
 import com.trm.audiofeels.core.player.mapper.toMediaItem
 import com.trm.audiofeels.core.player.mapper.toState
-import com.trm.audiofeels.domain.model.PlayerConstants
 import com.trm.audiofeels.domain.model.PlayerError
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Track
 import com.trm.audiofeels.domain.player.PlayerConnection
 import io.github.aakira.napier.Napier
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.WhileSubscribed
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -45,61 +40,42 @@ actual class AudioPlayerConnection(
   private val context: PlatformContext,
   private val scope: AppCoroutineScope,
 ) : PlayerConnection {
-  private val _playerState = MutableStateFlow<PlayerState>(PlayerState.Idle)
-  override val playerState: StateFlow<PlayerState> = _playerState.asStateFlow()
+  override val currentPositionMs: Flow<Long> = flow {
+    while (currentCoroutineContext().isActive) {
+      emit(mediaBrowser.await().currentPosition)
+      delay(100L)
+    }
+  }
 
-  override val currentPositionMs: StateFlow<Long> =
-    flow {
-        while (currentCoroutineContext().isActive) {
-          emit(mediaBrowser.await().currentPosition)
-          delay(100L)
-        }
-      }
-      .stateIn(
-        scope = scope,
-        started = SharingStarted.WhileSubscribed(5.seconds),
-        initialValue = PlayerConstants.DEFAULT_START_POSITION_MS,
-      )
-
-  @OptIn(UnstableApi::class)
-  private val mediaBrowser: Deferred<MediaBrowser> by
-    scope.lazyAsync {
-      MediaBrowser.Builder(
-          context,
-          SessionToken(context, ComponentName(context, PlayerService::class.java)),
-        )
-        .buildAsync()
-        .await()
-        .apply {
-          addListener(
-            object : Player.Listener {
-              override fun onEvents(player: Player, events: Player.Events) {
-                if (
-                  events.containsAny(
-                    Player.EVENT_PLAYBACK_STATE_CHANGED,
-                    Player.EVENT_MEDIA_METADATA_CHANGED,
-                    Player.EVENT_PLAY_WHEN_READY_CHANGED,
-                  )
-                ) {
-                  _playerState.value = player.toState()
-                }
-              }
-
-              override fun onPlayerError(error: PlaybackException) {
-                Napier.e(
-                  message = "Error code: ${error.errorCode}\nMessage:${error.localizedMessage}",
-                  throwable = error,
-                  tag = this@AudioPlayerConnection.javaClass.simpleName,
+  override val playerState: Flow<PlayerState> =
+    callbackFlow {
+        val browser = mediaBrowser.await()
+        var previousState: PlayerState = PlayerState.Idle
+        val listener =
+          object : Player.Listener {
+            override fun onEvents(player: Player, events: Player.Events) {
+              if (
+                events.containsAny(
+                  Player.EVENT_PLAYBACK_STATE_CHANGED,
+                  Player.EVENT_MEDIA_METADATA_CHANGED,
+                  Player.EVENT_PLAY_WHEN_READY_CHANGED,
                 )
-
-                updatePlayerState(error)
+              ) {
+                trySend(player.toState().also { previousState = it })
               }
+            }
 
-              private fun updatePlayerState(exception: PlaybackException) {
-                _playerState.update {
-                  PlayerState.Error(
+            override fun onPlayerError(error: PlaybackException) {
+              Napier.e(
+                message = "Error code: ${error.errorCode}\nMessage:${error.localizedMessage}",
+                throwable = error,
+                tag = this@AudioPlayerConnection.javaClass.simpleName,
+              )
+
+              trySend(
+                PlayerState.Error(
                     error =
-                      when (exception.cause) {
+                      when (error.cause) {
                         is HttpDataSource.InvalidResponseCodeException -> {
                           PlayerError.INVALID_HOST_ERROR
                         }
@@ -110,18 +86,37 @@ actual class AudioPlayerConnection(
                           PlayerError.OTHER_ERROR
                         }
                       },
-                    previousState = it,
+                    previousState = previousState,
                   )
-                }
-              }
+                  .also { previousState = it }
+              )
             }
-          )
-        }
+          }
+
+        browser.addListener(listener)
+        trySend(previousState)
+
+        awaitClose { browser.removeListener(listener) }
+      }
+      .conflate()
+
+  @OptIn(UnstableApi::class)
+  private val mediaBrowser: Deferred<MediaBrowser> by
+    scope.lazyAsync {
+      MediaBrowser.Builder(
+          context,
+          SessionToken(context, ComponentName(context, PlayerService::class.java)),
+        )
+        .buildAsync()
+        .await()
     }
 
-  override fun toggleIsPlaying() {
-    val playerState = _playerState.value as? PlayerState.Initialized ?: return
-    withMediaBrowser { if (playerState.isPlaying) pause() else play() }
+  override fun play() {
+    withMediaBrowser(MediaBrowser::play)
+  }
+
+  override fun pause() {
+    withMediaBrowser(MediaBrowser::pause)
   }
 
   override fun playPrevious() {
@@ -145,9 +140,9 @@ actual class AudioPlayerConnection(
     }
   }
 
-  override fun skipTo(itemIndex: Int, positionMs: Long) {
+  override fun skipTo(trackIndex: Int, positionMs: Long) {
     withMediaBrowser {
-      seekTo(itemIndex, positionMs)
+      seekTo(trackIndex, positionMs)
       play()
     }
   }
@@ -173,7 +168,6 @@ actual class AudioPlayerConnection(
 
   override fun reset() {
     withMediaBrowser(MediaBrowser::clearMediaItems)
-    _playerState.value = PlayerState.Idle
   }
 
   private fun withMediaBrowser(action: MediaBrowser.() -> Unit) {

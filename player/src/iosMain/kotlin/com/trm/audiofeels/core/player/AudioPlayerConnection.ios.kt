@@ -17,7 +17,11 @@ actual class AudioPlayerConnection : PlayerConnection {
 
   override val currentPositionMs: StateFlow<Long> = MutableStateFlow(0L)
 
-  override fun toggleIsPlaying() {
+  override fun play() {
+    TODO("Not yet implemented")
+  }
+
+  override fun pause() {
     TODO("Not yet implemented")
   }
 
@@ -33,7 +37,7 @@ actual class AudioPlayerConnection : PlayerConnection {
     TODO("Not yet implemented")
   }
 
-  override fun skipTo(itemIndex: Int, positionMs: Long) {
+  override fun skipTo(trackIndex: Int, positionMs: Long) {
     TODO("Not yet implemented")
   }
 

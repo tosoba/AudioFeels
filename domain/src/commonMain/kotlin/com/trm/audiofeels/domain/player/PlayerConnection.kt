@@ -3,14 +3,16 @@ package com.trm.audiofeels.domain.player
 import com.trm.audiofeels.domain.model.PlayerConstants
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Track
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.Flow
 
 interface PlayerConnection {
-  val playerState: StateFlow<PlayerState>
+  val playerState: Flow<PlayerState>
 
-  val currentPositionMs: StateFlow<Long>
+  val currentPositionMs: Flow<Long>
 
-  fun toggleIsPlaying()
+  fun play()
+
+  fun pause()
 
   fun playPrevious()
 
@@ -18,7 +20,7 @@ interface PlayerConnection {
 
   fun skipTo(positionMs: Long)
 
-  fun skipTo(itemIndex: Int, positionMs: Long = 0L)
+  fun skipTo(trackIndex: Int, positionMs: Long = 0L)
 
   fun play(
     tracks: List<Track>,
