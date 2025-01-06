@@ -14,9 +14,8 @@ import com.trm.audiofeels.core.base.di.ApplicationScope
 import com.trm.audiofeels.core.base.util.AppCoroutineScope
 import com.trm.audiofeels.core.base.util.PlatformContext
 import com.trm.audiofeels.core.base.util.lazyAsync
-import com.trm.audiofeels.core.player.mapper.enumPlaybackStateOf
 import com.trm.audiofeels.core.player.mapper.toMediaItem
-import com.trm.audiofeels.core.player.mapper.toTrack
+import com.trm.audiofeels.core.player.mapper.toState
 import com.trm.audiofeels.domain.model.PlayerConstants
 import com.trm.audiofeels.domain.model.PlayerError
 import com.trm.audiofeels.domain.model.PlayerState
@@ -74,16 +73,6 @@ actual class AudioPlayerConnection(
         .apply {
           addListener(
             object : Player.Listener {
-              override fun onPlayerError(error: PlaybackException) {
-                Napier.e(
-                  message = "Error code: ${error.errorCode}\nMessage:${error.localizedMessage}",
-                  throwable = error,
-                  tag = "PlayerConnection",
-                )
-
-                updatePlayerState(error)
-              }
-
               override fun onEvents(player: Player, events: Player.Events) {
                 if (
                   events.containsAny(
@@ -92,7 +81,37 @@ actual class AudioPlayerConnection(
                     Player.EVENT_PLAY_WHEN_READY_CHANGED,
                   )
                 ) {
-                  updatePlayerState(player)
+                  _playerState.value = player.toState()
+                }
+              }
+
+              override fun onPlayerError(error: PlaybackException) {
+                Napier.e(
+                  message = "Error code: ${error.errorCode}\nMessage:${error.localizedMessage}",
+                  throwable = error,
+                  tag = this@AudioPlayerConnection.javaClass.simpleName,
+                )
+
+                updatePlayerState(error)
+              }
+
+              private fun updatePlayerState(exception: PlaybackException) {
+                _playerState.update {
+                  PlayerState.Error(
+                    error =
+                      when (exception.cause) {
+                        is HttpDataSource.InvalidResponseCodeException -> {
+                          PlayerError.INVALID_HOST_ERROR
+                        }
+                        is HttpDataSourceException -> {
+                          PlayerError.CONNECTION_ERROR
+                        }
+                        else -> {
+                          PlayerError.OTHER_ERROR
+                        }
+                      },
+                    previousState = it,
+                  )
                 }
               }
             }
@@ -159,36 +178,5 @@ actual class AudioPlayerConnection(
 
   private fun withMediaBrowser(action: MediaBrowser.() -> Unit) {
     scope.launch { mediaBrowser.await().run(action) }
-  }
-
-  private fun updatePlayerState(player: Player) {
-    _playerState.update {
-      with(player) {
-        currentMediaItem?.let { item ->
-          PlayerState.Initialized(
-            currentTrack = item.toTrack(),
-            currentTrackIndex = currentMediaItemIndex,
-            tracksCount = mediaItemCount,
-            playbackState = enumPlaybackStateOf(playbackState),
-            isPlaying = isPlaying,
-            trackDurationMs = duration,
-          )
-        } ?: PlayerState.Idle
-      }
-    }
-  }
-
-  private fun updatePlayerState(exception: PlaybackException) {
-    _playerState.update {
-      PlayerState.Error(
-        error =
-          when (exception.cause) {
-            is HttpDataSource.InvalidResponseCodeException -> PlayerError.INVALID_HOST_ERROR
-            is HttpDataSourceException -> PlayerError.CONNECTION_ERROR
-            else -> PlayerError.OTHER_ERROR
-          },
-        previousState = it,
-      )
-    }
   }
 }
