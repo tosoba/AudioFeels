@@ -20,7 +20,7 @@ fun TrackResponseItem.toTrack() =
   Track(
     artworkUrl = artwork?.url,
     description = description,
-    duration = duration,
+    duration = requireNotNull(duration),
     genre = genre,
     id = requireNotNull(id),
     mood = mood,

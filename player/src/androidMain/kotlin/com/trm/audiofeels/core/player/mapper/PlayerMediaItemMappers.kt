@@ -35,18 +35,20 @@ internal fun Track.toMediaItem(host: String): MediaItem =
     )
     .build()
 
-internal fun MediaItem.toTrack(): Track =
-  Track(
-    artworkUrl = mediaMetadata.extras?.getString(ARTWORK_URL_EXTRA),
-    description = mediaMetadata.extras?.getString(DESCRIPTION_EXTRA),
-    duration = mediaMetadata.extras?.getInt(DURATION_EXTRA),
-    genre = mediaMetadata.extras?.getString(GENRE_EXTRA),
+internal fun MediaItem.toTrack(): Track {
+  val extras = requireNotNull(mediaMetadata.extras)
+  return Track(
+    artworkUrl = extras.getString(ARTWORK_URL_EXTRA),
+    description = extras.getString(DESCRIPTION_EXTRA),
+    duration = extras.getInt(DURATION_EXTRA),
+    genre = extras.getString(GENRE_EXTRA),
     id = mediaId,
-    mood = mediaMetadata.extras?.getString(MOOD_EXTRA),
-    playCount = mediaMetadata.extras?.getInt(PLAY_COUNT_EXTRA),
-    tags = mediaMetadata.extras?.getString(TAGS_EXTRA),
+    mood = extras.getString(MOOD_EXTRA),
+    playCount = extras.getInt(PLAY_COUNT_EXTRA),
+    tags = extras.getString(TAGS_EXTRA),
     title = mediaMetadata.title?.toString().orEmpty(),
   )
+}
 
 private const val ARTWORK_URL_EXTRA = "ARTWORK_URL_EXTRA"
 private const val DESCRIPTION_EXTRA = "DESCRIPTION_EXTRA"

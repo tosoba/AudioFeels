@@ -2,7 +2,6 @@ package com.trm.audiofeels.core.player
 
 import android.content.ComponentName
 import androidx.annotation.OptIn
-import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -138,11 +137,11 @@ actual class AudioPlayerConnection(
     tracks: List<Track>,
     host: String,
     autoPlay: Boolean,
-    startIndex: Int,
+    startTrackIndex: Int,
     startPositionMs: Long,
   ) {
     withMediaBrowser {
-      setMediaItems(tracks.toMediaItems(host), startIndex, startPositionMs)
+      setMediaItems(tracks.toMediaItems(host), startTrackIndex, startPositionMs)
       prepare()
       if (autoPlay) play()
       repeatMode = Player.REPEAT_MODE_OFF
@@ -172,8 +171,7 @@ actual class AudioPlayerConnection(
             tracksCount = mediaItemCount,
             playbackState = enumPlaybackStateOf(playbackState),
             isPlaying = isPlaying,
-            trackDurationMs =
-              duration.takeIf { it != C.TIME_UNSET } ?: PlayerConstants.DEFAULT_DURATION_MS,
+            trackDurationMs = duration,
           )
         } ?: PlayerState.Idle
       }

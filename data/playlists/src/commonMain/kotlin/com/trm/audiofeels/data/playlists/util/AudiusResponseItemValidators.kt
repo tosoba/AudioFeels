@@ -7,6 +7,7 @@ val TrackResponseItem.isValid: Boolean
   get() =
     id != null &&
       title != null &&
+      duration != null &&
       isAvailable == true &&
       isPremium != true &&
       isDelete != true &&

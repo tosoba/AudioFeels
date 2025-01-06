@@ -24,7 +24,7 @@ interface PlayerConnection {
     tracks: List<Track>,
     host: String,
     autoPlay: Boolean = true,
-    startIndex: Int = PlayerConstants.DEFAULT_START_INDEX,
+    startTrackIndex: Int = PlayerConstants.DEFAULT_START_TRACK_INDEX,
     startPositionMs: Long = PlayerConstants.DEFAULT_START_POSITION_MS,
   )
 
