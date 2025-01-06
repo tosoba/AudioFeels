@@ -19,7 +19,7 @@ import me.tatarka.inject.annotations.Provides
 interface NetworkCoreComponent : NetworkPlatformComponent {
   val imageLoader: ImageLoader
 
-  @Provides fun hostValidator(): HostValidator = HostValidator()
+  @Provides @ApplicationScope fun hostValidator(): HostValidator = HostValidator()
 
   @Provides
   @ApplicationScope
@@ -27,6 +27,7 @@ interface NetworkCoreComponent : NetworkPlatformComponent {
     NetworkMonitor(platformContext = platformContext)
 
   @Provides
+  @ApplicationScope
   fun newImageLoader(
     platformContext: PlatformContext,
     coilPlatformContext: coil3.PlatformContext,
@@ -54,18 +55,18 @@ interface NetworkCoreComponent : NetworkPlatformComponent {
                   message = message.orEmpty(),
                 )
               }
+
+              private fun Level.toLogLevel(): LogLevel =
+                when (this) {
+                  Level.Verbose -> LogLevel.VERBOSE
+                  Level.Debug -> LogLevel.DEBUG
+                  Level.Info -> LogLevel.INFO
+                  Level.Warn -> LogLevel.WARNING
+                  Level.Error -> LogLevel.ERROR
+                }
             }
           )
         else this
       }
       .build()
 }
-
-private fun Level.toLogLevel(): LogLevel =
-  when (this) {
-    Level.Verbose -> LogLevel.VERBOSE
-    Level.Debug -> LogLevel.DEBUG
-    Level.Info -> LogLevel.INFO
-    Level.Warn -> LogLevel.WARNING
-    Level.Error -> LogLevel.ERROR
-  }
