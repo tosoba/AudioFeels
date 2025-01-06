@@ -89,7 +89,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
 
     val playerViewModel =
       viewModel<PlayerViewModel>(factory = applicationComponent.playerViewModelFactory)
-    val playerVisible by playerViewModel.playerVisible.collectAsStateWithLifecycle()
+    val (playerVisible) = playerViewModel.viewState.collectAsStateWithLifecycle().value
 
     val scope = rememberCoroutineScope()
     val appViewState =
