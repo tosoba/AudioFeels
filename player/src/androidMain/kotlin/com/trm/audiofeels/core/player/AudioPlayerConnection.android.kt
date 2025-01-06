@@ -6,8 +6,6 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.HttpDataSource
-import androidx.media3.datasource.HttpDataSource.HttpDataSourceException
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
 import com.trm.audiofeels.core.base.di.ApplicationScope
@@ -15,8 +13,8 @@ import com.trm.audiofeels.core.base.util.AppCoroutineScope
 import com.trm.audiofeels.core.base.util.PlatformContext
 import com.trm.audiofeels.core.base.util.lazyAsync
 import com.trm.audiofeels.core.player.mapper.toMediaItem
+import com.trm.audiofeels.core.player.mapper.toPlayerError
 import com.trm.audiofeels.core.player.mapper.toState
-import com.trm.audiofeels.domain.model.PlayerError
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Track
 import com.trm.audiofeels.domain.player.PlayerConnection
@@ -73,21 +71,7 @@ actual class AudioPlayerConnection(
               )
 
               trySend(
-                PlayerState.Error(
-                    error =
-                      when (error.cause) {
-                        is HttpDataSource.InvalidResponseCodeException -> {
-                          PlayerError.INVALID_HOST_ERROR
-                        }
-                        is HttpDataSourceException -> {
-                          PlayerError.CONNECTION_ERROR
-                        }
-                        else -> {
-                          PlayerError.OTHER_ERROR
-                        }
-                      },
-                    previousState = previousState,
-                  )
+                PlayerState.Error(error = error.toPlayerError(), previousState = previousState)
                   .also { previousState = it }
               )
             }
