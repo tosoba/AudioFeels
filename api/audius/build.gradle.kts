@@ -16,7 +16,6 @@ kotlin {
     commonMain {
       dependencies {
         implementation(projects.core.base)
-        implementation(projects.core.cache)
         implementation(projects.core.network)
 
         implementation(libs.kotlin.stdlib)

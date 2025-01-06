@@ -12,8 +12,10 @@ import com.trm.audiofeels.core.base.util.PlatformContext
 import com.trm.audiofeels.core.base.util.cachePath
 import com.trm.audiofeels.core.network.host.HostValidator
 import com.trm.audiofeels.core.network.monitor.NetworkMonitor
+import com.vipulasri.kachetor.KachetorStorage
 import io.github.aakira.napier.LogLevel
 import io.github.aakira.napier.Napier
+import io.ktor.client.plugins.cache.storage.CacheStorage
 import me.tatarka.inject.annotations.Provides
 
 interface NetworkCoreComponent : NetworkPlatformComponent {
@@ -25,6 +27,14 @@ interface NetworkCoreComponent : NetworkPlatformComponent {
   @ApplicationScope
   fun networkMonitor(platformContext: PlatformContext): NetworkMonitor =
     NetworkMonitor(platformContext = platformContext)
+
+  @Provides
+  @ApplicationScope
+  fun diskCache(platformContext: PlatformContext): CacheStorage =
+    KachetorStorage(
+      directoryPath = platformContext.cachePath.resolve("api_cache").toString(),
+      maxSize = 10L * 1024L * 1024L,
+    )
 
   @Provides
   @ApplicationScope

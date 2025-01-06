@@ -14,6 +14,8 @@ kotlin {
         api(libs.coil.core)
         api(libs.coil.network)
 
+        implementation(libs.kachetor)
+
         implementation(libs.kotlin.stdlib)
         implementation(libs.kotlininject.runtime)
 

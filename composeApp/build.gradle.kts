@@ -39,7 +39,6 @@ kotlin {
       implementation(projects.api.audius)
       implementation(projects.api.hosts)
       implementation(projects.core.base)
-      implementation(projects.core.cache)
       implementation(projects.core.network)
       implementation(projects.core.preferences)
       implementation(projects.core.ui.compose)

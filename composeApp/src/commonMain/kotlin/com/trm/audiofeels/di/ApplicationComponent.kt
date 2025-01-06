@@ -5,7 +5,6 @@ import com.trm.audiofeels.api.hosts.di.HostsApiComponent
 import com.trm.audiofeels.core.base.di.ApplicationScope
 import com.trm.audiofeels.core.base.util.AppCoroutineDispatchers
 import com.trm.audiofeels.core.base.util.AppCoroutineScope
-import com.trm.audiofeels.core.cache.di.CacheCoreComponent
 import com.trm.audiofeels.core.network.di.NetworkCoreComponent
 import com.trm.audiofeels.core.player.di.PlayerComponent
 import com.trm.audiofeels.core.preferences.di.PreferencesCoreComponent
@@ -22,7 +21,6 @@ import me.tatarka.inject.annotations.Provides
 interface ApplicationComponent :
   AudiusApiComponent,
   HostsApiComponent,
-  CacheCoreComponent,
   NetworkCoreComponent,
   PreferencesCoreComponent,
   HostsDataComponent,
@@ -41,7 +39,6 @@ interface ApplicationComponent :
 
   @ApplicationScope
   @Provides
-  fun provideApplicationCoroutineScope(
-    dispatchers: AppCoroutineDispatchers
-  ): AppCoroutineScope = CoroutineScope(dispatchers.main + SupervisorJob())
+  fun provideApplicationCoroutineScope(dispatchers: AppCoroutineDispatchers): AppCoroutineScope =
+    CoroutineScope(dispatchers.main + SupervisorJob())
 }
