@@ -11,4 +11,6 @@ sealed interface PlayerState {
     val isPlaying: Boolean,
     val trackDurationMs: Long = PlayerConstants.DEFAULT_DURATION_MS,
   ) : PlayerState
+
+  data class Error(val error: PlayerError, val previousState: PlayerState) : PlayerState
 }

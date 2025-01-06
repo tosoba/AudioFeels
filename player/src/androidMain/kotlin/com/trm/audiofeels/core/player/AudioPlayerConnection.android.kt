@@ -7,17 +7,19 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.HttpDataSource
+import androidx.media3.datasource.HttpDataSource.HttpDataSourceException
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
 import com.trm.audiofeels.core.base.di.ApplicationScope
 import com.trm.audiofeels.core.base.util.AppCoroutineScope
 import com.trm.audiofeels.core.base.util.PlatformContext
 import com.trm.audiofeels.core.base.util.lazyAsync
-import com.trm.audiofeels.core.network.monitor.NetworkMonitor
 import com.trm.audiofeels.core.player.mapper.enumPlaybackStateOf
 import com.trm.audiofeels.core.player.mapper.toMediaItem
 import com.trm.audiofeels.core.player.mapper.toTrack
 import com.trm.audiofeels.domain.model.PlayerConstants
+import com.trm.audiofeels.domain.model.PlayerError
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Track
 import com.trm.audiofeels.domain.player.PlayerConnection
@@ -44,7 +46,6 @@ import me.tatarka.inject.annotations.Inject
 actual class AudioPlayerConnection(
   private val context: PlatformContext,
   private val scope: AppCoroutineScope,
-  networkMonitor: NetworkMonitor, // TODO: consider moving this to PlayerVM
 ) : PlayerConnection {
   private val _playerState = MutableStateFlow<PlayerState>(PlayerState.Idle)
   override val playerState: StateFlow<PlayerState> = _playerState.asStateFlow()
@@ -81,22 +82,7 @@ actual class AudioPlayerConnection(
                   tag = "PlayerConnection",
                 )
 
-                // TODO: handle androidx.media3.exoplayer.ExoPlaybackException: Source error
-                // Caused by:
-                // androidx.media3.datasource.HttpDataSource$InvalidResponseCodeException:
-                // Response code: 525
-                // can happen for invalid host - recover (automatically like for network errors?)
-                // by reinitializing playback (using previously saved parameters)
-                // and host fetcher instead of host retriever?
-
-                // when (val cause = error.cause) {
-                //                  is InvalidResponseCodeException -> {
-                //                    scope.launch {}
-                //                  }
-                //                }
-
-                // TODO: connect network monitor on network exceptions (see exactly which
-                // exception occurs on no internet connection)
+                updatePlayerState(error)
               }
 
               override fun onEvents(player: Player, events: Player.Events) {
@@ -107,7 +93,7 @@ actual class AudioPlayerConnection(
                     Player.EVENT_PLAY_WHEN_READY_CHANGED,
                   )
                 ) {
-                  updateMusicState(player)
+                  updatePlayerState(player)
                 }
               }
             }
@@ -176,7 +162,7 @@ actual class AudioPlayerConnection(
     scope.launch { mediaBrowser.await().run(action) }
   }
 
-  private fun updateMusicState(player: Player) {
+  private fun updatePlayerState(player: Player) {
     _playerState.update {
       with(player) {
         currentMediaItem?.let { item ->
@@ -191,6 +177,20 @@ actual class AudioPlayerConnection(
           )
         } ?: PlayerState.Idle
       }
+    }
+  }
+
+  private fun updatePlayerState(exception: PlaybackException) {
+    _playerState.update {
+      PlayerState.Error(
+        error =
+          when (exception.cause) {
+            is HttpDataSource.InvalidResponseCodeException -> PlayerError.INVALID_HOST_ERROR
+            is HttpDataSourceException -> PlayerError.CONNECTION_ERROR
+            else -> PlayerError.OTHER_ERROR
+          },
+        previousState = it,
+      )
     }
   }
 }
