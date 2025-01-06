@@ -12,7 +12,6 @@ import com.trm.audiofeels.core.base.util.PlatformContext
 import com.trm.audiofeels.core.base.util.cachePath
 import com.trm.audiofeels.core.network.host.HostValidator
 import com.trm.audiofeels.core.network.monitor.NetworkMonitor
-import com.trm.audiofeels.core.network.monitor.NetworkPlatformMonitor
 import io.github.aakira.napier.LogLevel
 import io.github.aakira.napier.Napier
 import me.tatarka.inject.annotations.Provides
@@ -25,7 +24,7 @@ interface NetworkCoreComponent : NetworkPlatformComponent {
   @Provides
   @ApplicationScope
   fun networkMonitor(platformContext: PlatformContext): NetworkMonitor =
-    NetworkPlatformMonitor(platformContext = platformContext)
+    NetworkMonitor(platformContext = platformContext)
 
   @Provides
   fun newImageLoader(

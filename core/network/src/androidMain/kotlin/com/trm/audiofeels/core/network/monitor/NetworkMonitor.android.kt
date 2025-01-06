@@ -11,9 +11,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.conflate
 
-actual class NetworkPlatformMonitor actual constructor(platformContext: PlatformContext) :
-  NetworkMonitor {
-  override val connectivity: Flow<NetworkStatus> =
+actual class NetworkMonitor actual constructor(platformContext: PlatformContext) {
+  actual val connectivity: Flow<NetworkStatus> =
     callbackFlow {
         val connectivityManager = platformContext.getSystemService<ConnectivityManager>()
         val callback =
