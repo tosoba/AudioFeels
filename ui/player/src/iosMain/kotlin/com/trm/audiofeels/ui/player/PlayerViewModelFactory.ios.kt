@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.trm.audiofeels.core.base.model.ArgumentHandle
-import com.trm.audiofeels.core.network.host.HostRetriever
 import com.trm.audiofeels.core.player.PlayerConnection
+import com.trm.audiofeels.domain.repository.HostsRepository
 import com.trm.audiofeels.domain.repository.PlaylistsRepository
 import kotlin.reflect.KClass
 import kotlin.reflect.cast
@@ -15,15 +15,15 @@ import me.tatarka.inject.annotations.Inject
 actual class PlayerViewModelFactory(
   private val playerConnection: PlayerConnection,
   private val playlistsRepository: PlaylistsRepository,
-  private val hostRetriever: HostRetriever,
+  private val hostsRepository: HostsRepository,
 ) : ViewModelProvider.Factory {
   override fun <T : ViewModel> create(modelClass: KClass<T>, extras: CreationExtras): T =
     modelClass.cast(
       PlayerViewModel(
         playlistHandle = ArgumentHandle(),
         playerConnection = playerConnection,
-        repository = playlistsRepository,
-        hostRetriever = hostRetriever,
+        playlistsRepository = playlistsRepository,
+        hostsRepository = hostsRepository,
       )
     )
 }

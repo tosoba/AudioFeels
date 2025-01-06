@@ -12,6 +12,7 @@ import com.trm.audiofeels.core.preferences.get
 import com.trm.audiofeels.core.preferences.hostPreferenceKey
 import com.trm.audiofeels.core.preferences.set
 import com.trm.audiofeels.data.hosts.exception.NoHostAvailableException
+import com.trm.audiofeels.domain.repository.HostsRepository
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import me.tatarka.inject.annotations.Inject
@@ -23,7 +24,7 @@ class AudiusHostsRepository(
   private val dataStore: DataStore<Preferences>,
   endpoints: Lazy<HostsEndpoints>,
   validator: Lazy<HostValidator>,
-) : HostRetriever, HostFetcher {
+) : HostsRepository, HostRetriever, HostFetcher {
   private val endpoints by endpoints
   private val validator by validator
 
@@ -34,8 +35,7 @@ class AudiusHostsRepository(
       ?: mutex.withLock {
         inMemoryDataSource.host
           ?: dataStore.get(hostPreferenceKey)?.also(::storeHostInMemory)
-          ?: fetchHosts()?.firstSuccessfulOrNull()?.also { storeHost(it) }
-          ?: throw NoHostAvailableException
+          ?: fetchHosts().findAndStoreFirstValidOrThrow()
       }
 
   override suspend fun fetchHost(oldHost: String): String =
@@ -44,9 +44,11 @@ class AudiusHostsRepository(
       // in case another request already fetched and updated a new working host
       // after it encountered a 404 response with the oldHost.
       inMemoryDataSource.host?.takeIf { it != oldHost }
-        ?: fetchHosts()?.filter { it != oldHost }?.firstSuccessfulOrNull()?.also { storeHost(it) }
-        ?: throw NoHostAvailableException
+        ?: fetchHosts()?.filter { it != oldHost }.findAndStoreFirstValidOrThrow()
     }
+
+  override suspend fun fetchHost(): String =
+    mutex.withLock { fetchHosts().findAndStoreFirstValidOrThrow() }
 
   private suspend fun fetchHosts(): List<String>? = endpoints.getHosts().hosts
 
@@ -60,7 +62,7 @@ class AudiusHostsRepository(
     inMemoryDataSource.host = host
   }
 
-  private suspend fun List<String>.firstSuccessfulOrNull(): String? = firstOrNull {
-    validator.isValid(it)
-  }
+  private suspend fun List<String>?.findAndStoreFirstValidOrThrow(): String =
+    this?.firstOrNull { validator.isValid(it) }?.also { storeHost(it) }
+      ?: throw NoHostAvailableException
 }

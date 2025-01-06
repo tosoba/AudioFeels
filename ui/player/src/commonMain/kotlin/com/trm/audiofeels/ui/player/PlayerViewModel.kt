@@ -7,10 +7,10 @@ import com.trm.audiofeels.core.base.model.LoadableState
 import com.trm.audiofeels.core.base.model.loadableStateFlowOf
 import com.trm.audiofeels.core.base.model.map
 import com.trm.audiofeels.core.base.util.restartableStateIn
-import com.trm.audiofeels.core.network.host.HostRetriever
 import com.trm.audiofeels.core.player.PlayerConnection
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.model.Track
+import com.trm.audiofeels.domain.repository.HostsRepository
 import com.trm.audiofeels.domain.repository.PlaylistsRepository
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -30,14 +30,14 @@ import kotlinx.coroutines.flow.stateIn
 class PlayerViewModel(
   private val playlistHandle: ArgumentHandle<Playlist>,
   private val playerConnection: PlayerConnection,
-  private val repository: PlaylistsRepository,
-  private val hostRetriever: HostRetriever,
+  private val playlistsRepository: PlaylistsRepository,
+  private val hostsRepository: HostsRepository,
 ) : ViewModel() {
   val playerVisible: StateFlow<Boolean> =
     playlistHandle.flow
       .map { it != null }
       .stateIn(
-        viewModelScope,
+        scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5.seconds),
         initialValue = false,
       )
@@ -48,8 +48,8 @@ class PlayerViewModel(
         playlist?.let {
           loadableStateFlowOf {
               coroutineScope {
-                val tracks = async { repository.getPlaylistTracks(it.id) }
-                val host = async { hostRetriever.retrieveHost() }
+                val tracks = async { playlistsRepository.getPlaylistTracks(it.id) }
+                val host = async { hostsRepository.retrieveHost() }
                 tracks.await() to host.await()
               }
             }
@@ -67,7 +67,7 @@ class PlayerViewModel(
       }
       .restartableStateIn(
         scope = viewModelScope,
-        started = SharingStarted.Eagerly,
+        started = SharingStarted.Eagerly, // TODO: change to lazily/while sub
         initialValue = LoadableState.Loading,
       )
 

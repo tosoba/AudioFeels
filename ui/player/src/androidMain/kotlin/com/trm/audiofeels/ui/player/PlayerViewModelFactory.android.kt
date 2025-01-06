@@ -5,8 +5,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.trm.audiofeels.core.base.model.ArgumentHandle
-import com.trm.audiofeels.core.network.host.HostRetriever
 import com.trm.audiofeels.core.player.PlayerConnection
+import com.trm.audiofeels.domain.repository.HostsRepository
 import com.trm.audiofeels.domain.repository.PlaylistsRepository
 import me.tatarka.inject.annotations.Inject
 
@@ -14,7 +14,7 @@ import me.tatarka.inject.annotations.Inject
 actual class PlayerViewModelFactory(
   private val playerConnection: PlayerConnection,
   private val playlistsRepository: PlaylistsRepository,
-  private val hostRetriever: HostRetriever,
+  private val hostsRepository: HostsRepository,
 ) : AbstractSavedStateViewModelFactory(), ViewModelProvider.Factory {
   @Suppress("UNCHECKED_CAST")
   override fun <T : ViewModel> create(
@@ -25,8 +25,8 @@ actual class PlayerViewModelFactory(
     PlayerViewModel(
       playlistHandle = ArgumentHandle(savedStateHandle = handle, key = PLAYER_PLAYLIST_KEY),
       playerConnection = playerConnection,
-      repository = playlistsRepository,
-      hostRetriever = hostRetriever,
+      playlistsRepository = playlistsRepository,
+      hostsRepository = hostsRepository,
     )
       as T
 }
