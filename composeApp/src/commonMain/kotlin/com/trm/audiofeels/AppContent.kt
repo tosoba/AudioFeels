@@ -58,6 +58,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import coil3.compose.setSingletonImageLoaderFactory
+import com.materialkolor.DynamicMaterialTheme
 import com.trm.audiofeels.core.ui.compose.util.NavigationContentPosition
 import com.trm.audiofeels.core.ui.compose.util.NavigationType
 import com.trm.audiofeels.core.ui.compose.util.calculateWindowSize
@@ -69,7 +70,7 @@ import com.trm.audiofeels.ui.favourites.FavouritesPage
 import com.trm.audiofeels.ui.player.PlayerPage
 import com.trm.audiofeels.ui.player.PlayerViewModel
 import com.trm.audiofeels.ui.search.SearchPage
-import dev.zwander.compose.DynamicMaterialTheme
+import dev.zwander.compose.rememberThemeInfo
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -78,7 +79,8 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
 @Preview
 fun AppContent(applicationComponent: ApplicationComponent) {
-  DynamicMaterialTheme {
+  val themeInfo = rememberThemeInfo()
+  DynamicMaterialTheme(seedColor = themeInfo.seedColor, animate = true) {
     setSingletonImageLoaderFactory { applicationComponent.imageLoader }
 
     val adaptiveInfo = currentWindowAdaptiveInfo()
