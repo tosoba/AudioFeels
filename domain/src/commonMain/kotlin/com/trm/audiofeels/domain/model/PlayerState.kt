@@ -3,7 +3,7 @@ package com.trm.audiofeels.domain.model
 sealed interface PlayerState {
   data object Idle : PlayerState
 
-  data class Initialized(
+  data class Enqueued(
     val currentTrack: Track,
     val currentTrackIndex: Int,
     val playbackState: PlaybackState,
