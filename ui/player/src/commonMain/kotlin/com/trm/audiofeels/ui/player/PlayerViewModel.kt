@@ -34,10 +34,10 @@ class PlayerViewModel(
   val viewState: RestartableStateFlow<PlayerViewState> =
     playlistHandle.flow
       .flatMapLatest { playlist ->
-        playlist?.let {
+        playlist?.id?.let { playlistId ->
           loadableStateFlowOf {
               coroutineScope {
-                val tracks = async { playlistsRepository.getPlaylistTracks(it.id) }
+                val tracks = async { playlistsRepository.getPlaylistTracks(playlistId) }
                 val host = async { hostsRepository.retrieveHost() }
                 tracks.await() to host.await()
               }
@@ -67,8 +67,16 @@ class PlayerViewModel(
               }
             }
             .onEach {
-              if (it.playerState is PlayerState.Error) {
-                // TODO: error handling
+              when (it.playerState) {
+                is PlayerState.Error -> {
+                  // TODO: error handling
+                }
+                is PlayerState.Enqueued -> {
+                  // TODO: update datastore with current playback data
+                }
+                PlayerState.Idle -> {
+                  return@onEach
+                }
               }
             }
         } ?: flowOf(initialPlayerViewState()).onEach { playerConnection.reset() }

@@ -10,7 +10,7 @@ import com.trm.audiofeels.domain.model.PlayerState
 
 internal fun Player.toState(): PlayerState =
   currentMediaItem?.let { mediaItem ->
-    PlayerState.Initialized(
+    PlayerState.Enqueued(
       currentTrack = mediaItem.toTrack(),
       currentTrackIndex = currentMediaItemIndex,
       playbackState =
