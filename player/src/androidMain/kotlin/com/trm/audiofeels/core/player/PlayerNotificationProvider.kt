@@ -2,7 +2,9 @@ package com.trm.audiofeels.core.player
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
@@ -16,6 +18,7 @@ import androidx.media3.session.MediaNotification
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaStyleNotificationHelper.MediaStyle
 import com.google.common.collect.ImmutableList
+import com.trm.audiofeels.core.base.di.MainActivityIntent
 import com.trm.audiofeels.core.base.di.ServiceContext
 import com.trm.audiofeels.core.base.di.ServiceLifecycleScope
 import com.trm.audiofeels.core.base.di.ServiceScope
@@ -28,7 +31,7 @@ import me.tatarka.inject.annotations.Inject
 @Inject
 class PlayerNotificationProvider(
   @ServiceContext private val context: Context,
-  //  private val mainActivityIntent: Intent,
+  @MainActivityIntent private val mainActivityIntent: Intent,
   @ServiceLifecycleScope private val scope: LifecycleCoroutineScope,
   private val appCoroutineDispatchers: AppCoroutineDispatchers,
 ) : MediaNotification.Provider {
@@ -50,14 +53,15 @@ class PlayerNotificationProvider(
         .setContentTitle(metadata.title)
         .setContentText(metadata.artist)
         .setStyle(MediaStyle(session))
-    //        .setContentIntent(
-    //          PendingIntent.getActivity(
-    //            context,
-    //            MAIN_ACTIVITY_REQUEST_CODE,
-    //            mainActivityIntent,
-    //            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-    //          )
-    //        )
+        .setSmallIcon(R.drawable.ic_music)
+        .setContentIntent(
+          PendingIntent.getActivity(
+            context,
+            MAIN_ACTIVITY_REQUEST_CODE,
+            mainActivityIntent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+          )
+        )
 
     //    getNotificationActions(
     //        mediaSession = session,

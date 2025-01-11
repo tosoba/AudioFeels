@@ -142,7 +142,7 @@ actual class AudioPlayerConnection(
       setMediaItems(tracks.toMediaItems(host), startTrackIndex, startPositionMs)
       prepare()
       if (autoPlay) play()
-      repeatMode = Player.REPEAT_MODE_OFF
+      repeatMode = Player.REPEAT_MODE_ALL
     }
   }
 

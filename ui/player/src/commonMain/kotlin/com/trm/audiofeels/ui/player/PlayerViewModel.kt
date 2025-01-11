@@ -116,6 +116,14 @@ class PlayerViewModel(
   fun onCancelPlaybackClick() {
     viewModelScope.launch { playbackRepository.clear() }
   }
+
+  fun onPlayClick() {
+    playerConnection.play()
+  }
+
+  fun onPauseClick() {
+    playerConnection.pause()
+  }
 }
 
 private data class PlayerInput(val tracks: List<Track>, val host: String, val trackIndex: Int)

@@ -1,13 +1,13 @@
 package com.trm.audiofeels
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.sizeIn
@@ -17,9 +17,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Pause
+import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationDrawerItem
@@ -63,6 +67,7 @@ import com.trm.audiofeels.core.ui.compose.util.NavigationContentPosition
 import com.trm.audiofeels.core.ui.compose.util.NavigationType
 import com.trm.audiofeels.core.ui.compose.util.calculateWindowSize
 import com.trm.audiofeels.di.ApplicationComponent
+import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.ui.discover.DiscoverPage
 import com.trm.audiofeels.ui.discover.DiscoverViewModelFactory
@@ -91,7 +96,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
 
     val playerViewModel =
       viewModel<PlayerViewModel>(factory = applicationComponent.playerViewModelFactory)
-    val (playerVisible) = playerViewModel.viewState.collectAsStateWithLifecycle().value
+    val (playerVisible, playerState) = playerViewModel.viewState.collectAsStateWithLifecycle().value
 
     val scope = rememberCoroutineScope()
     val appViewState =
@@ -150,10 +155,32 @@ fun AppContent(applicationComponent: ApplicationComponent) {
       ) {
         BottomSheetScaffold(
           sheetContent = {
-            Box(
-              contentAlignment = Alignment.Center,
-              modifier = Modifier.fillMaxWidth().height(100.dp),
+            Row(
+              horizontalArrangement = Arrangement.Center,
+              modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp),
             ) {
+              Text(
+                when (playerState) {
+                  is PlayerState.Enqueued -> "Enq ${playerState.currentTrackIndex}"
+                  is PlayerState.Error -> "Error"
+                  PlayerState.Idle -> "Idle"
+                }
+              )
+
+              if (playerState is PlayerState.Enqueued) {
+                Crossfade(playerState.isPlaying) {
+                  if (it) {
+                    IconButton(onClick = playerViewModel::onPauseClick) {
+                      Icon(imageVector = Icons.Outlined.Pause, contentDescription = "Pause")
+                    }
+                  } else {
+                    IconButton(onClick = playerViewModel::onPlayClick) {
+                      Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
+                    }
+                  }
+                }
+              }
+
               Button(onClick = playerViewModel::onCancelPlaybackClick) { Text("Cancel") }
             }
           },

@@ -19,3 +19,12 @@ annotation class ServiceContext
   AnnotationTarget.TYPE,
 )
 annotation class ServiceLifecycleScope
+
+@Qualifier
+@Target(
+  AnnotationTarget.PROPERTY_GETTER,
+  AnnotationTarget.FUNCTION,
+  AnnotationTarget.VALUE_PARAMETER,
+  AnnotationTarget.TYPE,
+)
+annotation class MainActivityIntent
