@@ -4,54 +4,36 @@ import com.trm.audiofeels.core.base.di.ApplicationScope
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Track
 import com.trm.audiofeels.domain.player.PlayerConnection
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import me.tatarka.inject.annotations.Inject
 
 @ApplicationScope
 @Inject
 actual class AudioPlayerConnection : PlayerConnection {
-  private val _playerStateFlow = MutableStateFlow<PlayerState>(PlayerState.Idle)
-  override val playerState: StateFlow<PlayerState> = _playerStateFlow.asStateFlow()
+  override val playerState: Flow<PlayerState> = emptyFlow()
 
-  override val currentPositionMs: StateFlow<Long> = MutableStateFlow(0L)
+  override val currentPositionMs: Flow<Long> = emptyFlow()
 
-  override fun play() {
-    TODO("Not yet implemented")
-  }
+  override fun play() {}
 
-  override fun pause() {
-    TODO("Not yet implemented")
-  }
+  override fun pause() {}
 
-  override fun playPrevious() {
-    TODO("Not yet implemented")
-  }
+  override fun playPrevious() {}
 
-  override fun playNext() {
-    TODO("Not yet implemented")
-  }
+  override fun playNext() {}
 
-  override fun skipTo(positionMs: Long) {
-    TODO("Not yet implemented")
-  }
+  override fun skipTo(positionMs: Long) {}
 
-  override fun skipTo(trackIndex: Int, positionMs: Long) {
-    TODO("Not yet implemented")
-  }
+  override fun skipTo(trackIndex: Int, positionMs: Long) {}
 
   override fun play(
     tracks: List<Track>,
     host: String,
     autoPlay: Boolean,
-    startIndex: Int,
+    startTrackIndex: Int,
     startPositionMs: Long,
-  ) {
-    TODO("Not yet implemented")
-  }
+  ) {}
 
-  override fun reset() {
-    TODO("Not yet implemented")
-  }
+  override fun reset() {}
 }

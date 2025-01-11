@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.trm.audiofeels.core.base.model.ArgumentHandle
-import com.trm.audiofeels.core.player.PlayerConnection
+import com.trm.audiofeels.domain.player.PlayerConnection
 import com.trm.audiofeels.domain.repository.HostsRepository
 import com.trm.audiofeels.domain.repository.PlaylistsRepository
 import kotlin.reflect.KClass
