@@ -47,6 +47,9 @@ actual class AudioPlayerConnection(
 
   override val playerState: Flow<PlayerState> =
     callbackFlow {
+        val browser = mediaBrowser.await()
+        trySend(browser.toState())
+
         var previousState: PlayerState = PlayerState.Idle
         val listener =
           object : Player.Listener {
@@ -75,10 +78,7 @@ actual class AudioPlayerConnection(
               )
             }
           }
-
-        val browser = mediaBrowser.await()
         browser.addListener(listener)
-        trySend(browser.toState())
 
         awaitClose { browser.removeListener(listener) }
       }
