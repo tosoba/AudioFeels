@@ -2,7 +2,6 @@ package com.trm.audiofeels.ui.player
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.trm.audiofeels.core.base.model.ArgumentHandle
 import com.trm.audiofeels.core.base.model.LoadableState
 import com.trm.audiofeels.core.base.model.loadableStateFlowOf
 import com.trm.audiofeels.core.base.model.map
@@ -10,8 +9,10 @@ import com.trm.audiofeels.core.base.util.RestartableStateFlow
 import com.trm.audiofeels.core.base.util.restartableStateIn
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Playlist
+import com.trm.audiofeels.domain.model.Track
 import com.trm.audiofeels.domain.player.PlayerConnection
 import com.trm.audiofeels.domain.repository.HostsRepository
+import com.trm.audiofeels.domain.repository.PlaybackRepository
 import com.trm.audiofeels.domain.repository.PlaylistsRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
@@ -23,29 +24,40 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.transformLatest
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class PlayerViewModel(
-  private val playlistHandle: ArgumentHandle<Playlist>,
   private val playerConnection: PlayerConnection,
   private val playlistsRepository: PlaylistsRepository,
   private val hostsRepository: HostsRepository,
+  private val playbackRepository: PlaybackRepository,
 ) : ViewModel() {
   val viewState: RestartableStateFlow<PlayerViewState> =
-    playlistHandle.flow
+    playbackRepository
+      .getPlaybackPlaylistFlow()
       .flatMapLatest { playlist ->
         playlist?.id?.let { playlistId ->
           loadableStateFlowOf {
               coroutineScope {
                 val tracks = async { playlistsRepository.getPlaylistTracks(playlistId) }
                 val host = async { hostsRepository.retrieveHost() }
-                tracks.await() to host.await()
+                val trackIndex = async { playbackRepository.getPlaybackTrackIndex() }
+                PlayerInput(
+                  tracks = tracks.await(),
+                  host = host.await(),
+                  trackIndex = trackIndex.await(),
+                )
               }
             }
             .onEach {
               if (it is LoadableState.Success) {
-                val (tracks, host) = it.value
-                playerConnection.play(tracks, "https://$host")
+                val (tracks, host, trackIndex) = it.value
+                playerConnection.play(
+                  tracks = tracks,
+                  host = "https://$host",
+                  startTrackIndex = trackIndex,
+                )
               }
             }
             .mapLatest { it.map { (tracks) -> tracks } }
@@ -72,7 +84,10 @@ class PlayerViewModel(
                   // TODO: error handling
                 }
                 is PlayerState.Enqueued -> {
-                  // TODO: update datastore with current playback data
+                  playbackRepository.updatePlaybackTrack(
+                    track = it.playerState.currentTrack,
+                    trackIndex = it.playerState.currentTrackIndex,
+                  )
                 }
                 PlayerState.Idle -> {
                   return@onEach
@@ -88,7 +103,7 @@ class PlayerViewModel(
       )
 
   fun onPlaylistClick(playlist: Playlist) {
-    playlistHandle.value = playlist
+    viewModelScope.launch { playbackRepository.updatePlaybackPlaylist(playlist) }
   }
 
   private fun initialPlayerViewState(): PlayerViewState =
@@ -99,6 +114,8 @@ class PlayerViewModel(
     )
 
   fun onCancelPlaybackClick() {
-    playlistHandle.value = null
+    viewModelScope.launch { playbackRepository.clear() }
   }
 }
+
+private data class PlayerInput(val tracks: List<Track>, val host: String, val trackIndex: Int)

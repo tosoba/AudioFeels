@@ -1,5 +1,8 @@
 package com.trm.audiofeels.domain.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Track(
   val artworkUrl: String?,
   val description: String?,

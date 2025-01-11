@@ -1,20 +1,21 @@
 package com.trm.audiofeels.core.preferences
 
 import com.trm.audiofeels.core.base.util.PlatformContext
+import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSUserDomainMask
-import platform.Foundation.NSURL
 
+@OptIn(ExperimentalForeignApi::class)
 actual val PlatformContext.dataStorePath: String
-  get() {
-    val documentDirectory: NSURL? =
-      NSFileManager.defaultManager.URLForDirectory(
-        directory = NSDocumentDirectory,
-        inDomain = NSUserDomainMask,
-        appropriateForURL = null,
-        create = false,
-        error = null,
+  get() =
+    requireNotNull(
+        NSFileManager.defaultManager.URLForDirectory(
+          directory = NSDocumentDirectory,
+          inDomain = NSUserDomainMask,
+          appropriateForURL = null,
+          create = false,
+          error = null,
+        )
       )
-    return requireNotNull(documentDirectory).path + "/$dataStoreFileName"
-  }
+      .path + "/$dataStoreFileName"
