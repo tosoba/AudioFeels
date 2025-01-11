@@ -4,12 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.trm.audiofeels.core.base.model.LoadableState
 import com.trm.audiofeels.core.base.model.loadableStateFlowOf
-import com.trm.audiofeels.core.base.model.map
 import com.trm.audiofeels.core.base.util.RestartableStateFlow
 import com.trm.audiofeels.core.base.util.restartableStateIn
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Playlist
-import com.trm.audiofeels.domain.model.Track
 import com.trm.audiofeels.domain.player.PlayerConnection
 import com.trm.audiofeels.domain.repository.HostsRepository
 import com.trm.audiofeels.domain.repository.PlaybackRepository
@@ -42,30 +40,27 @@ class PlayerViewModel(
               coroutineScope {
                 val tracks = async { playlistsRepository.getPlaylistTracks(playlistId) }
                 val host = async { hostsRepository.retrieveHost() }
-                val trackIndex = async { playbackRepository.getPlaybackTrackIndex() }
-                PlayerInput(
-                  tracks = tracks.await(),
-                  host = host.await(),
-                  trackIndex = trackIndex.await(),
-                )
+                val start = async { playbackRepository.getPlaybackStart() }
+                PlayerInput(tracks = tracks.await(), host = host.await(), start = start.await())
               }
             }
-            .onEach {
-              if (it is LoadableState.Success) {
-                val (tracks, host, trackIndex) = it.value
-                playerConnection.play(
-                  tracks = tracks,
-                  host = "https://$host",
-                  startTrackIndex = trackIndex,
-                )
+            .onEach { input ->
+              if (input is LoadableState.Success) {
+                val (tracks, host, start) = input.value
+                if (start.autoPlay) {
+                  playerConnection.play(
+                    tracks = tracks,
+                    host = "https://$host",
+                    startTrackIndex = start.trackIndex,
+                  )
+                }
               }
             }
-            .mapLatest { it.map { (tracks) -> tracks } }
-            .transformLatest { tracks ->
-              if (tracks is LoadableState.Success<*>) {
+            .transformLatest { input ->
+              if (input is LoadableState.Success) {
                 emitAll(
                   playerConnection.playerState.mapLatest {
-                    PlayerViewState(isVisible = true, playerState = it, tracksState = tracks)
+                    PlayerViewState(isVisible = true, playerState = it, playerInput = input)
                   }
                 )
               } else {
@@ -73,7 +68,7 @@ class PlayerViewModel(
                   PlayerViewState(
                     isVisible = true,
                     playerState = PlayerState.Idle,
-                    tracksState = tracks,
+                    playerInput = input,
                   )
                 )
               }
@@ -110,7 +105,7 @@ class PlayerViewModel(
     PlayerViewState(
       isVisible = false,
       playerState = PlayerState.Idle,
-      tracksState = LoadableState.Loading,
+      playerInput = LoadableState.Loading,
     )
 
   fun onCancelPlaybackClick() {
@@ -118,12 +113,26 @@ class PlayerViewModel(
   }
 
   fun onPlayClick() {
-    playerConnection.play()
+    val (_, playerState, playerInput) = viewState.value
+    when (playerState) {
+      PlayerState.Idle -> {
+        if (playerInput is LoadableState.Success) {
+          val (tracks, host, start) = playerInput.value
+          playerConnection.play(
+            tracks = tracks,
+            host = "https://$host",
+            startTrackIndex = start.trackIndex,
+          )
+        }
+      }
+      is PlayerState.Enqueued -> {
+        playerConnection.play()
+      }
+      is PlayerState.Error -> return
+    }
   }
 
   fun onPauseClick() {
     playerConnection.pause()
   }
 }
-
-private data class PlayerInput(val tracks: List<Track>, val host: String, val trackIndex: Int)

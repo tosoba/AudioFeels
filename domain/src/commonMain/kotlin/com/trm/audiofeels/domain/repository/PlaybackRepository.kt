@@ -1,5 +1,6 @@
 package com.trm.audiofeels.domain.repository
 
+import com.trm.audiofeels.domain.model.PlaybackStart
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.model.Track
 import kotlinx.coroutines.flow.Flow
@@ -9,7 +10,7 @@ interface PlaybackRepository {
 
   fun getPlaybackPlaylistFlow(): Flow<Playlist?>
 
-  suspend fun getPlaybackTrackIndex(): Int
+  suspend fun getPlaybackStart(): PlaybackStart
 
   suspend fun updatePlaybackTrack(track: Track, trackIndex: Int)
 

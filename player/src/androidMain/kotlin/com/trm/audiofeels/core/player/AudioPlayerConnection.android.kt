@@ -78,7 +78,7 @@ actual class AudioPlayerConnection(
 
         val browser = mediaBrowser.await()
         browser.addListener(listener)
-        trySend(previousState)
+        trySend(browser.toState())
 
         awaitClose { browser.removeListener(listener) }
       }

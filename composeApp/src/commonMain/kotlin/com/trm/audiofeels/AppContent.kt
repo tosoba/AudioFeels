@@ -156,7 +156,8 @@ fun AppContent(applicationComponent: ApplicationComponent) {
         BottomSheetScaffold(
           sheetContent = {
             Row(
-              horizontalArrangement = Arrangement.Center,
+              verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.SpaceAround,
               modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp),
             ) {
               Text(
@@ -167,16 +168,24 @@ fun AppContent(applicationComponent: ApplicationComponent) {
                 }
               )
 
-              if (playerState is PlayerState.Enqueued) {
-                Crossfade(playerState.isPlaying) {
-                  if (it) {
-                    IconButton(onClick = playerViewModel::onPauseClick) {
-                      Icon(imageVector = Icons.Outlined.Pause, contentDescription = "Pause")
+              when (playerState) {
+                is PlayerState.Enqueued -> {
+                  Crossfade(playerState.isPlaying) {
+                    if (it) {
+                      IconButton(onClick = playerViewModel::onPauseClick) {
+                        Icon(imageVector = Icons.Outlined.Pause, contentDescription = "Pause")
+                      }
+                    } else {
+                      IconButton(onClick = playerViewModel::onPlayClick) {
+                        Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
+                      }
                     }
-                  } else {
-                    IconButton(onClick = playerViewModel::onPlayClick) {
-                      Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
-                    }
+                  }
+                }
+                is PlayerState.Error -> {}
+                PlayerState.Idle -> {
+                  IconButton(onClick = playerViewModel::onPlayClick) {
+                    Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
                   }
                 }
               }
