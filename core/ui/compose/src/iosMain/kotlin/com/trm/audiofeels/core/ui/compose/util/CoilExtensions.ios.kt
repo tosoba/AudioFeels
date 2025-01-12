@@ -5,4 +5,4 @@ import androidx.compose.ui.graphics.asComposeImageBitmap
 import coil3.Image
 import coil3.toBitmap
 
-actual fun Image.toComposeImageBitmap(): ImageBitmap = toBitmap().asComposeImageBitmap()
+internal actual fun Image.toComposeImageBitmap(): ImageBitmap = toBitmap().asComposeImageBitmap()

@@ -4,12 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import coil3.ImageLoader
 import coil3.PlatformContext
-import coil3.request.ImageRequest
 import com.trm.audiofeels.core.base.model.LoadableState
 import com.trm.audiofeels.core.base.model.loadableStateFlowOf
 import com.trm.audiofeels.core.base.util.RestartableStateFlow
 import com.trm.audiofeels.core.base.util.restartableStateIn
-import com.trm.audiofeels.core.ui.compose.util.toComposeImageBitmap
+import com.trm.audiofeels.core.ui.compose.util.loadImageBitmapOrNull
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.player.PlayerConnection
@@ -17,7 +16,6 @@ import com.trm.audiofeels.domain.repository.HostsRepository
 import com.trm.audiofeels.domain.repository.PlaybackRepository
 import com.trm.audiofeels.domain.repository.PlaylistsRepository
 import io.github.aakira.napier.Napier
-import kotlin.coroutines.resume
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -30,7 +28,6 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class PlayerViewModel(
@@ -81,20 +78,7 @@ class PlayerViewModel(
                           when (playerState) {
                             is PlayerState.Enqueued -> {
                               playerState.currentTrack.artworkUrl?.let { artworkUrl ->
-                                // TODO: extension for that (ImageExtensions - CoilExtensions)
-                                suspendCancellableCoroutine { continuation ->
-                                  imageLoader.enqueue(
-                                    ImageRequest.Builder(platformContext)
-                                      .data(artworkUrl)
-                                      .target(
-                                        onSuccess = {
-                                          continuation.resume(it.toComposeImageBitmap())
-                                        },
-                                        onError = { continuation.resume(null) },
-                                      )
-                                      .build()
-                                  )
-                                }
+                                imageLoader.loadImageBitmapOrNull(artworkUrl, platformContext)
                               }
                             }
                             PlayerState.Idle,
