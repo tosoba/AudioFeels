@@ -50,9 +50,10 @@ actual class AudioPlayerConnection(
         val browser = mediaBrowser.await()
         trySend(browser.toState())
 
-        var previousState: PlayerState = PlayerState.Idle
         val listener =
           object : Player.Listener {
+            private var previousState: PlayerState = PlayerState.Idle
+
             override fun onEvents(player: Player, events: Player.Events) {
               if (
                 events.containsAny(
@@ -61,7 +62,12 @@ actual class AudioPlayerConnection(
                   Player.EVENT_PLAY_WHEN_READY_CHANGED,
                 )
               ) {
-                trySend(player.toState().also { previousState = it })
+                val state = player.toState()
+                Napier.d(
+                  message = state.toString(),
+                  tag = this@AudioPlayerConnection.javaClass.simpleName,
+                )
+                trySend(state.also { previousState = it })
               }
             }
 
