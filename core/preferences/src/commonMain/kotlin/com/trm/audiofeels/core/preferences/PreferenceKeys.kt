@@ -7,6 +7,5 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 val hostPreferenceKey = stringPreferencesKey("host")
 
 val playbackPlaylistPreferenceKey = stringPreferencesKey("playbackPlaylist")
-val playbackTrackPreferenceKey = stringPreferencesKey("playbackTrack")
 val playbackTrackIndexPreferenceKey = intPreferencesKey("playbackTrackIndex")
 val playbackAutoPlayPreferenceKey = booleanPreferencesKey("playbackAutoPlay")

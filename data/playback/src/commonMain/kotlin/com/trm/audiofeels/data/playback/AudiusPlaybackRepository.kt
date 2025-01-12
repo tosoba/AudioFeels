@@ -8,10 +8,8 @@ import com.trm.audiofeels.core.preferences.getFlow
 import com.trm.audiofeels.core.preferences.playbackAutoPlayPreferenceKey
 import com.trm.audiofeels.core.preferences.playbackPlaylistPreferenceKey
 import com.trm.audiofeels.core.preferences.playbackTrackIndexPreferenceKey
-import com.trm.audiofeels.core.preferences.playbackTrackPreferenceKey
 import com.trm.audiofeels.domain.model.PlaybackStart
 import com.trm.audiofeels.domain.model.Playlist
-import com.trm.audiofeels.domain.model.Track
 import com.trm.audiofeels.domain.repository.PlaybackRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
@@ -46,23 +44,16 @@ class AudiusPlaybackRepository(private val dataStore: DataStore<Preferences>) : 
       }
       .firstOrNull() ?: PlaybackStart()
 
-  override suspend fun updatePlaybackTrack(track: Track, trackIndex: Int) {
+  override suspend fun updatePlaybackTrackIndex(trackIndex: Int) {
     dataStore.edit { preferences ->
-      preferences[playbackTrackPreferenceKey] = Json.encodeToString(Track.serializer(), track)
       preferences[playbackTrackIndexPreferenceKey] = trackIndex
       preferences[playbackAutoPlayPreferenceKey] = false
     }
   }
 
-  override fun getPlaybackTrackFlow(): Flow<Track?> =
-    dataStore.getFlow(playbackTrackPreferenceKey).map { trackJson ->
-      trackJson?.let { Json.decodeFromString(Track.serializer(), it) }
-    }
-
   override suspend fun clear() {
     dataStore.edit { preferences ->
       preferences -= playbackPlaylistPreferenceKey
-      preferences -= playbackTrackPreferenceKey
       preferences[playbackTrackIndexPreferenceKey] = 0
       preferences[playbackAutoPlayPreferenceKey] = false
     }

@@ -22,10 +22,10 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
@@ -69,26 +69,34 @@ class PlayerViewModel(
               when (input) {
                 is LoadableState.Success -> {
                   emitAll(
-                    playerConnection.playerState.combine(
-                      playbackRepository.getPlaybackTrackFlow()
-                    ) { playerState, track ->
+                    playerConnection.playerState.mapLatest { playerState ->
                       PlayerViewState(
                         isVisible = true,
                         playerState = playerState,
                         playerInput = input,
                         trackImageBitmap =
-                          track?.artworkUrl?.let { artworkUrl
-                            -> // TODO: extension for that (ImageExtensions - CoilExtensions)
-                            suspendCancellableCoroutine { continuation ->
-                              imageLoader.enqueue(
-                                ImageRequest.Builder(platformContext)
-                                  .data(artworkUrl)
-                                  .target(
-                                    onSuccess = { continuation.resume(it.toComposeImageBitmap()) },
-                                    onError = { continuation.resume(null) },
+                          when (playerState) {
+                            is PlayerState.Enqueued -> {
+                              playerState.currentTrack.artworkUrl?.let { artworkUrl ->
+                                // TODO: extension for that (ImageExtensions - CoilExtensions)
+                                suspendCancellableCoroutine { continuation ->
+                                  imageLoader.enqueue(
+                                    ImageRequest.Builder(platformContext)
+                                      .data(artworkUrl)
+                                      .target(
+                                        onSuccess = {
+                                          continuation.resume(it.toComposeImageBitmap())
+                                        },
+                                        onError = { continuation.resume(null) },
+                                      )
+                                      .build()
                                   )
-                                  .build()
-                              )
+                                }
+                              }
+                            }
+                            PlayerState.Idle,
+                            is PlayerState.Error -> {
+                              null
                             }
                           },
                       )
@@ -115,10 +123,7 @@ class PlayerViewModel(
                   return@onEach
                 }
                 is PlayerState.Enqueued -> {
-                  playbackRepository.updatePlaybackTrack(
-                    track = it.playerState.currentTrack,
-                    trackIndex = it.playerState.currentTrackIndex,
-                  )
+                  playbackRepository.updatePlaybackTrackIndex(it.playerState.currentTrackIndex)
                 }
                 is PlayerState.Error -> {
                   // TODO: error handling
