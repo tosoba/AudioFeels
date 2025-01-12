@@ -137,7 +137,7 @@ actual class AudioPlayerConnection(
     }
   }
 
-  override fun play(
+  override fun enqueue(
     tracks: List<Track>,
     host: String,
     autoPlay: Boolean,

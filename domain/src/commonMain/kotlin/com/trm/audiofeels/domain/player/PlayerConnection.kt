@@ -22,7 +22,7 @@ interface PlayerConnection {
 
   fun skipTo(trackIndex: Int, positionMs: Long = 0L)
 
-  fun play(
+  fun enqueue(
     tracks: List<Track>,
     host: String,
     autoPlay: Boolean = true,

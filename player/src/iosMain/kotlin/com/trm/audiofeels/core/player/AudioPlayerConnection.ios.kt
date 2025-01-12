@@ -27,7 +27,7 @@ actual class AudioPlayerConnection : PlayerConnection {
 
   override fun skipTo(trackIndex: Int, positionMs: Long) {}
 
-  override fun play(
+  override fun enqueue(
     tracks: List<Track>,
     host: String,
     autoPlay: Boolean,

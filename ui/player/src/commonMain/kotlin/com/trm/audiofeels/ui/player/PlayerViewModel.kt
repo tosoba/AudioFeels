@@ -53,15 +53,8 @@ class PlayerViewModel(
               }
             }
             .onEach { input ->
-              if (input !is LoadableState.Success) return@onEach
-
-              val (tracks, host, start) = input.value
-              if (start.autoPlay) {
-                playerConnection.play(
-                  tracks = tracks,
-                  host = "https://$host",
-                  startTrackIndex = start.trackIndex,
-                )
+              if (input is LoadableState.Success && input.value.start.autoPlay) {
+                enqueue(input.value)
               }
             }
             .transformLatest { input ->
@@ -151,13 +144,9 @@ class PlayerViewModel(
     val (_, _, playerState, playerInput) = viewState.value
     when (playerState) {
       PlayerState.Idle -> {
-        if (playerInput !is LoadableState.Success) return
-        val (tracks, host, start) = playerInput.value
-        playerConnection.play(
-          tracks = tracks,
-          host = "https://$host",
-          startTrackIndex = start.trackIndex,
-        )
+        if (playerInput is LoadableState.Success) {
+          enqueue(playerInput.value)
+        }
       }
       is PlayerState.Enqueued -> {
         playerConnection.play()
@@ -166,6 +155,15 @@ class PlayerViewModel(
         return
       }
     }
+  }
+
+  private fun enqueue(input: PlayerInput) {
+    val (tracks, host, start) = input
+    playerConnection.enqueue(
+      tracks = tracks,
+      host = "https://$host",
+      startTrackIndex = start.trackIndex,
+    )
   }
 
   fun onPauseClick() {
