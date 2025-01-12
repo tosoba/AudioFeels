@@ -22,6 +22,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -43,6 +44,7 @@ class PlayerViewModel(
   val viewState: RestartableStateFlow<PlayerViewState> =
     playbackRepository
       .getPlaybackPlaylistFlow()
+      .distinctUntilChangedBy { it?.id }
       .flatMapLatest { playlist ->
         playlist?.id?.let { playlistId ->
           loadableStateFlowOf {
@@ -72,6 +74,7 @@ class PlayerViewModel(
                     playerConnection.playerState.mapLatest { playerState ->
                       PlayerViewState(
                         isVisible = true,
+                        playlist = playlist,
                         playerState = playerState,
                         playerInput = input,
                         trackImageBitmap =
@@ -108,6 +111,7 @@ class PlayerViewModel(
                   emit(
                     PlayerViewState(
                       isVisible = true,
+                      playlist = playlist,
                       playerState = PlayerState.Idle,
                       playerInput = input,
                       trackImageBitmap = null,
@@ -139,12 +143,17 @@ class PlayerViewModel(
       )
 
   fun onPlaylistClick(playlist: Playlist) {
-    viewModelScope.launch { playbackRepository.updatePlaybackPlaylist(playlist) }
+    if (viewState.value.playlist != playlist) {
+      viewModelScope.launch { playbackRepository.updatePlaybackPlaylist(playlist) }
+    } else {
+      onPlayClick()
+    }
   }
 
   private fun initialPlayerViewState(): PlayerViewState =
     PlayerViewState(
       isVisible = false,
+      playlist = null,
       playerState = PlayerState.Idle,
       playerInput = LoadableState.Loading,
       trackImageBitmap = null,
@@ -155,7 +164,7 @@ class PlayerViewModel(
   }
 
   fun onPlayClick() {
-    val (_, playerState, playerInput) = viewState.value
+    val (_, _, playerState, playerInput) = viewState.value
     when (playerState) {
       PlayerState.Idle -> {
         if (playerInput !is LoadableState.Success) return
@@ -169,7 +178,9 @@ class PlayerViewModel(
       is PlayerState.Enqueued -> {
         playerConnection.play()
       }
-      is PlayerState.Error -> return
+      is PlayerState.Error -> {
+        return
+      }
     }
   }
 

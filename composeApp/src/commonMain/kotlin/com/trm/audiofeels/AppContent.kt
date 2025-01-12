@@ -87,9 +87,11 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
 @Preview
 fun AppContent(applicationComponent: ApplicationComponent) {
+  setSingletonImageLoaderFactory { applicationComponent.imageLoader }
+
   val playerViewModel =
     viewModel<PlayerViewModel>(factory = applicationComponent.playerViewModelFactory)
-  val (playerVisible, playerState, _, trackImageBitmap) =
+  val (playerVisible, _, playerState, _, trackImageBitmap) =
     playerViewModel.viewState.collectAsStateWithLifecycle().value
 
   val fallbackSeedColor = rememberThemeInfo().seedColor
@@ -97,8 +99,6 @@ fun AppContent(applicationComponent: ApplicationComponent) {
     trackImageBitmap?.let { rememberThemeColor(it, fallbackSeedColor) } ?: fallbackSeedColor
 
   DynamicMaterialTheme(seedColor = seedColor, animate = true) {
-    setSingletonImageLoaderFactory { applicationComponent.imageLoader }
-
     val adaptiveInfo = currentWindowAdaptiveInfo()
     val navigationType =
       NavigationType(adaptiveInfo = adaptiveInfo, windowSize = calculateWindowSize())
