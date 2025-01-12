@@ -14,5 +14,7 @@ interface PlaybackRepository {
 
   suspend fun updatePlaybackTrack(track: Track, trackIndex: Int)
 
+  fun getPlaybackTrackFlow(): Flow<Track?>
+
   suspend fun clear()
 }

@@ -20,6 +20,8 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.SkipNext
+import androidx.compose.material.icons.outlined.SkipPrevious
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -63,6 +65,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import coil3.compose.setSingletonImageLoaderFactory
 import com.materialkolor.DynamicMaterialTheme
+import com.materialkolor.ktx.rememberThemeColor
 import com.trm.audiofeels.core.ui.compose.util.NavigationContentPosition
 import com.trm.audiofeels.core.ui.compose.util.NavigationType
 import com.trm.audiofeels.core.ui.compose.util.calculateWindowSize
@@ -84,8 +87,16 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
 @Preview
 fun AppContent(applicationComponent: ApplicationComponent) {
-  val themeInfo = rememberThemeInfo()
-  DynamicMaterialTheme(seedColor = themeInfo.seedColor, animate = true) {
+  val playerViewModel =
+    viewModel<PlayerViewModel>(factory = applicationComponent.playerViewModelFactory)
+  val (playerVisible, playerState, _, trackImageBitmap) =
+    playerViewModel.viewState.collectAsStateWithLifecycle().value
+
+  val fallbackSeedColor = rememberThemeInfo().seedColor
+  val seedColor =
+    trackImageBitmap?.let { rememberThemeColor(it, fallbackSeedColor) } ?: fallbackSeedColor
+
+  DynamicMaterialTheme(seedColor = seedColor, animate = true) {
     setSingletonImageLoaderFactory { applicationComponent.imageLoader }
 
     val adaptiveInfo = currentWindowAdaptiveInfo()
@@ -93,10 +104,6 @@ fun AppContent(applicationComponent: ApplicationComponent) {
       NavigationType(adaptiveInfo = adaptiveInfo, windowSize = calculateWindowSize())
     val navigationContentPosition =
       NavigationContentPosition(adaptiveInfo.windowSizeClass.windowHeightSizeClass)
-
-    val playerViewModel =
-      viewModel<PlayerViewModel>(factory = applicationComponent.playerViewModelFactory)
-    val (playerVisible, playerState) = playerViewModel.viewState.collectAsStateWithLifecycle().value
 
     val scope = rememberCoroutineScope()
     val appViewState =
@@ -170,6 +177,10 @@ fun AppContent(applicationComponent: ApplicationComponent) {
 
               when (playerState) {
                 is PlayerState.Enqueued -> {
+                  IconButton(onClick = playerViewModel::onPreviousClick) {
+                    Icon(imageVector = Icons.Outlined.SkipPrevious, contentDescription = "Previous")
+                  }
+
                   Crossfade(playerState.isPlaying) {
                     if (it) {
                       IconButton(onClick = playerViewModel::onPauseClick) {
@@ -180,6 +191,10 @@ fun AppContent(applicationComponent: ApplicationComponent) {
                         Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
                       }
                     }
+                  }
+
+                  IconButton(onClick = playerViewModel::onNextClick) {
+                    Icon(imageVector = Icons.Outlined.SkipNext, contentDescription = "Next")
                   }
                 }
                 is PlayerState.Error -> {}

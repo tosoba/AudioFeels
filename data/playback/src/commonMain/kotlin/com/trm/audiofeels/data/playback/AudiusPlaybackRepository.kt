@@ -54,6 +54,11 @@ class AudiusPlaybackRepository(private val dataStore: DataStore<Preferences>) : 
     }
   }
 
+  override fun getPlaybackTrackFlow(): Flow<Track?> =
+    dataStore.getFlow(playbackTrackPreferenceKey).map { trackJson ->
+      trackJson?.let { Json.decodeFromString(Track.serializer(), it) }
+    }
+
   override suspend fun clear() {
     dataStore.edit { preferences ->
       preferences -= playbackPlaylistPreferenceKey
