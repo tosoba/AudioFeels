@@ -24,8 +24,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -60,19 +60,22 @@ class PlayerViewModel(
               when (input) {
                 is LoadableState.Success -> {
                   playerConnection.playerState
-                    .mapLatest { playerState ->
-                      playerState to
-                        when (playerState) {
-                          is PlayerState.Enqueued -> {
-                            playerState.currentTrack.artworkUrl?.let { artworkUrl ->
-                              imageLoader.loadImageBitmapOrNull(artworkUrl, platformContext)
-                            }
-                          }
-                          PlayerState.Idle,
-                          is PlayerState.Error -> {
-                            null
+                    .transformLatest { playerState ->
+                      when (playerState) {
+                        is PlayerState.Enqueued -> {
+                          emit(playerState to null)
+                          playerState.currentTrack.artworkUrl?.let { artworkUrl ->
+                            emit(
+                              playerState to
+                                imageLoader.loadImageBitmapOrNull(artworkUrl, platformContext)
+                            )
                           }
                         }
+                        PlayerState.Idle,
+                        is PlayerState.Error -> {
+                          emit(playerState to null)
+                        }
+                      }
                     }
                     .combine(playerConnection.currentTrackPositionMs) {
                       (playerState, trackImageBitmap),
