@@ -13,7 +13,7 @@ import me.tatarka.inject.annotations.Inject
 actual class AudioPlayerConnection : PlayerConnection {
   override val playerState: Flow<PlayerState> = emptyFlow()
 
-  override val currentPositionMs: Flow<Long> = emptyFlow()
+  override val currentTrackPositionMs: Flow<Long> = emptyFlow()
 
   override fun play() {}
 

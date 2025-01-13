@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
 interface PlayerConnection {
   val playerState: Flow<PlayerState>
 
-  val currentPositionMs: Flow<Long>
+  val currentTrackPositionMs: Flow<Long>
 
   fun play()
 

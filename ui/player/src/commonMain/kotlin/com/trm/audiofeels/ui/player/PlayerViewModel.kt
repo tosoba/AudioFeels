@@ -20,13 +20,12 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChangedBy
-import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -57,39 +56,45 @@ class PlayerViewModel(
                 enqueue(input.value)
               }
             }
-            .transformLatest { input ->
+            .flatMapLatest { input ->
               when (input) {
                 is LoadableState.Success -> {
-                  emitAll(
-                    playerConnection.playerState.mapLatest { playerState ->
+                  playerConnection.playerState
+                    .mapLatest { playerState ->
+                      playerState to
+                        when (playerState) {
+                          is PlayerState.Enqueued -> {
+                            playerState.currentTrack.artworkUrl?.let { artworkUrl ->
+                              imageLoader.loadImageBitmapOrNull(artworkUrl, platformContext)
+                            }
+                          }
+                          PlayerState.Idle,
+                          is PlayerState.Error -> {
+                            null
+                          }
+                        }
+                    }
+                    .combine(playerConnection.currentTrackPositionMs) {
+                      (playerState, trackImageBitmap),
+                      currentTrackPositionMs ->
                       PlayerViewState(
                         isVisible = true,
                         playlist = playlist,
                         playerState = playerState,
+                        currentTrackPositionSeconds = currentTrackPositionMs / 1000L,
                         playerInput = input,
-                        trackImageBitmap =
-                          when (playerState) {
-                            is PlayerState.Enqueued -> {
-                              playerState.currentTrack.artworkUrl?.let { artworkUrl ->
-                                imageLoader.loadImageBitmapOrNull(artworkUrl, platformContext)
-                              }
-                            }
-                            PlayerState.Idle,
-                            is PlayerState.Error -> {
-                              null
-                            }
-                          },
+                        trackImageBitmap = trackImageBitmap,
                       )
                     }
-                  )
                 }
                 LoadableState.Loading,
                 is LoadableState.Error -> {
-                  emit(
+                  flowOf(
                     PlayerViewState(
                       isVisible = true,
                       playlist = playlist,
                       playerState = PlayerState.Idle,
+                      currentTrackPositionSeconds = 0L,
                       playerInput = input,
                       trackImageBitmap = null,
                     )
@@ -132,6 +137,7 @@ class PlayerViewModel(
       isVisible = false,
       playlist = null,
       playerState = PlayerState.Idle,
+      currentTrackPositionSeconds = 0L,
       playerInput = LoadableState.Loading,
       trackImageBitmap = null,
     )
@@ -141,7 +147,7 @@ class PlayerViewModel(
   }
 
   fun onPlayClick() {
-    val (_, _, playerState, playerInput) = viewState.value
+    val (_, _, playerState, _, playerInput) = viewState.value
     when (playerState) {
       PlayerState.Idle -> {
         if (playerInput is LoadableState.Success) {
