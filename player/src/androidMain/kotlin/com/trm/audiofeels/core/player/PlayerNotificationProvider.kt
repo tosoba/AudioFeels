@@ -17,13 +17,18 @@ import androidx.media3.session.CommandButton
 import androidx.media3.session.MediaNotification
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaStyleNotificationHelper.MediaStyle
+import coil3.ImageLoader
+import coil3.PlatformContext
+import coil3.toBitmap
 import com.google.common.collect.ImmutableList
 import com.trm.audiofeels.core.base.di.MainActivityIntent
 import com.trm.audiofeels.core.base.di.ServiceContext
 import com.trm.audiofeels.core.base.di.ServiceLifecycleScope
 import com.trm.audiofeels.core.base.di.ServiceScope
 import com.trm.audiofeels.core.base.util.AppCoroutineDispatchers
-import kotlinx.coroutines.*
+import com.trm.audiofeels.core.network.image.loadImageOrNull
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.tatarka.inject.annotations.Inject
 
 @UnstableApi
@@ -34,6 +39,8 @@ class PlayerNotificationProvider(
   @MainActivityIntent private val mainActivityIntent: Intent,
   @ServiceLifecycleScope private val scope: LifecycleCoroutineScope,
   private val appCoroutineDispatchers: AppCoroutineDispatchers,
+  private val imageLoader: ImageLoader,
+  private val platformContext: PlatformContext,
 ) : MediaNotification.Provider {
   private val notificationManager = requireNotNull(context.getSystemService<NotificationManager>())
 
@@ -70,14 +77,14 @@ class PlayerNotificationProvider(
     //      )
     //      .forEach(builder::addAction)
 
-    //    setupArtwork(
-    //      uri = metadata.artworkUri,
-    //      setLargeIcon = builder::setLargeIcon,
-    //      updateNotification = {
-    //        val notification = MediaNotification(NOTIFICATION_ID, builder.build())
-    //        onNotificationChangedCallback.onNotificationChanged(notification)
-    //      },
-    //    )
+    metadata.artworkUri?.let {
+      scope.launch {
+        builder.setLargeIcon(loadBitmap(it))
+        onNotificationChangedCallback.onNotificationChanged(
+          MediaNotification(NOTIFICATION_ID, builder.build())
+        )
+      }
+    }
 
     return MediaNotification(NOTIFICATION_ID, builder.build())
   }
@@ -113,21 +120,11 @@ class PlayerNotificationProvider(
   //      PlayerActions.getPlayNextAction(context, mediaSession, actionFactory),
   //    )
 
-  private fun setupArtwork(
-    uri: Uri?,
-    setLargeIcon: (Bitmap?) -> Unit,
-    updateNotification: () -> Unit,
-  ) {
-    scope.launch {
-      //      val bitmap = loadArtworkBitmap(uri)
-      //      setLargeIcon(bitmap)
-      updateNotification()
-    }
-  }
-
-  //  private suspend fun loadArtworkBitmap(uri: Uri?): Bitmap? =
-  //    if (uri == null) null else withContext(appCoroutineDispatchers.io) { context.loadBitmap(uri)
-  // }
+  private suspend fun loadBitmap(uri: Uri): Bitmap? =
+    withContext(appCoroutineDispatchers.io) {
+        imageLoader.loadImageOrNull(platformContext, uri.toString())
+      }
+      ?.toBitmap()
 
   companion object {
     private const val NOTIFICATION_ID = 1001

@@ -16,6 +16,7 @@ kotlin {
     commonMain {
       dependencies {
         implementation(projects.core.base)
+        implementation(projects.core.network)
 
         api(compose.components.resources)
         api(compose.components.uiToolingPreview)
