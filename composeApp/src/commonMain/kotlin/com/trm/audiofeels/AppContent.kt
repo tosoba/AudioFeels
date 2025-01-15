@@ -91,7 +91,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
 
   val playerViewModel =
     viewModel<PlayerViewModel>(factory = applicationComponent.playerViewModelFactory)
-  val (playerVisible, _, playerState, currentTrackPositionSeconds, _, trackImageBitmap) =
+  val (playerVisible, _, playerState, currentTrackProgress, _, trackImageBitmap) =
     playerViewModel.viewState.collectAsStateWithLifecycle().value
 
   val fallbackSeedColor = rememberThemeInfo().seedColor
@@ -170,7 +170,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
               Text(
                 when (playerState) {
                   is PlayerState.Enqueued -> {
-                    "Enq ${playerState.currentTrackIndex} - $currentTrackPositionSeconds"
+                    "Enq ${playerState.currentTrackIndex} - $currentTrackProgress"
                   }
                   is PlayerState.Error -> {
                     "Error"

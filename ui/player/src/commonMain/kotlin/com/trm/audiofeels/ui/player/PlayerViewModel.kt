@@ -8,6 +8,7 @@ import com.trm.audiofeels.core.base.model.LoadableState
 import com.trm.audiofeels.core.base.model.loadableStateFlowOf
 import com.trm.audiofeels.core.base.util.RestartableStateFlow
 import com.trm.audiofeels.core.base.util.restartableStateIn
+import com.trm.audiofeels.core.base.util.roundTo
 import com.trm.audiofeels.core.ui.compose.util.loadImageBitmapOrNull
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Playlist
@@ -84,7 +85,18 @@ class PlayerViewModel(
                         isVisible = true,
                         playlist = playlist,
                         playerState = playerState,
-                        currentTrackPositionSeconds = currentTrackPositionMs / 1000L,
+                        currentTrackProgress =
+                          when (playerState) {
+                            is PlayerState.Enqueued -> {
+                              currentTrackPositionMs.toDouble() /
+                                1000.0 /
+                                playerState.currentTrack.duration.toDouble()
+                            }
+                            is PlayerState.Error,
+                            PlayerState.Idle -> {
+                              0.0
+                            }
+                          }.roundTo(3),
                         playerInput = input,
                         trackImageBitmap = trackImageBitmap,
                       )
@@ -97,7 +109,7 @@ class PlayerViewModel(
                       isVisible = true,
                       playlist = playlist,
                       playerState = PlayerState.Idle,
-                      currentTrackPositionSeconds = 0L,
+                      currentTrackProgress = 0.0,
                       playerInput = input,
                       trackImageBitmap = null,
                     )
@@ -140,7 +152,7 @@ class PlayerViewModel(
       isVisible = false,
       playlist = null,
       playerState = PlayerState.Idle,
-      currentTrackPositionSeconds = 0L,
+      currentTrackProgress = 0.0,
       playerInput = LoadableState.Loading,
       trackImageBitmap = null,
     )

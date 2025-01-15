@@ -9,7 +9,7 @@ data class PlayerViewState(
   val isVisible: Boolean,
   val playlist: Playlist?,
   val playerState: PlayerState,
-  val currentTrackPositionSeconds: Long,
+  val currentTrackProgress: Double,
   val playerInput: LoadableState<PlayerInput>,
   val trackImageBitmap: ImageBitmap?,
 )
