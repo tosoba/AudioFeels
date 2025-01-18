@@ -11,7 +11,7 @@ interface PlaybackRepository {
 
   suspend fun getPlaybackStart(): PlaybackStart
 
-  suspend fun updatePlaybackTrackIndex(trackIndex: Int)
+  suspend fun updatePlaybackTrack(trackIndex: Int, trackPositionMs: Long)
 
   suspend fun clear()
 }

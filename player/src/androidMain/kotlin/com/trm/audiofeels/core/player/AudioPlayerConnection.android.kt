@@ -41,7 +41,7 @@ actual class AudioPlayerConnection(
   override val currentTrackPositionMs: Flow<Long> = flow {
     while (currentCoroutineContext().isActive) {
       emit(mediaBrowser.await().currentPosition)
-      delay(100L)
+      delay(1_000L)
     }
   }
 

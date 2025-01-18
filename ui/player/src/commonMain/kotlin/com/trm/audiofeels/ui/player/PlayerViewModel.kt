@@ -17,6 +17,7 @@ import com.trm.audiofeels.domain.repository.HostsRepository
 import com.trm.audiofeels.domain.repository.PlaybackRepository
 import com.trm.audiofeels.domain.repository.PlaylistsRepository
 import io.github.aakira.napier.Napier
+import kotlin.math.roundToLong
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -90,8 +91,7 @@ class PlayerViewModel(
                           when (playerState) {
                             is PlayerState.Enqueued -> {
                               currentTrackPositionMs.toDouble() /
-                                1000.0 /
-                                playerState.currentTrack.duration.toDouble()
+                                playerState.trackDurationMs.toDouble()
                             }
                             PlayerState.Idle,
                             is PlayerState.Error -> {
@@ -125,7 +125,12 @@ class PlayerViewModel(
                   return@onEach
                 }
                 is PlayerState.Enqueued -> {
-                  playbackRepository.updatePlaybackTrackIndex(it.playerState.currentTrackIndex)
+                  playbackRepository.updatePlaybackTrack(
+                    trackIndex = it.playerState.currentTrackIndex,
+                    trackPositionMs =
+                      (it.currentTrackProgress * it.playerState.trackDurationMs.toDouble())
+                        .roundToLong(),
+                  )
                 }
                 is PlayerState.Error -> {
                   // TODO: error handling
@@ -185,6 +190,7 @@ class PlayerViewModel(
       tracks = tracks,
       host = "https://$host",
       startTrackIndex = start.trackIndex,
+      startPositionMs = start.trackPositionMs,
     )
   }
 

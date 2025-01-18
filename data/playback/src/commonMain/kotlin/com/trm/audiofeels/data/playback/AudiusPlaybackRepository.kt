@@ -8,6 +8,7 @@ import com.trm.audiofeels.core.preferences.getFlow
 import com.trm.audiofeels.core.preferences.playbackAutoPlayPreferenceKey
 import com.trm.audiofeels.core.preferences.playbackPlaylistPreferenceKey
 import com.trm.audiofeels.core.preferences.playbackTrackIndexPreferenceKey
+import com.trm.audiofeels.core.preferences.playbackTrackPositionMsKey
 import com.trm.audiofeels.domain.model.PlaybackStart
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.repository.PlaybackRepository
@@ -39,14 +40,16 @@ class AudiusPlaybackRepository(private val dataStore: DataStore<Preferences>) : 
       .map { preferences ->
         PlaybackStart(
           trackIndex = preferences[playbackTrackIndexPreferenceKey] ?: 0,
+          trackPositionMs = preferences[playbackTrackPositionMsKey] ?: 0L,
           autoPlay = preferences[playbackAutoPlayPreferenceKey] ?: false,
         )
       }
       .firstOrNull() ?: PlaybackStart()
 
-  override suspend fun updatePlaybackTrackIndex(trackIndex: Int) {
+  override suspend fun updatePlaybackTrack(trackIndex: Int, trackPositionMs: Long) {
     dataStore.edit { preferences ->
       preferences[playbackTrackIndexPreferenceKey] = trackIndex
+      preferences[playbackTrackPositionMsKey] = trackPositionMs
       preferences[playbackAutoPlayPreferenceKey] = false
     }
   }
