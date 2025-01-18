@@ -13,6 +13,7 @@ kotlin {
       dependencies {
         implementation(projects.core.base)
 
+        implementation(libs.kotlininject.runtime)
         implementation(libs.kotlinx.coroutines.core)
         implementation(libs.kotlinx.serialization.json)
       }

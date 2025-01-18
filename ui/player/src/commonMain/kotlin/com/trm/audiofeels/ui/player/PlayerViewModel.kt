@@ -10,17 +10,15 @@ import com.trm.audiofeels.core.base.util.RestartableStateFlow
 import com.trm.audiofeels.core.base.util.restartableStateIn
 import com.trm.audiofeels.core.base.util.roundTo
 import com.trm.audiofeels.core.ui.compose.util.loadImageBitmapOrNull
+import com.trm.audiofeels.domain.model.PlayerInput
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.player.PlayerConnection
-import com.trm.audiofeels.domain.repository.HostsRepository
 import com.trm.audiofeels.domain.repository.PlaybackRepository
-import com.trm.audiofeels.domain.repository.PlaylistsRepository
+import com.trm.audiofeels.domain.usecase.GetPlayerInputUseCase
 import io.github.aakira.napier.Napier
 import kotlin.math.roundToLong
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -34,8 +32,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalCoroutinesApi::class)
 class PlayerViewModel(
   private val playerConnection: PlayerConnection,
-  private val playlistsRepository: PlaylistsRepository,
-  private val hostsRepository: HostsRepository,
+  private val getPlayerInputUseCase: GetPlayerInputUseCase,
   private val playbackRepository: PlaybackRepository,
   private val imageLoader: ImageLoader,
   private val platformContext: PlatformContext,
@@ -46,14 +43,7 @@ class PlayerViewModel(
       .distinctUntilChangedBy { it?.id }
       .flatMapLatest { playlist ->
         playlist?.id?.let { playlistId ->
-          loadableStateFlowOf {
-              coroutineScope { // TODO: usecase for that
-                val tracks = async { playlistsRepository.getPlaylistTracks(playlistId) }
-                val host = async { hostsRepository.retrieveHost() }
-                val start = async { playbackRepository.getPlaybackStart() }
-                PlayerInput(tracks = tracks.await(), host = host.await(), start = start.await())
-              }
-            }
+          loadableStateFlowOf { getPlayerInputUseCase(playlistId) }
             .onEach { input ->
               if (input is LoadableState.Success && input.value.start.autoPlay) {
                 enqueue(input.value)

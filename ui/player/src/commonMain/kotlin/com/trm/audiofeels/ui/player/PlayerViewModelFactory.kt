@@ -6,9 +6,8 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import coil3.ImageLoader
 import coil3.PlatformContext
 import com.trm.audiofeels.domain.player.PlayerConnection
-import com.trm.audiofeels.domain.repository.HostsRepository
 import com.trm.audiofeels.domain.repository.PlaybackRepository
-import com.trm.audiofeels.domain.repository.PlaylistsRepository
+import com.trm.audiofeels.domain.usecase.GetPlayerInputUseCase
 import kotlin.reflect.KClass
 import kotlin.reflect.cast
 import me.tatarka.inject.annotations.Inject
@@ -16,8 +15,7 @@ import me.tatarka.inject.annotations.Inject
 @Inject
 class PlayerViewModelFactory(
   private val playerConnection: PlayerConnection,
-  private val playlistsRepository: PlaylistsRepository,
-  private val hostsRepository: HostsRepository,
+  private val getPlayerInputUseCase: GetPlayerInputUseCase,
   private val playbackRepository: PlaybackRepository,
   private val imageLoader: ImageLoader,
   private val platformContext: PlatformContext,
@@ -26,8 +24,7 @@ class PlayerViewModelFactory(
     modelClass.cast(
       PlayerViewModel(
         playerConnection = playerConnection,
-        playlistsRepository = playlistsRepository,
-        hostsRepository = hostsRepository,
+        getPlayerInputUseCase = getPlayerInputUseCase,
         playbackRepository = playbackRepository,
         imageLoader = imageLoader,
         platformContext = platformContext,
