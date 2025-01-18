@@ -22,6 +22,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -78,7 +79,7 @@ class PlayerViewModel(
                         }
                       }
                     }
-                    .combine(playerConnection.currentTrackPositionMs) {
+                    .combine(playerConnection.currentTrackPositionMs.distinctUntilChanged()) {
                       (playerState, trackImageBitmap),
                       currentTrackPositionMs ->
                       PlayerViewState(
@@ -92,8 +93,8 @@ class PlayerViewModel(
                                 1000.0 /
                                 playerState.currentTrack.duration.toDouble()
                             }
-                            is PlayerState.Error,
-                            PlayerState.Idle -> {
+                            PlayerState.Idle,
+                            is PlayerState.Error -> {
                               0.0
                             }
                           }.roundTo(3),

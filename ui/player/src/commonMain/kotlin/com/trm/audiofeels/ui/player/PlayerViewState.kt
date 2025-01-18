@@ -11,5 +11,5 @@ data class PlayerViewState(
   val playerState: PlayerState,
   val currentTrackProgress: Double,
   val playerInput: LoadableState<PlayerInput>,
-  val trackImageBitmap: ImageBitmap?,
+  val trackImageBitmap: ImageBitmap?, // TODO: use a placeholder in case of no artwork
 )
