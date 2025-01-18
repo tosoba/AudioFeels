@@ -1,6 +1,7 @@
 package com.trm.audiofeels
 
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
@@ -167,6 +169,10 @@ fun AppContent(applicationComponent: ApplicationComponent) {
               horizontalArrangement = Arrangement.SpaceAround,
               modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp),
             ) {
+              trackImageBitmap?.let {
+                Image(bitmap = it, contentDescription = null, modifier = Modifier.size(40.dp))
+              }
+
               Text(
                 when (playerState) {
                   is PlayerState.Enqueued -> {

@@ -49,26 +49,24 @@ class PlayerViewModel(
                 enqueue(input.value)
               }
             }
-            .flatMapLatest { input ->
-              when (input) {
+            .flatMapLatest { playerInput ->
+              when (playerInput) {
                 is LoadableState.Success -> {
+                  var lastArtworkUrl: String? = null
+
                   playerConnection.playerState
                     .transformLatest { playerState ->
-                      when (playerState) {
-                        is PlayerState.Enqueued -> {
-                          emit(playerState to null)
-                          playerState.currentTrack.artworkUrl?.let { artworkUrl ->
-                            emit(
-                              playerState to
-                                imageLoader.loadImageBitmapOrNull(artworkUrl, platformContext)
-                            )
-                          }
-                        }
-                        PlayerState.Idle,
-                        is PlayerState.Error -> {
-                          emit(playerState to null)
-                        }
+                      val trackArtworkUrl = getTrackArtworkUrl(playerState, playerInput.value)
+                      if (trackArtworkUrl != lastArtworkUrl) {
+                        lastArtworkUrl = trackArtworkUrl
+                        emit(playerState to null)
                       }
+                      emit(
+                        playerState to
+                          trackArtworkUrl?.let { artworkUrl ->
+                            imageLoader.loadImageBitmapOrNull(artworkUrl, platformContext)
+                          }
+                      )
                     }
                     .combine(playerConnection.currentTrackPositionMs.distinctUntilChanged()) {
                       (playerState, trackImageBitmap),
@@ -88,7 +86,7 @@ class PlayerViewModel(
                               0.0
                             }
                           }.roundTo(3),
-                        playerInput = input,
+                        playerInput = playerInput,
                         trackImageBitmap = trackImageBitmap,
                       )
                     }
@@ -101,7 +99,7 @@ class PlayerViewModel(
                       playlist = playlist,
                       playerState = PlayerState.Idle,
                       currentTrackProgress = 0.0,
-                      playerInput = input,
+                      playerInput = playerInput,
                       trackImageBitmap = null,
                     )
                   )
@@ -134,6 +132,20 @@ class PlayerViewModel(
         started = SharingStarted.Lazily,
         initialValue = initialPlayerViewState(),
       )
+
+  private fun getTrackArtworkUrl(playerState: PlayerState, input: PlayerInput): String? =
+    when (playerState) {
+      PlayerState.Idle -> {
+        input.artworkUrl
+      }
+      is PlayerState.Enqueued -> {
+        playerState.currentTrack.artworkUrl
+      }
+      is PlayerState.Error -> {
+        (playerState.previousState as? PlayerState.Enqueued)?.currentTrack?.artworkUrl
+          ?: input.artworkUrl
+      }
+    }
 
   fun onPlaylistClick(playlist: Playlist) {
     if (viewState.value.playlist != playlist) {
