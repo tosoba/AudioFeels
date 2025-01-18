@@ -175,19 +175,24 @@ fun AppContent(applicationComponent: ApplicationComponent) {
 
               Text(
                 when (playerState) {
+                  PlayerState.Idle -> {
+                    "Idle"
+                  }
                   is PlayerState.Enqueued -> {
                     "Enq ${playerState.currentTrackIndex} - $currentTrackProgress"
                   }
                   is PlayerState.Error -> {
                     "Error"
                   }
-                  PlayerState.Idle -> {
-                    "Idle"
-                  }
                 }
               )
 
               when (playerState) {
+                PlayerState.Idle -> {
+                  IconButton(onClick = playerViewModel::onPlayClick) {
+                    Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
+                  }
+                }
                 is PlayerState.Enqueued -> {
                   IconButton(onClick = playerViewModel::onPreviousClick) {
                     Icon(imageVector = Icons.Outlined.SkipPrevious, contentDescription = "Previous")
@@ -210,11 +215,6 @@ fun AppContent(applicationComponent: ApplicationComponent) {
                   }
                 }
                 is PlayerState.Error -> {}
-                PlayerState.Idle -> {
-                  IconButton(onClick = playerViewModel::onPlayClick) {
-                    Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
-                  }
-                }
               }
 
               Button(onClick = playerViewModel::onCancelPlaybackClick) { Text("Cancel") }
