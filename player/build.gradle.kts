@@ -1,9 +1,17 @@
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+
 plugins {
   id("com.trm.audiofeels.android.library")
   id("com.trm.audiofeels.kotlin.multiplatform")
 }
 
 kotlin {
+  targets.withType<KotlinNativeTarget>().forEach { nativeTarget ->
+    nativeTarget.compilations.getByName("main") {
+      val nskeyvalueobserving by cinterops.creating
+    }
+  }
+
   sourceSets {
     androidMain {
       dependencies {
