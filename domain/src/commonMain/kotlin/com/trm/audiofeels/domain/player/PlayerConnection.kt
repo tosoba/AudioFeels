@@ -20,8 +20,6 @@ interface PlayerConnection {
 
   fun skipTo(positionMs: Long)
 
-  fun skipTo(trackIndex: Int, positionMs: Long = 0L)
-
   fun enqueue(
     tracks: List<Track>,
     host: String,

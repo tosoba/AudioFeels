@@ -79,7 +79,8 @@ class PlayerViewModel(
                           when (playerState) {
                             is PlayerState.Enqueued -> {
                               currentTrackPositionMs.toDouble() /
-                                playerState.trackDurationMs.toDouble()
+                                playerState.currentTrack.duration.toDouble() /
+                                1000.0
                             }
                             PlayerState.Idle,
                             is PlayerState.Error -> {
@@ -116,7 +117,9 @@ class PlayerViewModel(
                   playbackRepository.updatePlaybackTrack(
                     trackIndex = it.playerState.currentTrackIndex,
                     trackPositionMs =
-                      (it.currentTrackProgress * it.playerState.trackDurationMs.toDouble())
+                      (it.currentTrackProgress *
+                          it.playerState.currentTrack.duration.toDouble() *
+                          1000.0)
                         .roundToLong(),
                   )
                 }

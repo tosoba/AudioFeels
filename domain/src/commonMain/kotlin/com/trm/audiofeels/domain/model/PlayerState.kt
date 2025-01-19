@@ -8,7 +8,6 @@ sealed interface PlayerState {
     val currentTrackIndex: Int,
     val playbackState: PlaybackState,
     val isPlaying: Boolean,
-    val trackDurationMs: Long,
   ) : PlayerState
 
   data class Error(val error: PlayerError, val previousState: PlayerState) : PlayerState

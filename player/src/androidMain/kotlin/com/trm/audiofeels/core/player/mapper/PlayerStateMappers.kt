@@ -22,7 +22,6 @@ internal fun Player.toState(): PlayerState =
           else -> throw IllegalArgumentException()
         },
       isPlaying = isPlaying,
-      trackDurationMs = duration,
     )
   } ?: PlayerState.Idle
 

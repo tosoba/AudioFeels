@@ -3,6 +3,9 @@ package com.trm.audiofeels.core.player
 import com.trm.audiofeels.core.base.di.ApplicationScope
 import com.trm.audiofeels.core.player.util.buildStreamUrl
 import com.trm.audiofeels.core.player.util.isPlaying
+import com.trm.audiofeels.domain.model.PlaybackState
+import com.trm.audiofeels.domain.model.PlayerConstants
+import com.trm.audiofeels.domain.model.PlayerError
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Track
 import com.trm.audiofeels.domain.player.PlayerConnection
@@ -12,13 +15,13 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.cinterop.COpaquePointer
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import me.tatarka.inject.annotations.Inject
 import platform.AVFAudio.AVAudioSession
@@ -27,6 +30,7 @@ import platform.AVFAudio.AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation
 import platform.AVFAudio.setActive
 import platform.AVFoundation.AVPlayer
 import platform.AVFoundation.AVPlayerItem
+import platform.AVFoundation.AVPlayerItemStatusReadyToPlay
 import platform.AVFoundation.AVPlayerStatusFailed
 import platform.AVFoundation.AVPlayerStatusUnknown
 import platform.AVFoundation.addBoundaryTimeObserverForTimes
@@ -54,7 +58,18 @@ import platform.darwin.dispatch_get_main_queue
 @ApplicationScope
 @Inject
 actual class AudioPlayerConnection : PlayerConnection {
-  private val player by lazy(::AVPlayer)
+  private val player by lazy {
+    AVPlayer().apply {
+      // TODO: should this be removed at any point?
+      addObserver(
+        observer = timeControlObserver,
+        forKeyPath = "timeControlStatus",
+        options = NSKeyValueObservingOptionNew,
+        context = null,
+      )
+    }
+  }
+
   private val audioSession: AVAudioSession by lazy {
     AVAudioSession.sharedInstance().apply {
       try {
@@ -74,6 +89,33 @@ actual class AudioPlayerConnection : PlayerConnection {
   private var timeObserverToken: Any? = null
   private var host: String? = null
 
+  private val timeControlObserver: NSObject =
+    object : NSObject(), NSKeyValueObservingProtocol {
+      override fun observeValueForKeyPath(
+        keyPath: String?,
+        ofObject: Any?,
+        change: Map<Any?, *>?,
+        context: COpaquePointer?,
+      ) {
+        _playerState.update {
+          when (it) {
+            is PlayerState.Enqueued -> {
+              it.copy(isPlaying = player.isPlaying)
+            }
+            PlayerState.Idle,
+            is PlayerState.Error -> {
+              PlayerState.Enqueued(
+                currentTrack = tracks[currentItemIndex],
+                currentTrackIndex = currentItemIndex,
+                playbackState = PlaybackState.READY,
+                isPlaying = player.isPlaying,
+              )
+            }
+          }
+        }
+      }
+    }
+
   private val itemStatusObserver: NSObject =
     object : NSObject(), NSKeyValueObservingProtocol {
       override fun observeValueForKeyPath(
@@ -82,37 +124,40 @@ actual class AudioPlayerConnection : PlayerConnection {
         change: Map<Any?, *>?,
         context: COpaquePointer?,
       ) {
-        val isLoading = player.currentItem?.status == AVPlayerStatusUnknown
-        val hasError = player.currentItem?.status == AVPlayerStatusFailed
+        _playerState.update {
+          when (player.currentItem?.status) {
+            AVPlayerStatusFailed -> {
+              // TODO: check if there's a way to figure out error type
+              PlayerState.Error(PlayerError.OTHER_ERROR, it)
+            }
+            AVPlayerStatusUnknown -> {
+              // TODO: not sure if Enqueued should be returned when current state is idle/error
+              PlayerState.Enqueued(
+                currentTrack = tracks[currentItemIndex],
+                currentTrackIndex = currentItemIndex,
+                playbackState = PlaybackState.BUFFERING,
+                isPlaying = player.isPlaying,
+              )
+            }
+            AVPlayerItemStatusReadyToPlay -> {
+              // TODO: not sure if Enqueued should be returned when current state is idle/error
+              PlayerState.Enqueued(
+                currentTrack = tracks[currentItemIndex],
+                currentTrackIndex = currentItemIndex,
+                playbackState = PlaybackState.READY,
+                isPlaying = player.isPlaying,
+              )
+            }
+            else -> {
+              it
+            }
+          }
+        }
       }
     }
 
-  override val playerState: Flow<PlayerState> =
-    callbackFlow<PlayerState> {
-        val timeControlObserver =
-          object : NSObject(), NSKeyValueObservingProtocol {
-            override fun observeValueForKeyPath(
-              keyPath: String?,
-              ofObject: Any?,
-              change: Map<Any?, *>?,
-              context: COpaquePointer?,
-            ) {
-              player.isPlaying
-            }
-          }
-
-        player.addObserver(
-          observer = timeControlObserver,
-          forKeyPath = "timeControlStatus",
-          options = NSKeyValueObservingOptionNew,
-          context = null,
-        )
-
-        awaitClose {
-          player.removeObserver(observer = timeControlObserver, forKeyPath = "timeControlStatus")
-        }
-      }
-      .conflate()
+  private val _playerState = MutableStateFlow<PlayerState>(PlayerState.Idle)
+  override val playerState: Flow<PlayerState> = _playerState.asStateFlow()
 
   override val currentTrackPositionMs: Flow<Long> = flow {
     while (currentCoroutineContext().isActive) {
@@ -134,19 +179,19 @@ actual class AudioPlayerConnection : PlayerConnection {
   }
 
   override fun playPrevious() {
-    // TODO:
+    currentItemIndex = if (currentItemIndex - 1 >= 0) currentItemIndex - 1 else 0
+    play(currentItemIndex)
   }
 
   override fun playNext() {
-    // TODO:
+    currentItemIndex = if (currentItemIndex + 1 < tracks.size) currentItemIndex + 1 else 0
+    play(currentItemIndex)
   }
 
   override fun skipTo(positionMs: Long) {
-    // TODO:
-  }
-
-  override fun skipTo(trackIndex: Int, positionMs: Long) {
-    // TODO:
+    player.seekToTime(
+      CMTimeMakeWithSeconds(seconds = positionMs.toDouble(), preferredTimescale = 1_000)
+    )
   }
 
   override fun enqueue(
@@ -154,12 +199,12 @@ actual class AudioPlayerConnection : PlayerConnection {
     host: String,
     autoPlay: Boolean,
     startTrackIndex: Int,
-    startPositionMs: Long, // TODO: use that somehow :D
+    startPositionMs: Long,
   ) {
     this.tracks = tracks
     this.host = host
     if (autoPlay) {
-      play(startTrackIndex)
+      play(trackIndex = startTrackIndex, startPositionMs = startPositionMs)
     }
   }
 
@@ -188,8 +233,8 @@ actual class AudioPlayerConnection : PlayerConnection {
     timeObserverToken?.let { timeObserverToken ->
       player.removeTimeObserver(timeObserverToken)
       this.timeObserverToken = null
+      player.currentItem?.removeObserver(observer = itemStatusObserver, forKeyPath = "status")
     }
-    player.currentItem?.removeObserver(observer = itemStatusObserver, forKeyPath = "status")
   }
 
   private fun scheduleNextSkipOnEndPlaying(duration: CValue<CMTime>) {
@@ -203,8 +248,12 @@ actual class AudioPlayerConnection : PlayerConnection {
       }
   }
 
-  private fun play(trackIndex: Int) {
+  private fun play(
+    trackIndex: Int,
+    startPositionMs: Long = PlayerConstants.DEFAULT_START_POSITION_MS,
+  ) {
     setCurrentItem(index = trackIndex)
+    startPositionMs.takeUnless { it == PlayerConstants.DEFAULT_START_POSITION_MS }?.let(::skipTo)
     play()
   }
 

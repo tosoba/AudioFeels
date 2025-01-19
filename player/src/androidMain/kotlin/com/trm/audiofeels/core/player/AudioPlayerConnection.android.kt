@@ -130,13 +130,6 @@ actual class AudioPlayerConnection(
     }
   }
 
-  override fun skipTo(trackIndex: Int, positionMs: Long) {
-    withMediaBrowser {
-      seekTo(trackIndex, positionMs)
-      play()
-    }
-  }
-
   override fun enqueue(
     tracks: List<Track>,
     host: String,
