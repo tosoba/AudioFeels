@@ -30,7 +30,6 @@ import platform.AVFoundation.AVPlayerItem
 import platform.AVFoundation.AVPlayerStatusFailed
 import platform.AVFoundation.AVPlayerStatusUnknown
 import platform.AVFoundation.addBoundaryTimeObserverForTimes
-import platform.AVFoundation.asset
 import platform.AVFoundation.currentItem
 import platform.AVFoundation.currentTime
 import platform.AVFoundation.pause
@@ -41,6 +40,7 @@ import platform.AVFoundation.seekToTime
 import platform.AVFoundation.valueWithCMTime
 import platform.CoreMedia.CMTime
 import platform.CoreMedia.CMTimeGetSeconds
+import platform.CoreMedia.CMTimeMake
 import platform.CoreMedia.CMTimeMakeWithSeconds
 import platform.Foundation.NSKeyValueObservingOptionNew
 import platform.Foundation.NSURL.Companion.URLWithString
@@ -165,10 +165,10 @@ actual class AudioPlayerConnection : PlayerConnection {
 
   private fun setCurrentItem(index: Int) {
     currentItemIndex = index
-
     removeCurrentItemObservers()
 
-    AVPlayerItem(URLWithString(tracks[index].buildStreamUrl(host = requireNotNull(host)))!!).apply {
+    val track = tracks[index]
+    AVPlayerItem(URLWithString(track.buildStreamUrl(host = requireNotNull(host)))!!).apply {
       player.replaceCurrentItemWithPlayerItem(this)
       addObserver(
         observer = itemStatusObserver,
@@ -176,10 +176,11 @@ actual class AudioPlayerConnection : PlayerConnection {
         options = NSKeyValueObservingOptionNew,
         context = null,
       )
-      asset.loadValuesAsynchronouslyForKeys(listOf("duration")) {
-        // Skip to the next track when the current one ends
-        scheduleNextSkipOnEndPlaying(duration = asset.duration)
-      }
+
+      // Skip to the next track when the current one ends
+      scheduleNextSkipOnEndPlaying(
+        duration = CMTimeMake(value = track.duration.toLong(), timescale = 1)
+      )
     }
   }
 
@@ -192,10 +193,9 @@ actual class AudioPlayerConnection : PlayerConnection {
   }
 
   private fun scheduleNextSkipOnEndPlaying(duration: CValue<CMTime>) {
-    val time = CMTimeMakeWithSeconds(seconds = CMTimeGetSeconds(duration), preferredTimescale = 1)
     timeObserverToken =
       player.addBoundaryTimeObserverForTimes(
-        times = listOf(NSValue.valueWithCMTime(time)),
+        times = listOf(NSValue.valueWithCMTime(duration)),
         queue = dispatch_get_main_queue(),
       ) {
         currentItemIndex = if (currentItemIndex + 1 < tracks.size) currentItemIndex + 1 else 0
