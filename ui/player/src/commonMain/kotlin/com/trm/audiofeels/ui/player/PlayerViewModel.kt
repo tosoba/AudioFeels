@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
 
@@ -68,9 +69,11 @@ class PlayerViewModel(
                           }
                       )
                     }
-                    .combine(playerConnection.currentTrackPositionMs.distinctUntilChanged()) {
-                      (playerState, trackImageBitmap),
-                      currentTrackPositionMs ->
+                    .combine(
+                      playerConnection.currentTrackPositionMs.distinctUntilChanged().onStart {
+                        emit(0L)
+                      }
+                    ) { (playerState, trackImageBitmap), currentTrackPositionMs ->
                       PlayerViewState(
                         isVisible = true,
                         playlist = playlist,
@@ -89,6 +92,13 @@ class PlayerViewModel(
                           }.roundTo(3),
                         playerInput = playerInput,
                         trackImageBitmap = trackImageBitmap,
+                        onPlayClick = {
+                          when (playerState) {
+                            PlayerState.Idle -> enqueue(playerInput.value)
+                            is PlayerState.Enqueued -> playerConnection.play()
+                            is PlayerState.Error -> return@PlayerViewState
+                          }
+                        },
                       )
                     }
                 }
@@ -154,7 +164,7 @@ class PlayerViewModel(
     if (viewState.value.playlist != playlist) {
       viewModelScope.launch { playbackRepository.updatePlaybackPlaylist(playlist) }
     } else {
-      onPlayClick()
+      viewState.value.onPlayClick()
     }
   }
 
@@ -170,23 +180,6 @@ class PlayerViewModel(
 
   fun onCancelPlaybackClick() {
     viewModelScope.launch { playbackRepository.clear() }
-  }
-
-  fun onPlayClick() {
-    val (_, _, playerState, _, playerInput) = viewState.value
-    when (playerState) {
-      PlayerState.Idle -> {
-        if (playerInput is LoadableState.Success) {
-          enqueue(playerInput.value)
-        }
-      }
-      is PlayerState.Enqueued -> {
-        playerConnection.play()
-      }
-      is PlayerState.Error -> {
-        return
-      }
-    }
   }
 
   private fun enqueue(input: PlayerInput) {

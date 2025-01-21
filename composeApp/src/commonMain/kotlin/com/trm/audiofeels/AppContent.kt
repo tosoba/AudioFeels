@@ -93,8 +93,9 @@ fun AppContent(applicationComponent: ApplicationComponent) {
 
   val playerViewModel =
     viewModel<PlayerViewModel>(factory = applicationComponent.playerViewModelFactory)
-  val (playerVisible, _, playerState, currentTrackProgress, _, trackImageBitmap) =
-    playerViewModel.viewState.collectAsStateWithLifecycle().value
+  val viewState by playerViewModel.viewState.collectAsStateWithLifecycle()
+  val (playerVisible, _, playerState, currentTrackProgress, _, trackImageBitmap, onPlayClick) =
+    viewState
 
   val fallbackSeedColor = rememberThemeInfo().seedColor
   val seedColor =
@@ -189,7 +190,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
 
               when (playerState) {
                 PlayerState.Idle -> {
-                  IconButton(onClick = playerViewModel::onPlayClick) {
+                  IconButton(onClick = onPlayClick) {
                     Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
                   }
                 }
@@ -204,7 +205,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
                         Icon(imageVector = Icons.Outlined.Pause, contentDescription = "Pause")
                       }
                     } else {
-                      IconButton(onClick = playerViewModel::onPlayClick) {
+                      IconButton(onClick = onPlayClick) {
                         Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
                       }
                     }

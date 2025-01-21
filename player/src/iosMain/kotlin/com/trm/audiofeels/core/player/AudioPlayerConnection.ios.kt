@@ -187,7 +187,7 @@ actual class AudioPlayerConnection : PlayerConnection {
 
   override fun skipTo(positionMs: Long) {
     player.seekToTime(
-      CMTimeMakeWithSeconds(seconds = positionMs.toDouble(), preferredTimescale = 1_000)
+      CMTimeMakeWithSeconds(seconds = positionMs.toDouble() / 1_000, preferredTimescale = 1)
     )
   }
 
@@ -250,8 +250,8 @@ actual class AudioPlayerConnection : PlayerConnection {
     startPositionMs: Long = PlayerConstants.DEFAULT_START_POSITION_MS,
   ) {
     setCurrentItem(index = trackIndex)
-    startPositionMs.takeUnless { it == PlayerConstants.DEFAULT_START_POSITION_MS }?.let(::skipTo)
     play()
+    startPositionMs.takeUnless { it == PlayerConstants.DEFAULT_START_POSITION_MS }?.let(::skipTo)
   }
 
   override fun reset() {
