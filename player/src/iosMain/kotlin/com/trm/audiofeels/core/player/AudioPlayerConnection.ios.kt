@@ -11,7 +11,6 @@ import com.trm.audiofeels.domain.model.Track
 import com.trm.audiofeels.domain.player.PlayerConnection
 import com.trm.audiofeels.interop.NSKeyValueObservingProtocol
 import io.github.aakira.napier.Napier
-import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.cinterop.COpaquePointer
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -161,9 +160,7 @@ actual class AudioPlayerConnection : PlayerConnection {
 
   override val currentTrackPositionMs: Flow<Long> = flow {
     while (currentCoroutineContext().isActive) {
-      player.currentItem?.let {
-        emit(CMTimeGetSeconds(player.currentTime()).milliseconds.inWholeMilliseconds)
-      }
+      player.currentItem?.let { emit((CMTimeGetSeconds(player.currentTime()) * 1000).toLong()) }
       delay(1_000L)
     }
   }
