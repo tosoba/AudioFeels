@@ -13,12 +13,14 @@ import com.trm.audiofeels.core.base.util.roundTo
 import com.trm.audiofeels.core.ui.compose.util.loadImageBitmapOrNull
 import com.trm.audiofeels.domain.model.PlayerInput
 import com.trm.audiofeels.domain.model.PlayerState
+import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.player.PlayerConnection
 import com.trm.audiofeels.domain.repository.PlaybackRepository
 import com.trm.audiofeels.domain.usecase.GetPlayerInputUseCase
 import io.github.aakira.napier.Napier
 import kotlin.math.roundToLong
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -50,104 +52,8 @@ class PlayerViewModel(
                 enqueue(input.value)
               }
             }
-            .flatMapLatest { playerInput ->
-              val tracks = playerInput.map(PlayerInput::tracks)
-              when (playerInput) {
-                is LoadableState.Success -> {
-                  var lastArtworkUrl: String? = null
-
-                  playerConnection.playerState
-                    .transformLatest { playerState ->
-                      val trackArtworkUrl = getTrackArtworkUrl(playerState, playerInput.value)
-                      if (trackArtworkUrl != lastArtworkUrl) {
-                        lastArtworkUrl = trackArtworkUrl
-                        emit(playerState to null)
-                      }
-                      emit(
-                        playerState to
-                          trackArtworkUrl?.let { artworkUrl ->
-                            imageLoader.loadImageBitmapOrNull(artworkUrl, platformContext)
-                          }
-                      )
-                    }
-                    .combine(
-                      playerConnection.currentTrackPositionMs.distinctUntilChanged().onStart {
-                        emit(0L)
-                      }
-                    ) { (playerState, currentTrackImageBitmap), currentTrackPositionMs ->
-                      val onTogglePlayClick = {
-                        when (playerState) {
-                          PlayerState.Idle -> {
-                            enqueue(playerInput.value)
-                          }
-                          is PlayerState.Enqueued -> {
-                            if (playerState.isPlaying) playerConnection.pause()
-                            else playerConnection.play()
-                          }
-                          is PlayerState.Error -> {}
-                        }
-                      }
-                      PlayerViewState(
-                        playerVisible = true,
-                        playlist = playlist,
-                        playerState = playerState,
-                        tracks = tracks,
-                        currentTrackProgress =
-                          when (playerState) {
-                            is PlayerState.Enqueued -> {
-                              currentTrackPositionMs.toDouble() /
-                                playerState.currentTrack.duration.toDouble() /
-                                1000.0
-                            }
-                            PlayerState.Idle,
-                            is PlayerState.Error -> {
-                              0.0
-                            }
-                          }.roundTo(3),
-                        currentTrackImageBitmap = currentTrackImageBitmap,
-                        startPlayback = {
-                          if (playlist != it) {
-                            viewModelScope.launch { playbackRepository.updatePlaybackPlaylist(it) }
-                          } else {
-                            onTogglePlayClick()
-                          }
-                        },
-                        onTogglePlayClick = onTogglePlayClick,
-                        onPreviousClick = playerConnection::playPrevious,
-                        onNextClick = playerConnection::playNext,
-                        cancelClick = { viewModelScope.launch { playbackRepository.clear() } },
-                      )
-                    }
-                }
-                LoadableState.Loading,
-                is LoadableState.Error -> {
-                  flowOf(
-                    PlayerViewState(playerVisible = true, playlist = playlist, tracks = tracks)
-                  )
-                }
-              }
-            }
-            .onEach {
-              Napier.d(tag = "PLAYER_STATE", message = it.playerState.toString())
-              when (it.playerState) {
-                PlayerState.Idle -> {
-                  return@onEach
-                }
-                is PlayerState.Enqueued -> {
-                  playbackRepository.updatePlaybackTrack(
-                    trackIndex = it.playerState.currentTrackIndex,
-                    trackPositionMs =
-                      (it.currentTrackProgress *
-                          it.playerState.currentTrack.duration.toDouble() *
-                          1000.0)
-                        .roundToLong(),
-                  )
-                }
-                is PlayerState.Error -> {
-                  // TODO: error handling
-                }
-              }
-            }
+            .flatMapLatest { playerInput -> playbackPlayerViewStateFlow(playerInput, playlist) }
+            .onEach { onPlaybackPlayerViewState(it) }
         } ?: flowOf(PlayerViewState()).onEach { playerConnection.reset() }
       }
       .restartableStateIn(
@@ -155,6 +61,104 @@ class PlayerViewModel(
         started = SharingStarted.Lazily,
         initialValue = PlayerViewState(),
       )
+
+  private fun playbackPlayerViewStateFlow(
+    playerInput: LoadableState<PlayerInput>,
+    playlist: Playlist,
+  ): Flow<PlayerViewState> {
+    val tracks = playerInput.map(PlayerInput::tracks)
+    return when (playerInput) {
+      is LoadableState.Success -> {
+        var lastArtworkUrl: String? = null
+
+        playerConnection.playerState
+          .transformLatest { playerState ->
+            val trackArtworkUrl = getTrackArtworkUrl(playerState, playerInput.value)
+            if (trackArtworkUrl != lastArtworkUrl) {
+              lastArtworkUrl = trackArtworkUrl
+              emit(playerState to null)
+            }
+            emit(
+              playerState to
+                trackArtworkUrl?.let { artworkUrl ->
+                  imageLoader.loadImageBitmapOrNull(artworkUrl, platformContext)
+                }
+            )
+          }
+          .combine(
+            playerConnection.currentTrackPositionMs.distinctUntilChanged().onStart { emit(0L) }
+          ) { (playerState, currentTrackImageBitmap), currentTrackPositionMs ->
+            val onTogglePlayClick = {
+              when (playerState) {
+                PlayerState.Idle -> {
+                  enqueue(playerInput.value)
+                }
+                is PlayerState.Enqueued -> {
+                  if (playerState.isPlaying) playerConnection.pause() else playerConnection.play()
+                }
+                is PlayerState.Error -> {}
+              }
+            }
+            PlayerViewState(
+              playerVisible = true,
+              playlist = playlist,
+              playerState = playerState,
+              tracks = tracks,
+              currentTrackProgress =
+                when (playerState) {
+                  is PlayerState.Enqueued -> {
+                    currentTrackPositionMs.toDouble() /
+                      playerState.currentTrack.duration.toDouble() /
+                      1000.0
+                  }
+                  PlayerState.Idle,
+                  is PlayerState.Error -> {
+                    0.0
+                  }
+                }.roundTo(3),
+              currentTrackImageBitmap = currentTrackImageBitmap,
+              startPlayback = {
+                if (playlist != it) {
+                  viewModelScope.launch { playbackRepository.updatePlaybackPlaylist(it) }
+                } else {
+                  onTogglePlayClick()
+                }
+              },
+              onTogglePlayClick = onTogglePlayClick,
+              onPreviousClick = playerConnection::playPrevious,
+              onNextClick = playerConnection::playNext,
+              cancelClick = { viewModelScope.launch { playbackRepository.clear() } },
+            )
+          }
+      }
+      LoadableState.Loading,
+      is LoadableState.Error -> {
+        flowOf(PlayerViewState(playerVisible = true, playlist = playlist, tracks = tracks))
+      }
+    }
+  }
+
+  private fun onPlaybackPlayerViewState(state: PlayerViewState) {
+    Napier.d(tag = "PLAYER_STATE", message = state.playerState.toString())
+    when (val playerState = state.playerState) {
+      PlayerState.Idle -> {
+        return
+      }
+      is PlayerState.Enqueued -> {
+        viewModelScope.launch {
+          playbackRepository.updatePlaybackTrack(
+            trackIndex = playerState.currentTrackIndex,
+            trackPositionMs =
+              (state.currentTrackProgress * playerState.currentTrack.duration.toDouble() * 1000.0)
+                .roundToLong(),
+          )
+        }
+      }
+      is PlayerState.Error -> {
+        // TODO: error handling
+      }
+    }
+  }
 
   private fun getTrackArtworkUrl(playerState: PlayerState, input: PlayerInput): String? =
     when (playerState) {
