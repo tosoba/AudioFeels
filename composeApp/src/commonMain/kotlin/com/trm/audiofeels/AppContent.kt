@@ -166,11 +166,15 @@ fun AppContent(applicationComponent: ApplicationComponent) {
         BottomSheetScaffold(
           sheetContent = {
             when (val it = viewState) {
-              PlayerViewState.Idle -> {
+              is PlayerViewState.Invisible,
+              is PlayerViewState.Loading -> {
                 // TODO: loading placeholder of some kind
               }
               is PlayerViewState.Playback -> {
                 PlayerSheetContent(it)
+              }
+              is PlayerViewState.Error -> {
+                // TODO: retry button
               }
             }
           },
@@ -199,7 +203,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
                   navController = navController,
                   discoverViewModelFactory = applicationComponent.discoverViewModelFactory,
                   modifier = Modifier.fillMaxSize(),
-                  onPlaylistClick = viewState.actions::startPlayback,
+                  onPlaylistClick = viewState.playbackActions::start,
                 )
               }
             },
@@ -207,7 +211,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
               AnimatedPane {
                 PlayerPage(
                   modifier = Modifier.fillMaxSize(),
-                  onCancelPlaybackClick = viewState.actions::cancelClick,
+                  onCancelPlaybackClick = viewState.playbackActions::cancel,
                 )
               }
             },
@@ -218,6 +222,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
   }
 }
 
+// TODO: consider moving this to :ui:player
 @Composable
 private fun PlayerSheetContent(viewState: PlayerViewState.Playback) {
   Row(
@@ -245,32 +250,30 @@ private fun PlayerSheetContent(viewState: PlayerViewState.Playback) {
 
     when (val playerState = viewState.playerState) {
       PlayerState.Idle -> {
-        IconButton(onClick = viewState.actions::onTogglePlayClick) {
+        IconButton(onClick = viewState.controlActions::onTogglePlayClick) {
           Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
         }
       }
-
       is PlayerState.Enqueued -> {
-        IconButton(onClick = viewState.actions::onPreviousClick) {
+        IconButton(onClick = viewState.controlActions::onPreviousClick) {
           Icon(imageVector = Icons.Outlined.SkipPrevious, contentDescription = "Previous")
         }
 
-        IconButton(onClick = viewState.actions::onTogglePlayClick) {
+        IconButton(onClick = viewState.controlActions::onTogglePlayClick) {
           Crossfade(playerState.isPlaying) {
             if (it) Icon(imageVector = Icons.Outlined.Pause, contentDescription = "Pause")
             else Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
           }
         }
 
-        IconButton(onClick = viewState.actions::onNextClick) {
+        IconButton(onClick = viewState.controlActions::onNextClick) {
           Icon(imageVector = Icons.Outlined.SkipNext, contentDescription = "Next")
         }
       }
-
       is PlayerState.Error -> {}
     }
 
-    Button(onClick = viewState.actions::cancelClick) { Text("Cancel") }
+    Button(onClick = viewState.playbackActions::cancel) { Text("Cancel") }
   }
 }
 

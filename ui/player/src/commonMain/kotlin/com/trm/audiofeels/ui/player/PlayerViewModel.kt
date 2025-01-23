@@ -6,7 +6,6 @@ import coil3.ImageLoader
 import coil3.PlatformContext
 import com.trm.audiofeels.core.base.model.LoadableState
 import com.trm.audiofeels.core.base.model.loadableStateFlowOf
-import com.trm.audiofeels.core.base.model.map
 import com.trm.audiofeels.core.base.util.RestartableStateFlow
 import com.trm.audiofeels.core.base.util.restartableStateIn
 import com.trm.audiofeels.core.base.util.roundTo
@@ -18,6 +17,7 @@ import com.trm.audiofeels.domain.player.PlayerConnection
 import com.trm.audiofeels.domain.repository.PlaybackRepository
 import com.trm.audiofeels.domain.usecase.GetPlayerInputUseCase
 import io.github.aakira.napier.Napier
+import kotlin.math.roundToLong
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -30,7 +30,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
-import kotlin.math.roundToLong
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class PlayerViewModel(
@@ -52,22 +51,24 @@ class PlayerViewModel(
                 enqueue(input.value)
               }
             }
-            .flatMapLatest { playerInput -> playerViewStatePlaybackFlow(playerInput, playlist) }
-            .onEach { onPlayerViewStatePlayback(it) }
-        } ?: flowOf(PlayerViewState.Idle).onEach { playerConnection.reset() }
+            .flatMapLatest { playerInput -> playerViewStateFlow(playerInput, playlist) }
+            .onEach { if (it is PlayerViewState.Playback) onPlayerViewStatePlayback(it) }
+        }
+          ?: flowOf(PlayerViewState.Invisible(playerViewPlaybackActions())).onEach {
+            playerConnection.reset()
+          }
       }
       .restartableStateIn(
         scope = viewModelScope,
         started = SharingStarted.Lazily,
-        initialValue = PlayerViewState.Idle,
+        initialValue = PlayerViewState.Invisible(playerViewPlaybackActions()),
       )
 
-  private fun playerViewStatePlaybackFlow(
+  private fun playerViewStateFlow(
     playerInput: LoadableState<PlayerInput>,
     playlist: Playlist,
-  ): Flow<PlayerViewState.Playback> {
-    val tracks = playerInput.map(PlayerInput::tracks)
-    return when (playerInput) {
+  ): Flow<PlayerViewState> =
+    when (playerInput) {
       is LoadableState.Success -> {
         var lastArtworkUrl: String? = null
 
@@ -88,10 +89,12 @@ class PlayerViewModel(
           .combine(
             playerConnection.currentTrackPositionMs.distinctUntilChanged().onStart { emit(0L) }
           ) { (playerState, currentTrackImageBitmap), currentTrackPositionMs ->
+            val controlActions =
+              playerViewControlActions(playerState = playerState, playerInput = playerInput.value)
             PlayerViewState.Playback(
               playlist = playlist,
               playerState = playerState,
-              tracks = tracks,
+              tracks = playerInput.value.tracks,
               currentTrackProgress =
                 when (playerState) {
                   is PlayerState.Enqueued -> {
@@ -105,42 +108,69 @@ class PlayerViewModel(
                   }
                 }.roundTo(3),
               currentTrackImageBitmap = currentTrackImageBitmap,
-              actions =
-                playerViewActions(
+              controlActions = controlActions,
+              playbackActions =
+                playerViewPlaybackActions(
                   currentPlaylist = playlist,
-                  playerState = playerState,
-                  playerInput = playerInput.value,
+                  toggleCurrentPlayback = controlActions::onTogglePlayClick,
                 ),
             )
           }
       }
-      LoadableState.Loading,
-      is LoadableState.Error -> {
+      LoadableState.Loading -> {
         flowOf(
-          PlayerViewState.Playback(
+          PlayerViewState.Loading(
             playlist = playlist,
-            tracks = tracks,
-            actions = object : PlayerViewActions {},
+            playbackActions = playerViewPlaybackActions(),
           )
         )
       }
+      is LoadableState.Error -> {
+        flowOf(
+          PlayerViewState.Error(playlist = playlist, playbackActions = playerViewPlaybackActions())
+        )
+      }
     }
-  }
 
-  private fun playerViewActions(
+  private fun playerViewPlaybackActions(
     currentPlaylist: Playlist,
-    playerState: PlayerState,
-    playerInput: PlayerInput,
-  ): PlayerViewActions =
-    object : PlayerViewActions {
-      override fun startPlayback(playlist: Playlist) {
-        if (playlist != currentPlaylist) {
-          viewModelScope.launch { playbackRepository.updatePlaybackPlaylist(playlist) }
-        } else {
-          onTogglePlayClick()
-        }
+    toggleCurrentPlayback: () -> Unit,
+  ): PlayerViewPlaybackActions =
+    object : PlayerViewPlaybackActions {
+      override fun start(playlist: Playlist) {
+        if (playlist != currentPlaylist) startNewPlaylistPlayback(playlist)
+        else toggleCurrentPlayback()
       }
 
+      override fun cancel() {
+        cancelPlayback()
+      }
+    }
+
+  private fun playerViewPlaybackActions(): PlayerViewPlaybackActions =
+    object : PlayerViewPlaybackActions {
+      override fun start(playlist: Playlist) {
+        startNewPlaylistPlayback(playlist)
+      }
+
+      override fun cancel() {
+        cancelPlayback()
+      }
+    }
+
+  private fun startNewPlaylistPlayback(playlist: Playlist) {
+    viewModelScope.launch { playbackRepository.updatePlaybackPlaylist(playlist) }
+  }
+
+  private fun cancelPlayback() {
+    viewModelScope.launch { playbackRepository.clear() }
+  }
+
+  private fun playerViewControlActions(
+    playerState: PlayerState,
+    playerInput: PlayerInput,
+  ): PlayerViewControlActions =
+    object : PlayerViewControlActions {
       override fun onTogglePlayClick() {
         when (playerState) {
           PlayerState.Idle -> {
@@ -159,10 +189,6 @@ class PlayerViewModel(
 
       override fun onNextClick() {
         playerConnection.playNext()
-      }
-
-      override fun cancelClick() {
-        viewModelScope.launch { playbackRepository.clear() }
       }
     }
 

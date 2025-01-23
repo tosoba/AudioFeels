@@ -1,31 +1,44 @@
 package com.trm.audiofeels.ui.player
 
 import androidx.compose.ui.graphics.ImageBitmap
-import com.trm.audiofeels.core.base.model.LoadableState
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.model.Track
 
 sealed interface PlayerViewState {
   val playerVisible: Boolean
-  val currentTrackImageBitmap: ImageBitmap?
-  val actions: PlayerViewActions
+    get() = this !is Invisible
 
-  data object Idle : PlayerViewState {
-    override val playerVisible: Boolean = false
+  val currentTrackImageBitmap: ImageBitmap?
+
+  val playbackActions: PlayerViewPlaybackActions
+
+  data class Invisible(override val playbackActions: PlayerViewPlaybackActions) : PlayerViewState {
     override val currentTrackImageBitmap: ImageBitmap? = null
-    override val actions: PlayerViewActions = object : PlayerViewActions {}
+  }
+
+  data class Loading(
+    val playlist: Playlist,
+    override val playbackActions: PlayerViewPlaybackActions,
+  ) : PlayerViewState {
+    override val currentTrackImageBitmap: ImageBitmap? = null
   }
 
   data class Playback(
     val playlist: Playlist,
     val playerState: PlayerState = PlayerState.Idle,
-    val tracks: LoadableState<List<Track>> = LoadableState.Loading,
+    val tracks: List<Track> = emptyList(),
     val currentTrackProgress: Double = 0.0,
     override val currentTrackImageBitmap: ImageBitmap? =
       null, // TODO: use a placeholder in case of no artwork
-    override val actions: PlayerViewActions,
+    val controlActions: PlayerViewControlActions,
+    override val playbackActions: PlayerViewPlaybackActions,
+  ) : PlayerViewState
+
+  data class Error(
+    val playlist: Playlist,
+    override val playbackActions: PlayerViewPlaybackActions,
   ) : PlayerViewState {
-    override val playerVisible: Boolean = true
+    override val currentTrackImageBitmap: ImageBitmap? = null
   }
 }
