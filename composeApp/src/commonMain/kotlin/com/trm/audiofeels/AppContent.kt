@@ -194,7 +194,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
                   }
                 }
                 is PlayerState.Enqueued -> {
-                  IconButton(onClick = playerViewModel::onPreviousClick) {
+                  IconButton(onClick = viewState.onPreviousClick) {
                     Icon(imageVector = Icons.Outlined.SkipPrevious, contentDescription = "Previous")
                   }
 
@@ -205,14 +205,14 @@ fun AppContent(applicationComponent: ApplicationComponent) {
                     }
                   }
 
-                  IconButton(onClick = playerViewModel::onNextClick) {
+                  IconButton(onClick = viewState.onNextClick) {
                     Icon(imageVector = Icons.Outlined.SkipNext, contentDescription = "Next")
                   }
                 }
                 is PlayerState.Error -> {}
               }
 
-              Button(onClick = playerViewModel::onCancelPlaybackClick) { Text("Cancel") }
+              Button(onClick = viewState.cancelClick) { Text("Cancel") }
             }
           },
           scaffoldState = appViewState.playerViewState.scaffoldState,
@@ -240,7 +240,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
                   navController = navController,
                   discoverViewModelFactory = applicationComponent.discoverViewModelFactory,
                   modifier = Modifier.fillMaxSize(),
-                  onPlaylistClick = playerViewModel::onPlaylistClick,
+                  onPlaylistClick = viewState.startPlayback,
                 )
               }
             },
@@ -248,7 +248,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
               AnimatedPane {
                 PlayerPage(
                   modifier = Modifier.fillMaxSize(),
-                  onCancelPlaybackClick = playerViewModel::onCancelPlaybackClick,
+                  onCancelPlaybackClick = viewState.cancelClick,
                 )
               }
             },

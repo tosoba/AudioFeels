@@ -13,5 +13,9 @@ data class PlayerViewState(
   val tracks: LoadableState<List<Track>> = LoadableState.Loading,
   val currentTrackProgress: Double = 0.0,
   val currentTrackImageBitmap: ImageBitmap? = null, // TODO: use a placeholder in case of no artwork
+  val startPlayback: (Playlist) -> Unit = {},
   val onTogglePlayClick: () -> Unit = {},
+  val onPreviousClick: () -> Unit = {},
+  val onNextClick: () -> Unit = {},
+  val cancelClick: () -> Unit = {},
 )

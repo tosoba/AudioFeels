@@ -13,7 +13,6 @@ import com.trm.audiofeels.core.base.util.roundTo
 import com.trm.audiofeels.core.ui.compose.util.loadImageBitmapOrNull
 import com.trm.audiofeels.domain.model.PlayerInput
 import com.trm.audiofeels.domain.model.PlayerState
-import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.player.PlayerConnection
 import com.trm.audiofeels.domain.repository.PlaybackRepository
 import com.trm.audiofeels.domain.usecase.GetPlayerInputUseCase
@@ -76,6 +75,18 @@ class PlayerViewModel(
                         emit(0L)
                       }
                     ) { (playerState, currentTrackImageBitmap), currentTrackPositionMs ->
+                      val onTogglePlayClick = {
+                        when (playerState) {
+                          PlayerState.Idle -> {
+                            enqueue(playerInput.value)
+                          }
+                          is PlayerState.Enqueued -> {
+                            if (playerState.isPlaying) playerConnection.pause()
+                            else playerConnection.play()
+                          }
+                          is PlayerState.Error -> {}
+                        }
+                      }
                       PlayerViewState(
                         playerVisible = true,
                         playlist = playlist,
@@ -94,26 +105,25 @@ class PlayerViewModel(
                             }
                           }.roundTo(3),
                         currentTrackImageBitmap = currentTrackImageBitmap,
-                        onTogglePlayClick = {
-                          when (playerState) {
-                            PlayerState.Idle -> {
-                              enqueue(playerInput.value)
-                            }
-                            is PlayerState.Enqueued -> {
-                              if (playerState.isPlaying) playerConnection.pause()
-                              else playerConnection.play()
-                            }
-                            is PlayerState.Error -> {
-                              return@PlayerViewState
-                            }
+                        startPlayback = {
+                          if (playlist != it) {
+                            viewModelScope.launch { playbackRepository.updatePlaybackPlaylist(it) }
+                          } else {
+                            onTogglePlayClick()
                           }
                         },
+                        onTogglePlayClick = onTogglePlayClick,
+                        onPreviousClick = playerConnection::playPrevious,
+                        onNextClick = playerConnection::playNext,
+                        cancelClick = { viewModelScope.launch { playbackRepository.clear() } },
                       )
                     }
                 }
                 LoadableState.Loading,
                 is LoadableState.Error -> {
-                  flowOf(PlayerViewState(playerVisible = true, playlist = playlist, tracks = tracks))
+                  flowOf(
+                    PlayerViewState(playerVisible = true, playlist = playlist, tracks = tracks)
+                  )
                 }
               }
             }
@@ -160,18 +170,6 @@ class PlayerViewModel(
       }
     }
 
-  fun onPlaylistClick(playlist: Playlist) {
-    if (viewState.value.playlist != playlist) {
-      viewModelScope.launch { playbackRepository.updatePlaybackPlaylist(playlist) }
-    } else {
-      viewState.value.onTogglePlayClick()
-    }
-  }
-
-  fun onCancelPlaybackClick() {
-    viewModelScope.launch { playbackRepository.clear() }
-  }
-
   private fun enqueue(input: PlayerInput) {
     val (tracks, host, start) = input
     playerConnection.enqueue(
@@ -180,13 +178,5 @@ class PlayerViewModel(
       startTrackIndex = start.trackIndex,
       startPositionMs = start.trackPositionMs,
     )
-  }
-
-  fun onPreviousClick() {
-    playerConnection.playPrevious()
-  }
-
-  fun onNextClick() {
-    playerConnection.playNext()
   }
 }
