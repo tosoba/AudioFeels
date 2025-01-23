@@ -94,12 +94,13 @@ fun AppContent(applicationComponent: ApplicationComponent) {
   val playerViewModel =
     viewModel<PlayerViewModel>(factory = applicationComponent.playerViewModelFactory)
   val viewState by playerViewModel.viewState.collectAsStateWithLifecycle()
-  val (playerVisible, _, playerState, currentTrackProgress, _, trackImageBitmap, onPlayClick) =
+  val (
+    playerVisible, _, playerState, _, currentTrackProgress, currentTrackImageBitmap, onPlayClick) =
     viewState
 
   val fallbackSeedColor = rememberThemeInfo().seedColor
   val seedColor =
-    trackImageBitmap?.let { rememberThemeColor(it, fallbackSeedColor) } ?: fallbackSeedColor
+    currentTrackImageBitmap?.let { rememberThemeColor(it, fallbackSeedColor) } ?: fallbackSeedColor
 
   DynamicMaterialTheme(seedColor = seedColor, animate = true) {
     val adaptiveInfo = currentWindowAdaptiveInfo()
@@ -170,7 +171,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
               horizontalArrangement = Arrangement.SpaceAround,
               modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp),
             ) {
-              trackImageBitmap?.let {
+              currentTrackImageBitmap?.let {
                 Image(bitmap = it, contentDescription = null, modifier = Modifier.size(40.dp))
               }
 

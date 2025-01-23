@@ -6,6 +6,7 @@ import coil3.ImageLoader
 import coil3.PlatformContext
 import com.trm.audiofeels.core.base.model.LoadableState
 import com.trm.audiofeels.core.base.model.loadableStateFlowOf
+import com.trm.audiofeels.core.base.model.map
 import com.trm.audiofeels.core.base.util.RestartableStateFlow
 import com.trm.audiofeels.core.base.util.restartableStateIn
 import com.trm.audiofeels.core.base.util.roundTo
@@ -51,6 +52,7 @@ class PlayerViewModel(
               }
             }
             .flatMapLatest { playerInput ->
+              val tracks = playerInput.map(PlayerInput::tracks)
               when (playerInput) {
                 is LoadableState.Success -> {
                   var lastArtworkUrl: String? = null
@@ -73,11 +75,12 @@ class PlayerViewModel(
                       playerConnection.currentTrackPositionMs.distinctUntilChanged().onStart {
                         emit(0L)
                       }
-                    ) { (playerState, trackImageBitmap), currentTrackPositionMs ->
+                    ) { (playerState, currentTrackImageBitmap), currentTrackPositionMs ->
                       PlayerViewState(
                         isVisible = true,
                         playlist = playlist,
                         playerState = playerState,
+                        tracks = tracks,
                         currentTrackProgress =
                           when (playerState) {
                             is PlayerState.Enqueued -> {
@@ -90,8 +93,7 @@ class PlayerViewModel(
                               0.0
                             }
                           }.roundTo(3),
-                        playerInput = playerInput,
-                        trackImageBitmap = trackImageBitmap,
+                        currentTrackImageBitmap = currentTrackImageBitmap,
                         onPlayClick = {
                           when (playerState) {
                             PlayerState.Idle -> enqueue(playerInput.value)
@@ -104,16 +106,7 @@ class PlayerViewModel(
                 }
                 LoadableState.Loading,
                 is LoadableState.Error -> {
-                  flowOf(
-                    PlayerViewState(
-                      isVisible = true,
-                      playlist = playlist,
-                      playerState = PlayerState.Idle,
-                      currentTrackProgress = 0.0,
-                      playerInput = playerInput,
-                      trackImageBitmap = null,
-                    )
-                  )
+                  flowOf(PlayerViewState(isVisible = true, playlist = playlist, tracks = tracks))
                 }
               }
             }
@@ -138,12 +131,12 @@ class PlayerViewModel(
                 }
               }
             }
-        } ?: flowOf(initialPlayerViewState()).onEach { playerConnection.reset() }
+        } ?: flowOf(PlayerViewState()).onEach { playerConnection.reset() }
       }
       .restartableStateIn(
         scope = viewModelScope,
         started = SharingStarted.Lazily,
-        initialValue = initialPlayerViewState(),
+        initialValue = PlayerViewState(),
       )
 
   private fun getTrackArtworkUrl(playerState: PlayerState, input: PlayerInput): String? =
@@ -167,16 +160,6 @@ class PlayerViewModel(
       viewState.value.onPlayClick()
     }
   }
-
-  private fun initialPlayerViewState(): PlayerViewState =
-    PlayerViewState(
-      isVisible = false,
-      playlist = null,
-      playerState = PlayerState.Idle,
-      currentTrackProgress = 0.0,
-      playerInput = LoadableState.Loading,
-      trackImageBitmap = null,
-    )
 
   fun onCancelPlaybackClick() {
     viewModelScope.launch { playbackRepository.clear() }
