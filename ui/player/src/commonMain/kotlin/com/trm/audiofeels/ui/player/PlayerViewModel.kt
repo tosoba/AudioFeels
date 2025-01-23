@@ -18,7 +18,6 @@ import com.trm.audiofeels.domain.player.PlayerConnection
 import com.trm.audiofeels.domain.repository.PlaybackRepository
 import com.trm.audiofeels.domain.usecase.GetPlayerInputUseCase
 import io.github.aakira.napier.Napier
-import kotlin.math.roundToLong
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -31,6 +30,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
+import kotlin.math.roundToLong
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class PlayerViewModel(
@@ -52,20 +52,20 @@ class PlayerViewModel(
                 enqueue(input.value)
               }
             }
-            .flatMapLatest { playerInput -> playbackPlayerViewStateFlow(playerInput, playlist) }
-            .onEach { onPlaybackPlayerViewState(it) }
-        } ?: flowOf(PlayerViewState()).onEach { playerConnection.reset() }
+            .flatMapLatest { playerInput -> playerViewStatePlaybackFlow(playerInput, playlist) }
+            .onEach { onPlayerViewStatePlayback(it) }
+        } ?: flowOf(PlayerViewState.Idle).onEach { playerConnection.reset() }
       }
       .restartableStateIn(
         scope = viewModelScope,
         started = SharingStarted.Lazily,
-        initialValue = PlayerViewState(),
+        initialValue = PlayerViewState.Idle,
       )
 
-  private fun playbackPlayerViewStateFlow(
+  private fun playerViewStatePlaybackFlow(
     playerInput: LoadableState<PlayerInput>,
     playlist: Playlist,
-  ): Flow<PlayerViewState> {
+  ): Flow<PlayerViewState.Playback> {
     val tracks = playerInput.map(PlayerInput::tracks)
     return when (playerInput) {
       is LoadableState.Success -> {
@@ -88,19 +88,7 @@ class PlayerViewModel(
           .combine(
             playerConnection.currentTrackPositionMs.distinctUntilChanged().onStart { emit(0L) }
           ) { (playerState, currentTrackImageBitmap), currentTrackPositionMs ->
-            val onTogglePlayClick = {
-              when (playerState) {
-                PlayerState.Idle -> {
-                  enqueue(playerInput.value)
-                }
-                is PlayerState.Enqueued -> {
-                  if (playerState.isPlaying) playerConnection.pause() else playerConnection.play()
-                }
-                is PlayerState.Error -> {}
-              }
-            }
-            PlayerViewState(
-              playerVisible = true,
+            PlayerViewState.Playback(
               playlist = playlist,
               playerState = playerState,
               tracks = tracks,
@@ -117,30 +105,70 @@ class PlayerViewModel(
                   }
                 }.roundTo(3),
               currentTrackImageBitmap = currentTrackImageBitmap,
-              startPlayback = {
-                if (playlist != it) {
-                  viewModelScope.launch { playbackRepository.updatePlaybackPlaylist(it) }
-                } else {
-                  onTogglePlayClick()
-                }
-              },
-              onTogglePlayClick = onTogglePlayClick,
-              onPreviousClick = playerConnection::playPrevious,
-              onNextClick = playerConnection::playNext,
-              cancelClick = { viewModelScope.launch { playbackRepository.clear() } },
+              actions =
+                playerViewActions(
+                  currentPlaylist = playlist,
+                  playerState = playerState,
+                  playerInput = playerInput.value,
+                ),
             )
           }
       }
       LoadableState.Loading,
       is LoadableState.Error -> {
-        flowOf(PlayerViewState(playerVisible = true, playlist = playlist, tracks = tracks))
+        flowOf(
+          PlayerViewState.Playback(
+            playlist = playlist,
+            tracks = tracks,
+            actions = object : PlayerViewActions {},
+          )
+        )
       }
     }
   }
 
-  private fun onPlaybackPlayerViewState(state: PlayerViewState) {
-    Napier.d(tag = "PLAYER_STATE", message = state.playerState.toString())
-    when (val playerState = state.playerState) {
+  private fun playerViewActions(
+    currentPlaylist: Playlist,
+    playerState: PlayerState,
+    playerInput: PlayerInput,
+  ): PlayerViewActions =
+    object : PlayerViewActions {
+      override fun startPlayback(playlist: Playlist) {
+        if (playlist != currentPlaylist) {
+          viewModelScope.launch { playbackRepository.updatePlaybackPlaylist(playlist) }
+        } else {
+          onTogglePlayClick()
+        }
+      }
+
+      override fun onTogglePlayClick() {
+        when (playerState) {
+          PlayerState.Idle -> {
+            enqueue(playerInput)
+          }
+          is PlayerState.Enqueued -> {
+            if (playerState.isPlaying) playerConnection.pause() else playerConnection.play()
+          }
+          is PlayerState.Error -> {}
+        }
+      }
+
+      override fun onPreviousClick() {
+        playerConnection.playPrevious()
+      }
+
+      override fun onNextClick() {
+        playerConnection.playNext()
+      }
+
+      override fun cancelClick() {
+        viewModelScope.launch { playbackRepository.clear() }
+      }
+    }
+
+  private fun onPlayerViewStatePlayback(playbackState: PlayerViewState.Playback) {
+    Napier.d(tag = "PLAYER_STATE", message = playbackState.playerState.toString())
+    when (val playerState = playbackState.playerState) {
       PlayerState.Idle -> {
         return
       }
@@ -149,7 +177,9 @@ class PlayerViewModel(
           playbackRepository.updatePlaybackTrack(
             trackIndex = playerState.currentTrackIndex,
             trackPositionMs =
-              (state.currentTrackProgress * playerState.currentTrack.duration.toDouble() * 1000.0)
+              (playbackState.currentTrackProgress *
+                  playerState.currentTrack.duration.toDouble() *
+                  1000.0)
                 .roundToLong(),
           )
         }

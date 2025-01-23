@@ -79,6 +79,7 @@ import com.trm.audiofeels.ui.discover.DiscoverViewModelFactory
 import com.trm.audiofeels.ui.favourites.FavouritesPage
 import com.trm.audiofeels.ui.player.PlayerPage
 import com.trm.audiofeels.ui.player.PlayerViewModel
+import com.trm.audiofeels.ui.player.PlayerViewState
 import com.trm.audiofeels.ui.search.SearchPage
 import dev.zwander.compose.rememberThemeInfo
 import kotlinx.coroutines.launch
@@ -164,55 +165,13 @@ fun AppContent(applicationComponent: ApplicationComponent) {
       ) {
         BottomSheetScaffold(
           sheetContent = {
-            Row(
-              verticalAlignment = Alignment.CenterVertically,
-              horizontalArrangement = Arrangement.SpaceAround,
-              modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp),
-            ) {
-              viewState.currentTrackImageBitmap?.let {
-                Image(bitmap = it, contentDescription = null, modifier = Modifier.size(40.dp))
+            when (val it = viewState) {
+              PlayerViewState.Idle -> {
+                // TODO: loading placeholder of some kind
               }
-
-              Text(
-                when (val playerState = viewState.playerState) {
-                  PlayerState.Idle -> {
-                    "Idle"
-                  }
-                  is PlayerState.Enqueued -> {
-                    "Enq ${playerState.currentTrackIndex} - ${viewState.currentTrackProgress}"
-                  }
-                  is PlayerState.Error -> {
-                    "Error"
-                  }
-                }
-              )
-
-              when (val playerState = viewState.playerState) {
-                PlayerState.Idle -> {
-                  IconButton(onClick = viewState.onTogglePlayClick) {
-                    Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
-                  }
-                }
-                is PlayerState.Enqueued -> {
-                  IconButton(onClick = viewState.onPreviousClick) {
-                    Icon(imageVector = Icons.Outlined.SkipPrevious, contentDescription = "Previous")
-                  }
-
-                  IconButton(onClick = viewState.onTogglePlayClick) {
-                    Crossfade(playerState.isPlaying) {
-                      if (it) Icon(imageVector = Icons.Outlined.Pause, contentDescription = "Pause")
-                      else Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
-                    }
-                  }
-
-                  IconButton(onClick = viewState.onNextClick) {
-                    Icon(imageVector = Icons.Outlined.SkipNext, contentDescription = "Next")
-                  }
-                }
-                is PlayerState.Error -> {}
+              is PlayerViewState.Playback -> {
+                PlayerSheetContent(it)
               }
-
-              Button(onClick = viewState.cancelClick) { Text("Cancel") }
             }
           },
           scaffoldState = appViewState.playerViewState.scaffoldState,
@@ -240,7 +199,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
                   navController = navController,
                   discoverViewModelFactory = applicationComponent.discoverViewModelFactory,
                   modifier = Modifier.fillMaxSize(),
-                  onPlaylistClick = viewState.startPlayback,
+                  onPlaylistClick = viewState.actions::startPlayback,
                 )
               }
             },
@@ -248,7 +207,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
               AnimatedPane {
                 PlayerPage(
                   modifier = Modifier.fillMaxSize(),
-                  onCancelPlaybackClick = viewState.cancelClick,
+                  onCancelPlaybackClick = viewState.actions::cancelClick,
                 )
               }
             },
@@ -256,6 +215,62 @@ fun AppContent(applicationComponent: ApplicationComponent) {
         }
       }
     }
+  }
+}
+
+@Composable
+private fun PlayerSheetContent(viewState: PlayerViewState.Playback) {
+  Row(
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.SpaceAround,
+    modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp),
+  ) {
+    viewState.currentTrackImageBitmap?.let {
+      Image(bitmap = it, contentDescription = null, modifier = Modifier.size(40.dp))
+    }
+
+    Text(
+      when (val playerState = viewState.playerState) {
+        PlayerState.Idle -> {
+          "Idle"
+        }
+        is PlayerState.Enqueued -> {
+          "Enq ${playerState.currentTrackIndex} - ${viewState.currentTrackProgress}"
+        }
+        is PlayerState.Error -> {
+          "Error"
+        }
+      }
+    )
+
+    when (val playerState = viewState.playerState) {
+      PlayerState.Idle -> {
+        IconButton(onClick = viewState.actions::onTogglePlayClick) {
+          Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
+        }
+      }
+
+      is PlayerState.Enqueued -> {
+        IconButton(onClick = viewState.actions::onPreviousClick) {
+          Icon(imageVector = Icons.Outlined.SkipPrevious, contentDescription = "Previous")
+        }
+
+        IconButton(onClick = viewState.actions::onTogglePlayClick) {
+          Crossfade(playerState.isPlaying) {
+            if (it) Icon(imageVector = Icons.Outlined.Pause, contentDescription = "Pause")
+            else Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
+          }
+        }
+
+        IconButton(onClick = viewState.actions::onNextClick) {
+          Icon(imageVector = Icons.Outlined.SkipNext, contentDescription = "Next")
+        }
+      }
+
+      is PlayerState.Error -> {}
+    }
+
+    Button(onClick = viewState.actions::cancelClick) { Text("Cancel") }
   }
 }
 
