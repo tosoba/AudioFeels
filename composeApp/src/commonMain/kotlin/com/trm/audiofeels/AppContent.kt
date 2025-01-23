@@ -94,13 +94,11 @@ fun AppContent(applicationComponent: ApplicationComponent) {
   val playerViewModel =
     viewModel<PlayerViewModel>(factory = applicationComponent.playerViewModelFactory)
   val viewState by playerViewModel.viewState.collectAsStateWithLifecycle()
-  val (
-    playerVisible, _, playerState, _, currentTrackProgress, currentTrackImageBitmap, onPlayClick) =
-    viewState
 
   val fallbackSeedColor = rememberThemeInfo().seedColor
   val seedColor =
-    currentTrackImageBitmap?.let { rememberThemeColor(it, fallbackSeedColor) } ?: fallbackSeedColor
+    viewState.currentTrackImageBitmap?.let { rememberThemeColor(it, fallbackSeedColor) }
+      ?: fallbackSeedColor
 
   DynamicMaterialTheme(seedColor = seedColor, animate = true) {
     val adaptiveInfo = currentWindowAdaptiveInfo()
@@ -112,7 +110,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
     val scope = rememberCoroutineScope()
     val appViewState =
       rememberAppViewState(
-        playerVisible = playerVisible,
+        playerVisible = viewState.playerVisible,
         playerViewState =
           rememberAppPlayerViewState(
             scaffoldState =
@@ -120,7 +118,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
                 bottomSheetState =
                   rememberStandardBottomSheetState(
                     initialValue = SheetValue.Hidden,
-                    confirmValueChange = { it != SheetValue.Hidden || !playerVisible },
+                    confirmValueChange = { it != SheetValue.Hidden || !viewState.playerVisible },
                     skipHiddenState = false,
                   )
               )
@@ -171,17 +169,17 @@ fun AppContent(applicationComponent: ApplicationComponent) {
               horizontalArrangement = Arrangement.SpaceAround,
               modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp),
             ) {
-              currentTrackImageBitmap?.let {
+              viewState.currentTrackImageBitmap?.let {
                 Image(bitmap = it, contentDescription = null, modifier = Modifier.size(40.dp))
               }
 
               Text(
-                when (playerState) {
+                when (val playerState = viewState.playerState) {
                   PlayerState.Idle -> {
                     "Idle"
                   }
                   is PlayerState.Enqueued -> {
-                    "Enq ${playerState.currentTrackIndex} - $currentTrackProgress"
+                    "Enq ${playerState.currentTrackIndex} - ${viewState.currentTrackProgress}"
                   }
                   is PlayerState.Error -> {
                     "Error"
@@ -189,9 +187,9 @@ fun AppContent(applicationComponent: ApplicationComponent) {
                 }
               )
 
-              when (playerState) {
+              when (val playerState = viewState.playerState) {
                 PlayerState.Idle -> {
-                  IconButton(onClick = onPlayClick) {
+                  IconButton(onClick = viewState.onTogglePlayClick) {
                     Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
                   }
                 }
@@ -200,15 +198,10 @@ fun AppContent(applicationComponent: ApplicationComponent) {
                     Icon(imageVector = Icons.Outlined.SkipPrevious, contentDescription = "Previous")
                   }
 
-                  Crossfade(playerState.isPlaying) {
-                    if (it) {
-                      IconButton(onClick = playerViewModel::onPauseClick) {
-                        Icon(imageVector = Icons.Outlined.Pause, contentDescription = "Pause")
-                      }
-                    } else {
-                      IconButton(onClick = onPlayClick) {
-                        Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
-                      }
+                  IconButton(onClick = viewState.onTogglePlayClick) {
+                    Crossfade(playerState.isPlaying) {
+                      if (it) Icon(imageVector = Icons.Outlined.Pause, contentDescription = "Pause")
+                      else Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
                     }
                   }
 
@@ -228,7 +221,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
             rememberSupportingPaneScaffoldNavigator(
               scaffoldDirective =
                 calculatePaneScaffoldDirective(currentWindowAdaptiveInfo()).let {
-                  if (playerVisible) it
+                  if (viewState.playerVisible) it
                   else it.copy(maxHorizontalPartitions = 1, maxVerticalPartitions = 1)
                 }
             )

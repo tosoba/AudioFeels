@@ -7,11 +7,11 @@ import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.model.Track
 
 data class PlayerViewState(
-  val isVisible: Boolean = false,
+  val playerVisible: Boolean = false,
   val playlist: Playlist? = null,
   val playerState: PlayerState = PlayerState.Idle,
   val tracks: LoadableState<List<Track>> = LoadableState.Loading,
   val currentTrackProgress: Double = 0.0,
   val currentTrackImageBitmap: ImageBitmap? = null, // TODO: use a placeholder in case of no artwork
-  val onPlayClick: () -> Unit = {},
+  val onTogglePlayClick: () -> Unit = {},
 )

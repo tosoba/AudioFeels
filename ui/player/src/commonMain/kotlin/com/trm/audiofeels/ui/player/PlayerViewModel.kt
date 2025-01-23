@@ -77,7 +77,7 @@ class PlayerViewModel(
                       }
                     ) { (playerState, currentTrackImageBitmap), currentTrackPositionMs ->
                       PlayerViewState(
-                        isVisible = true,
+                        playerVisible = true,
                         playlist = playlist,
                         playerState = playerState,
                         tracks = tracks,
@@ -94,11 +94,18 @@ class PlayerViewModel(
                             }
                           }.roundTo(3),
                         currentTrackImageBitmap = currentTrackImageBitmap,
-                        onPlayClick = {
+                        onTogglePlayClick = {
                           when (playerState) {
-                            PlayerState.Idle -> enqueue(playerInput.value)
-                            is PlayerState.Enqueued -> playerConnection.play()
-                            is PlayerState.Error -> return@PlayerViewState
+                            PlayerState.Idle -> {
+                              enqueue(playerInput.value)
+                            }
+                            is PlayerState.Enqueued -> {
+                              if (playerState.isPlaying) playerConnection.pause()
+                              else playerConnection.play()
+                            }
+                            is PlayerState.Error -> {
+                              return@PlayerViewState
+                            }
                           }
                         },
                       )
@@ -106,7 +113,7 @@ class PlayerViewModel(
                 }
                 LoadableState.Loading,
                 is LoadableState.Error -> {
-                  flowOf(PlayerViewState(isVisible = true, playlist = playlist, tracks = tracks))
+                  flowOf(PlayerViewState(playerVisible = true, playlist = playlist, tracks = tracks))
                 }
               }
             }
@@ -157,7 +164,7 @@ class PlayerViewModel(
     if (viewState.value.playlist != playlist) {
       viewModelScope.launch { playbackRepository.updatePlaybackPlaylist(playlist) }
     } else {
-      viewState.value.onPlayClick()
+      viewState.value.onTogglePlayClick()
     }
   }
 
@@ -173,10 +180,6 @@ class PlayerViewModel(
       startTrackIndex = start.trackIndex,
       startPositionMs = start.trackPositionMs,
     )
-  }
-
-  fun onPauseClick() {
-    playerConnection.pause()
   }
 
   fun onPreviousClick() {
