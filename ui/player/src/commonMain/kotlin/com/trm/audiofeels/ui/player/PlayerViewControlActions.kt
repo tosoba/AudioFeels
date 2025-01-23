@@ -1,9 +1,9 @@
 package com.trm.audiofeels.ui.player
 
 interface PlayerViewControlActions {
-  fun onTogglePlayClick() {}
+  fun onTogglePlayClick()
 
-  fun onPreviousClick() {}
+  fun onPreviousClick()
 
-  fun onNextClick() {}
+  fun onNextClick()
 }
