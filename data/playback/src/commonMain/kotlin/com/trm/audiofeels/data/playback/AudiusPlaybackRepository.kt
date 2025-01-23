@@ -26,6 +26,7 @@ class AudiusPlaybackRepository(private val dataStore: DataStore<Preferences>) : 
       preferences[playbackPlaylistPreferenceKey] =
         Json.encodeToString(Playlist.serializer(), playlist)
       preferences[playbackTrackIndexPreferenceKey] = 0
+      preferences[playbackTrackPositionMsKey] = 0L
       preferences[playbackAutoPlayPreferenceKey] = true
     }
   }
@@ -58,6 +59,7 @@ class AudiusPlaybackRepository(private val dataStore: DataStore<Preferences>) : 
     dataStore.edit { preferences ->
       preferences -= playbackPlaylistPreferenceKey
       preferences[playbackTrackIndexPreferenceKey] = 0
+      preferences[playbackTrackPositionMsKey] = 0L
       preferences[playbackAutoPlayPreferenceKey] = false
     }
   }
