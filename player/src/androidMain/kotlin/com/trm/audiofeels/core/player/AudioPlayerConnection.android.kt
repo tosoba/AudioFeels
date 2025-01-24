@@ -111,14 +111,14 @@ actual class AudioPlayerConnection(
 
   override fun playPrevious() {
     withMediaBrowser {
-      seekToPrevious()
+      seekToPreviousMediaItem()
       play()
     }
   }
 
   override fun playNext() {
     withMediaBrowser {
-      seekToNext()
+      seekToNextMediaItem()
       play()
     }
   }
