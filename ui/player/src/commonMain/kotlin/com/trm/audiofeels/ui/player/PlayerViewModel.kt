@@ -85,39 +85,40 @@ class PlayerViewModel(
             }
             .stateIn(scope = viewModelScope, started = SharingStarted.Lazily, initialValue = null)
 
-        playerConnection.playerState
-          .onEach { artworkUrlChannel.send(getTrackArtworkUrl(it, playerInput.value)) }
-          .combine(imageBitmapFlow) { playerState, imageBitmap -> playerState to imageBitmap }
-          .combine(
-            playerConnection.currentTrackPositionMs.distinctUntilChanged().onStart { emit(0L) }
-          ) { (playerState, currentTrackImageBitmap), currentTrackPositionMs ->
-            val controlActions =
-              playerViewControlActions(playerState = playerState, playerInput = playerInput.value)
-            PlayerViewState.Playback(
-              playlist = playlist,
-              playerState = playerState,
-              tracks = playerInput.value.tracks,
-              currentTrackProgress =
-                when (playerState) {
-                  is PlayerState.Enqueued -> {
-                    currentTrackPositionMs.toDouble() /
-                      playerState.currentTrack.duration.toDouble() /
-                      1000.0
-                  }
-                  PlayerState.Idle,
-                  is PlayerState.Error -> {
-                    0.0
-                  }
-                }.roundTo(3),
-              currentTrackImageBitmap = currentTrackImageBitmap,
-              controlActions = controlActions,
-              playbackActions =
-                playerViewPlaybackActions(
-                  currentPlaylist = playlist,
-                  toggleCurrentPlayback = controlActions::onTogglePlayClick,
-                ),
-            )
-          }
+        combine(
+          playerConnection.playerState.onEach {
+            artworkUrlChannel.send(getTrackArtworkUrl(it, playerInput.value))
+          },
+          imageBitmapFlow,
+          playerConnection.currentTrackPositionMs.distinctUntilChanged().onStart { emit(0L) },
+        ) { playerState, currentTrackImageBitmap, currentTrackPositionMs ->
+          val controlActions =
+            playerViewControlActions(playerState = playerState, playerInput = playerInput.value)
+          PlayerViewState.Playback(
+            playlist = playlist,
+            playerState = playerState,
+            tracks = playerInput.value.tracks,
+            currentTrackProgress =
+              when (playerState) {
+                is PlayerState.Enqueued -> {
+                  currentTrackPositionMs.toDouble() /
+                    playerState.currentTrack.duration.toDouble() /
+                    1000.0
+                }
+                PlayerState.Idle,
+                is PlayerState.Error -> {
+                  0.0
+                }
+              }.roundTo(3),
+            currentTrackImageBitmap = currentTrackImageBitmap,
+            controlActions = controlActions,
+            playbackActions =
+              playerViewPlaybackActions(
+                currentPlaylist = playlist,
+                toggleCurrentPlayback = controlActions::onTogglePlayClick,
+              ),
+          )
+        }
       }
       LoadableState.Loading -> {
         flowOf(
