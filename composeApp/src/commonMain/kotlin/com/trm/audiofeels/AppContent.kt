@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -164,20 +165,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
         },
       ) {
         BottomSheetScaffold(
-          sheetContent = {
-            when (val it = viewState) {
-              is PlayerViewState.Invisible,
-              is PlayerViewState.Loading -> {
-                // TODO: loading placeholder of some kind
-              }
-              is PlayerViewState.Playback -> {
-                PlayerSheetContent(it)
-              }
-              is PlayerViewState.Error -> {
-                // TODO: retry button
-              }
-            }
-          },
+          sheetContent = { PlayerSheetContent(viewState) },
           scaffoldState = appViewState.playerViewState.scaffoldState,
         ) {
           val navigator =
@@ -224,7 +212,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
 
 // TODO: consider moving this to :ui:player
 @Composable
-private fun PlayerSheetContent(viewState: PlayerViewState.Playback) {
+private fun PlayerSheetContent(viewState: PlayerViewState) {
   Row(
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.SpaceAround,
@@ -234,43 +222,62 @@ private fun PlayerSheetContent(viewState: PlayerViewState.Playback) {
       Image(bitmap = it, contentDescription = null, modifier = Modifier.size(40.dp))
     }
 
-    Text(
-      when (val playerState = viewState.playerState) {
-        PlayerState.Idle -> {
-          "Idle"
-        }
-        is PlayerState.Enqueued -> {
-          "Enq ${playerState.currentTrackIndex} - ${viewState.currentTrackProgress}"
-        }
-        is PlayerState.Error -> {
-          "Error"
-        }
-      }
-    )
-
-    when (val playerState = viewState.playerState) {
-      PlayerState.Idle -> {
-        IconButton(onClick = viewState.controlActions::onTogglePlayClick) {
-          Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
-        }
-      }
-      is PlayerState.Enqueued -> {
-        IconButton(onClick = viewState.controlActions::onPreviousClick) {
-          Icon(imageVector = Icons.Outlined.SkipPrevious, contentDescription = "Previous")
-        }
-
-        IconButton(onClick = viewState.controlActions::onTogglePlayClick) {
-          Crossfade(playerState.isPlaying) {
-            if (it) Icon(imageVector = Icons.Outlined.Pause, contentDescription = "Pause")
-            else Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
+    if (viewState is PlayerViewState.Playback) {
+      Text(
+        when (val playerState = viewState.playerState) {
+          PlayerState.Idle -> {
+            "Idle"
+          }
+          is PlayerState.Enqueued -> {
+            "Enq ${playerState.currentTrackIndex} - ${viewState.currentTrackProgress}"
+          }
+          is PlayerState.Error -> {
+            "Error"
           }
         }
+      )
+    }
 
-        IconButton(onClick = viewState.controlActions::onNextClick) {
-          Icon(imageVector = Icons.Outlined.SkipNext, contentDescription = "Next")
+    when (viewState) {
+      is PlayerViewState.Invisible,
+      is PlayerViewState.Loading -> {
+        CircularProgressIndicator()
+      }
+      is PlayerViewState.Playback -> {
+        when (val playerState = viewState.playerState) {
+          PlayerState.Idle -> {
+            IconButton(onClick = viewState.controlActions::onTogglePlayClick) {
+              Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
+            }
+          }
+          is PlayerState.Enqueued -> {
+            IconButton(onClick = viewState.controlActions::onPreviousClick) {
+              Icon(imageVector = Icons.Outlined.SkipPrevious, contentDescription = "Previous")
+            }
+
+            IconButton(onClick = viewState.controlActions::onTogglePlayClick) {
+              Crossfade(playerState.isPlaying) {
+                if (it) Icon(imageVector = Icons.Outlined.Pause, contentDescription = "Pause")
+                else Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
+              }
+            }
+
+            IconButton(onClick = viewState.controlActions::onNextClick) {
+              Icon(imageVector = Icons.Outlined.SkipNext, contentDescription = "Next")
+            }
+          }
+          is PlayerState.Error -> {}
         }
       }
-      is PlayerState.Error -> {}
+      is PlayerViewState.Error -> {
+        Button(
+          onClick = {
+            // TODO: retry
+          }
+        ) {
+          Text("Retry")
+        }
+      }
     }
 
     Button(onClick = viewState.playbackActions::cancel) { Text("Cancel") }
