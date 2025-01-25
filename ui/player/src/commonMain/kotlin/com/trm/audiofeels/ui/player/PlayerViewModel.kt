@@ -1,5 +1,6 @@
 package com.trm.audiofeels.ui.player
 
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import coil3.ImageLoader
@@ -17,7 +18,6 @@ import com.trm.audiofeels.domain.player.PlayerConnection
 import com.trm.audiofeels.domain.repository.PlaybackRepository
 import com.trm.audiofeels.domain.usecase.GetPlayerInputUseCase
 import io.github.aakira.napier.Napier
-import kotlin.math.roundToLong
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
@@ -72,6 +72,14 @@ class PlayerViewModel(
     playlist: Playlist,
   ): Flow<PlayerViewState> =
     when (playerInput) {
+      LoadableState.Loading -> {
+        flowOf(
+          PlayerViewState.Loading(
+            playlist = playlist,
+            playbackActions = playerViewPlaybackActions(),
+          )
+        )
+      }
       is LoadableState.Success -> {
         val artworkUrlChannel = Channel<String?>(onBufferOverflow = BufferOverflow.DROP_OLDEST)
         combine(
@@ -84,41 +92,14 @@ class PlayerViewModel(
           },
           playerConnection.currentTrackPositionMs.distinctUntilChanged().onStart { emit(0L) },
         ) { playerState, currentTrackImageBitmap, currentTrackPositionMs ->
-          val controlActions =
-            playerViewControlActions(playerState = playerState, playerInput = playerInput.value)
-          PlayerViewState.Playback(
+          playbackViewState(
+            playerInput = playerInput.value,
             playlist = playlist,
             playerState = playerState,
-            tracks = playerInput.value.tracks,
-            currentTrackProgress =
-              when (playerState) {
-                is PlayerState.Enqueued -> {
-                  currentTrackPositionMs.toDouble() /
-                    playerState.currentTrack.duration.toDouble() /
-                    1000.0
-                }
-                PlayerState.Idle,
-                is PlayerState.Error -> {
-                  0.0
-                }
-              }.roundTo(3),
+            currentTrackPositionMs = currentTrackPositionMs,
             currentTrackImageBitmap = currentTrackImageBitmap,
-            controlActions = controlActions,
-            playbackActions =
-              playerViewPlaybackActions(
-                currentPlaylist = playlist,
-                toggleCurrentPlayback = controlActions::onTogglePlayClick,
-              ),
           )
         }
-      }
-      LoadableState.Loading -> {
-        flowOf(
-          PlayerViewState.Loading(
-            playlist = playlist,
-            playbackActions = playerViewPlaybackActions(),
-          )
-        )
       }
       is LoadableState.Error -> {
         flowOf(
@@ -126,6 +107,41 @@ class PlayerViewModel(
         )
       }
     }
+
+  private fun playbackViewState(
+    playerInput: PlayerInput,
+    playlist: Playlist,
+    playerState: PlayerState,
+    currentTrackPositionMs: Long,
+    currentTrackImageBitmap: ImageBitmap?,
+  ): PlayerViewState.Playback {
+    val controlActions =
+      playerViewControlActions(playerState = playerState, playerInput = playerInput)
+    return PlayerViewState.Playback(
+      playlist = playlist,
+      playerState = playerState,
+      tracks = playerInput.tracks,
+      currentTrackProgress = currentTrackProgress(playerState, currentTrackPositionMs),
+      currentTrackImageBitmap = currentTrackImageBitmap,
+      controlActions = controlActions,
+      playbackActions =
+        playerViewPlaybackActions(
+          currentPlaylist = playlist,
+          toggleCurrentPlayback = controlActions::onTogglePlayClick,
+        ),
+    )
+  }
+
+  private fun currentTrackProgress(playerState: PlayerState, currentTrackPositionMs: Long): Double =
+    when (playerState) {
+      is PlayerState.Enqueued -> {
+        currentTrackPositionMs.toDouble() / playerState.currentTrack.duration.toDouble() / 1000.0
+      }
+      PlayerState.Idle,
+      is PlayerState.Error -> {
+        0.0
+      }
+    }.roundTo(3)
 
   private fun playerViewPlaybackActions(
     currentPlaylist: Playlist,
@@ -198,10 +214,7 @@ class PlayerViewModel(
           playbackRepository.updatePlaybackTrack(
             trackIndex = playerState.currentTrackIndex,
             trackPositionMs =
-              (playbackState.currentTrackProgress *
-                  playerState.currentTrack.duration.toDouble() *
-                  1000.0)
-                .roundToLong(),
+              playerState.currentTrack.positionMsOf(playbackState.currentTrackProgress),
           )
         }
       }
