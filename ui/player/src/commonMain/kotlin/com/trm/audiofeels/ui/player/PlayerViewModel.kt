@@ -31,7 +31,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
 
@@ -75,21 +74,14 @@ class PlayerViewModel(
     when (playerInput) {
       is LoadableState.Success -> {
         val artworkUrlChannel = Channel<String?>(onBufferOverflow = BufferOverflow.DROP_OLDEST)
-        val imageBitmapFlow =
-          artworkUrlChannel
-            .receiveAsFlow()
-            .distinctUntilChanged()
-            .transformLatest { artworkUrl ->
-              emit(null)
-              artworkUrl?.let { emit(imageLoader.loadImageBitmapOrNull(it, platformContext)) }
-            }
-            .stateIn(scope = viewModelScope, started = SharingStarted.Lazily, initialValue = null)
-
         combine(
           playerConnection.playerState.onEach {
             artworkUrlChannel.send(getTrackArtworkUrl(it, playerInput.value))
           },
-          imageBitmapFlow,
+          artworkUrlChannel.receiveAsFlow().distinctUntilChanged().transformLatest { artworkUrl ->
+            emit(null)
+            artworkUrl?.let { emit(imageLoader.loadImageBitmapOrNull(it, platformContext)) }
+          },
           playerConnection.currentTrackPositionMs.distinctUntilChanged().onStart { emit(0L) },
         ) { playerState, currentTrackImageBitmap, currentTrackPositionMs ->
           val controlActions =
