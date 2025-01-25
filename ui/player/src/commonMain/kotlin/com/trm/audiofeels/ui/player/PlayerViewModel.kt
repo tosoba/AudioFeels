@@ -19,6 +19,8 @@ import com.trm.audiofeels.domain.usecase.GetPlayerInputUseCase
 import io.github.aakira.napier.Napier
 import kotlin.math.roundToLong
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -28,6 +30,8 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
 
@@ -70,22 +74,20 @@ class PlayerViewModel(
   ): Flow<PlayerViewState> =
     when (playerInput) {
       is LoadableState.Success -> {
-        var lastArtworkUrl: String? = null
+        val artworkUrlChannel = Channel<String?>(onBufferOverflow = BufferOverflow.DROP_OLDEST)
+        val imageBitmapFlow =
+          artworkUrlChannel
+            .receiveAsFlow()
+            .distinctUntilChanged()
+            .transformLatest { artworkUrl ->
+              emit(null)
+              artworkUrl?.let { emit(imageLoader.loadImageBitmapOrNull(it, platformContext)) }
+            }
+            .stateIn(scope = viewModelScope, started = SharingStarted.Lazily, initialValue = null)
 
         playerConnection.playerState
-          .transformLatest { playerState ->
-            val trackArtworkUrl = getTrackArtworkUrl(playerState, playerInput.value)
-            if (trackArtworkUrl != lastArtworkUrl) {
-              lastArtworkUrl = trackArtworkUrl
-              emit(playerState to null)
-            }
-            emit(
-              playerState to
-                trackArtworkUrl?.let { artworkUrl ->
-                  imageLoader.loadImageBitmapOrNull(artworkUrl, platformContext)
-                }
-            )
-          }
+          .onEach { artworkUrlChannel.send(getTrackArtworkUrl(it, playerInput.value)) }
+          .combine(imageBitmapFlow) { playerState, imageBitmap -> playerState to imageBitmap }
           .combine(
             playerConnection.currentTrackPositionMs.distinctUntilChanged().onStart { emit(0L) }
           ) { (playerState, currentTrackImageBitmap), currentTrackPositionMs ->
