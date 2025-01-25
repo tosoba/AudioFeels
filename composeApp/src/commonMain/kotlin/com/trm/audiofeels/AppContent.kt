@@ -1,34 +1,22 @@
 package com.trm.audiofeels
 
-import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Pause
-import androidx.compose.material.icons.outlined.PlayArrow
-import androidx.compose.material.icons.outlined.SkipNext
-import androidx.compose.material.icons.outlined.SkipPrevious
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationDrawerItem
@@ -73,14 +61,13 @@ import com.trm.audiofeels.core.ui.compose.util.NavigationContentPosition
 import com.trm.audiofeels.core.ui.compose.util.NavigationType
 import com.trm.audiofeels.core.ui.compose.util.calculateWindowSize
 import com.trm.audiofeels.di.ApplicationComponent
-import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.ui.discover.DiscoverPage
 import com.trm.audiofeels.ui.discover.DiscoverViewModelFactory
 import com.trm.audiofeels.ui.favourites.FavouritesPage
 import com.trm.audiofeels.ui.player.PlayerPage
+import com.trm.audiofeels.ui.player.PlayerSheetContent
 import com.trm.audiofeels.ui.player.PlayerViewModel
-import com.trm.audiofeels.ui.player.PlayerViewState
 import com.trm.audiofeels.ui.search.SearchPage
 import dev.zwander.compose.rememberThemeInfo
 import kotlinx.coroutines.launch
@@ -207,80 +194,6 @@ fun AppContent(applicationComponent: ApplicationComponent) {
         }
       }
     }
-  }
-}
-
-// TODO: consider moving this to :ui:player
-@Composable
-private fun PlayerSheetContent(viewState: PlayerViewState) {
-  Row(
-    verticalAlignment = Alignment.CenterVertically,
-    horizontalArrangement = Arrangement.SpaceAround,
-    modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp),
-  ) {
-    viewState.currentTrackImageBitmap?.let {
-      Image(bitmap = it, contentDescription = null, modifier = Modifier.size(40.dp))
-    }
-
-    if (viewState is PlayerViewState.Playback) {
-      Text(
-        when (val playerState = viewState.playerState) {
-          PlayerState.Idle -> {
-            "Idle"
-          }
-          is PlayerState.Enqueued -> {
-            "Enq ${playerState.currentTrackIndex} - ${viewState.currentTrackProgress}"
-          }
-          is PlayerState.Error -> {
-            "Error"
-          }
-        }
-      )
-    }
-
-    when (viewState) {
-      is PlayerViewState.Invisible,
-      is PlayerViewState.Loading -> {
-        CircularProgressIndicator()
-      }
-      is PlayerViewState.Playback -> {
-        when (val playerState = viewState.playerState) {
-          PlayerState.Idle -> {
-            IconButton(onClick = viewState.controlActions::onTogglePlayClick) {
-              Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
-            }
-          }
-          is PlayerState.Enqueued -> {
-            IconButton(onClick = viewState.controlActions::onPreviousClick) {
-              Icon(imageVector = Icons.Outlined.SkipPrevious, contentDescription = "Previous")
-            }
-
-            IconButton(onClick = viewState.controlActions::onTogglePlayClick) {
-              Crossfade(playerState.isPlaying) {
-                if (it) Icon(imageVector = Icons.Outlined.Pause, contentDescription = "Pause")
-                else Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
-              }
-            }
-
-            IconButton(onClick = viewState.controlActions::onNextClick) {
-              Icon(imageVector = Icons.Outlined.SkipNext, contentDescription = "Next")
-            }
-          }
-          is PlayerState.Error -> {}
-        }
-      }
-      is PlayerViewState.Error -> {
-        Button(
-          onClick = {
-            // TODO: retry
-          }
-        ) {
-          Text("Retry")
-        }
-      }
-    }
-
-    Button(onClick = viewState.playbackActions::cancel) { Text("Cancel") }
   }
 }
 
