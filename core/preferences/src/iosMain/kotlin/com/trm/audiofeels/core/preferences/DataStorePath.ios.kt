@@ -7,7 +7,7 @@ import platform.Foundation.NSFileManager
 import platform.Foundation.NSUserDomainMask
 
 @OptIn(ExperimentalForeignApi::class)
-actual val PlatformContext.dataStorePath: String
+internal actual val PlatformContext.dataStorePath: String
   get() =
     requireNotNull(
         NSFileManager.defaultManager.URLForDirectory(
