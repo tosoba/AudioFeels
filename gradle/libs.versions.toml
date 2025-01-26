@@ -35,6 +35,7 @@ mokkkery = "2.5.1"
 napier = "2.6.1"
 navigation = "2.8.0-alpha10"
 okio = "3.9.1"
+room = "2.7.0-alpha12"
 turbine = "1.2.0"
 
 [libraries]
@@ -86,6 +87,9 @@ materialyou = { group = "dev.zwander", name = "materialyou", version.ref = "mate
 napier = { group = "io.github.aakira", name = "napier", version.ref = "napier" }
 navigation-compose = { group = "org.jetbrains.androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
+room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 tools-desugarjdklibs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugarjdklibs" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 
@@ -108,3 +112,4 @@ kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref =
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 mokkery = { id = "dev.mokkery", version.ref = "mokkkery" }
+room = { id = "androidx.room", version.ref = "room" }

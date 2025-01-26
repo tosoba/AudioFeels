@@ -36,6 +36,7 @@ include(
   ":api:hosts",
   ":composeApp",
   ":core:base",
+  ":core:database",
   ":core:network",
   ":core:preferences",
   ":core:ui:compose",
