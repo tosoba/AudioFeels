@@ -26,11 +26,11 @@ sealed interface PlayerViewState {
 
   data class Playback(
     val playlist: Playlist,
-    val playerState: PlayerState = PlayerState.Idle,
-    val tracks: List<Track> = emptyList(),
-    val currentTrackProgress: Double = 0.0,
-    override val currentTrackImageBitmap: ImageBitmap? =
-      null, // TODO: use a placeholder in case of no artwork
+    val playerState: PlayerState,
+    val tracks: List<Track>,
+    val currentTrackProgress: Double,
+    // TODO: use a placeholder in case of no artwork
+    override val currentTrackImageBitmap: ImageBitmap?,
     val controlActions: PlayerViewControlActions,
     override val playbackActions: PlayerViewPlaybackActions,
   ) : PlayerViewState
