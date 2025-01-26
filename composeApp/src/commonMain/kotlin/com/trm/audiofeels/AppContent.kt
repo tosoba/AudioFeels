@@ -17,6 +17,7 @@ import androidx.compose.material.Text
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationDrawerItem
@@ -226,7 +227,7 @@ private fun AppNavigationRail(
 ) {
   NavigationRail(
     modifier = Modifier.fillMaxHeight(),
-    containerColor = androidx.compose.material3.MaterialTheme.colorScheme.inverseOnSurface,
+    containerColor = MaterialTheme.colorScheme.inverseOnSurface,
   ) {
     Column(
       horizontalAlignment = Alignment.CenterHorizontally,
@@ -256,7 +257,7 @@ private fun AppPermanentNavigationDrawer(
 ) {
   PermanentDrawerSheet(
     modifier = Modifier.sizeIn(minWidth = 200.dp, maxWidth = 300.dp),
-    drawerContainerColor = androidx.compose.material3.MaterialTheme.colorScheme.surfaceContainerHigh,
+    drawerContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
   ) {
     Column(
       modifier = Modifier.verticalScroll(rememberScrollState()).padding(16.dp),

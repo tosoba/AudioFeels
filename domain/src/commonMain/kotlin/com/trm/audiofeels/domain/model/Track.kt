@@ -16,4 +16,6 @@ data class Track(
   val title: String,
 ) {
   fun positionMsOf(progress: Double): Long = (progress * duration.toDouble() * 1000.0).roundToLong()
+
+  override fun toString(): String = "Track(id = $id, title = $title, artworkUrl = $artworkUrl)"
 }
