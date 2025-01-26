@@ -2,13 +2,13 @@ package com.trm.audiofeels.data.playback
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import com.trm.audiofeels.core.base.di.ApplicationScope
 import com.trm.audiofeels.core.preferences.getFlow
-import com.trm.audiofeels.core.preferences.playbackAutoPlayPreferenceKey
-import com.trm.audiofeels.core.preferences.playbackPlaylistPreferenceKey
-import com.trm.audiofeels.core.preferences.playbackTrackIndexPreferenceKey
-import com.trm.audiofeels.core.preferences.playbackTrackPositionMsKey
 import com.trm.audiofeels.domain.model.PlaybackStart
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.repository.PlaybackRepository
@@ -62,5 +62,12 @@ class AudiusPlaybackRepository(private val dataStore: DataStore<Preferences>) : 
       preferences[playbackTrackPositionMsKey] = 0L
       preferences[playbackAutoPlayPreferenceKey] = false
     }
+  }
+
+  companion object {
+    private val playbackPlaylistPreferenceKey = stringPreferencesKey("playbackPlaylist")
+    private val playbackTrackIndexPreferenceKey = intPreferencesKey("playbackTrackIndex")
+    private val playbackAutoPlayPreferenceKey = booleanPreferencesKey("playbackAutoPlay")
+    private val playbackTrackPositionMsKey = longPreferencesKey("playbackTrackPositionMs")
   }
 }

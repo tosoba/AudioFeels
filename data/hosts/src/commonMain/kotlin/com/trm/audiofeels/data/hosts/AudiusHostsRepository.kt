@@ -2,6 +2,7 @@ package com.trm.audiofeels.data.hosts
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.stringPreferencesKey
 import com.trm.audiofeels.api.hosts.HostsEndpoints
 import com.trm.audiofeels.core.base.di.ApplicationScope
 import com.trm.audiofeels.core.base.util.trimHttps
@@ -9,7 +10,6 @@ import com.trm.audiofeels.core.network.host.HostFetcher
 import com.trm.audiofeels.core.network.host.HostRetriever
 import com.trm.audiofeels.core.network.host.HostValidator
 import com.trm.audiofeels.core.preferences.get
-import com.trm.audiofeels.core.preferences.hostPreferenceKey
 import com.trm.audiofeels.core.preferences.set
 import com.trm.audiofeels.data.hosts.exception.NoHostAvailableException
 import com.trm.audiofeels.domain.repository.HostsRepository
@@ -65,4 +65,8 @@ class AudiusHostsRepository(
   private suspend fun List<String>?.findAndStoreFirstValidOrThrow(): String =
     this?.firstOrNull { validator.isValid(it) }?.also { storeHost(it) }
       ?: throw NoHostAvailableException
+
+  companion object {
+    private val hostPreferenceKey = stringPreferencesKey("host")
+  }
 }
