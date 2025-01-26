@@ -1,6 +1,7 @@
 plugins {
   id("com.trm.audiofeels.android.library")
   id("com.trm.audiofeels.kotlin.multiplatform")
+  alias(libs.plugins.kotlin.serialization)
   alias(libs.plugins.ksp)
   alias(libs.plugins.room)
 }
@@ -13,7 +14,9 @@ kotlin {
 
         implementation(libs.kotlin.stdlib)
         implementation(libs.kotlininject.runtime)
+        implementation(libs.kotlinx.serialization.json)
 
+        implementation(libs.sqlite.bundled)
         implementation(libs.room.runtime)
       }
     }

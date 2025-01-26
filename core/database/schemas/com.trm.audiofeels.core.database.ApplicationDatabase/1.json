@@ -2,10 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
+    "identityHash": "69c831dbaab756225c8a35bf3a1bad20",
     "entities": [
       {
-        "tableName": "Playlist",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `description` TEXT, `artwork_url` TEXT, `score` NUMBER NOT NULL, `track_count` INTEGER NOT NULL)",
+        "tableName": "playlist",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `description` TEXT, `artworkUrl` TEXT, `score` REAL NOT NULL, `trackCount` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -22,24 +23,22 @@
           {
             "fieldPath": "description",
             "columnName": "description",
-            "affinity": "TEXT",
-            "notNull": false
+            "affinity": "TEXT"
           },
           {
             "fieldPath": "artworkUrl",
-            "columnName": "artwork_url",
-            "affinity": "TEXT",
-            "notNull": false
+            "columnName": "artworkUrl",
+            "affinity": "TEXT"
           },
           {
             "fieldPath": "score",
             "columnName": "score",
-            "affinity": "NUMBER",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "trackCount",
-            "columnName": "track_count",
+            "columnName": "trackCount",
             "affinity": "INTEGER",
             "notNull": true
           }
@@ -51,6 +50,10 @@
           ]
         }
       }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '69c831dbaab756225c8a35bf3a1bad20')"
     ]
   }
 }

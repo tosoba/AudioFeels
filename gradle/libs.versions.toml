@@ -36,6 +36,7 @@ napier = "2.6.1"
 navigation = "2.8.0-alpha10"
 okio = "3.9.1"
 room = "2.7.0-alpha12"
+sqlite = "2.5.0-alpha12"
 turbine = "1.2.0"
 
 [libraries]
@@ -91,6 +92,7 @@ okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 tools-desugarjdklibs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugarjdklibs" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 
