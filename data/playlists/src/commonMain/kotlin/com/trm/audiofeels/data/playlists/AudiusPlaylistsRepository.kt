@@ -3,6 +3,7 @@ package com.trm.audiofeels.data.playlists
 import com.trm.audiofeels.api.audius.AudiusEndpoints
 import com.trm.audiofeels.api.audius.model.PlaylistsResponseItem
 import com.trm.audiofeels.api.audius.model.TrackResponseItem
+import com.trm.audiofeels.core.database.dao.PlaylistDao
 import com.trm.audiofeels.data.playlists.util.isValid
 import com.trm.audiofeels.data.playlists.util.toPlaylist
 import com.trm.audiofeels.data.playlists.util.toTrack
@@ -12,8 +13,10 @@ import com.trm.audiofeels.domain.repository.PlaylistsRepository
 import me.tatarka.inject.annotations.Inject
 
 @Inject
-class AudiusPlaylistsRepository(private val audiusEndpoints: AudiusEndpoints) :
-  PlaylistsRepository {
+class AudiusPlaylistsRepository(
+  private val audiusEndpoints: AudiusEndpoints,
+  private val playlistDao: PlaylistDao,
+) : PlaylistsRepository {
   override suspend fun getPlaylists(mood: String?): List<Playlist> =
     audiusEndpoints
       .getPlaylists(mood)
