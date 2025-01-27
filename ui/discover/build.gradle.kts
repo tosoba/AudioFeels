@@ -18,9 +18,6 @@ kotlin {
         implementation(libs.androidx.lifecycle.viewmodel.compose)
 
         implementation(libs.coil.compose)
-
-        implementation(libs.kotlin.stdlib)
-        implementation(libs.kotlininject.runtime)
       }
     }
   }

@@ -16,9 +16,6 @@ kotlin {
 
         implementation(libs.kachetor)
 
-        implementation(libs.kotlin.stdlib)
-        implementation(libs.kotlininject.runtime)
-
         implementation(libs.ktor.client.core)
         implementation(libs.ktor.client.logging)
         implementation(libs.ktor.client.content.negotiation)

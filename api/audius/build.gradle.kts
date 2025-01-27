@@ -18,9 +18,7 @@ kotlin {
         implementation(projects.core.base)
         implementation(projects.core.network)
 
-        implementation(libs.kotlin.stdlib)
         implementation(libs.kotlinx.serialization.json)
-        implementation(libs.kotlininject.runtime)
 
         implementation(libs.ktor.client.core)
         implementation(libs.ktor.client.logging)
@@ -28,11 +26,7 @@ kotlin {
       }
     }
 
-    iosMain {
-      dependencies {
-        implementation(libs.ktor.client.darwin)
-      }
-    }
+    iosMain { dependencies { implementation(libs.ktor.client.darwin) } }
   }
 }
 

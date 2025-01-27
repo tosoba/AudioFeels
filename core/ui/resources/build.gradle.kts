@@ -8,11 +8,11 @@ kotlin {
   sourceSets {
     commonMain {
       dependencies {
+        implementation(projects.core.base)
+
         api(compose.ui)
         api(compose.components.resources)
         implementation(compose.runtime)
-
-        implementation(libs.kotlinx.coroutines.core)
       }
     }
   }

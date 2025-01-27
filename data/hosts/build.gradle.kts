@@ -12,9 +12,6 @@ kotlin {
         implementation(projects.core.network)
         implementation(projects.core.preferences)
         implementation(projects.domain)
-
-        implementation(libs.kotlin.stdlib)
-        implementation(libs.kotlininject.runtime)
       }
     }
   }

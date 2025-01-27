@@ -21,12 +21,13 @@ kotlin {
         implementation(libs.androidx.lifecycle.runtime.compose)
         implementation(libs.androidx.lifecycle.viewmodel.compose)
 
+        api(libs.kotlin.stdlib)
+        api(libs.kotlininject.runtime)
+        api(libs.kotlinx.coroutines.core)
+        api(libs.kotlinx.datetime)
+        api(libs.kotlinx.serialization.json)
+
         api(libs.napier)
-
-        implementation(libs.kotlin.stdlib)
-        implementation(libs.kotlininject.runtime)
-        implementation(libs.kotlinx.coroutines.core)
-
         implementation(libs.okio)
       }
     }

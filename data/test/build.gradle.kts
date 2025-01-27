@@ -17,10 +17,8 @@ kotlin {
         implementation(projects.data.playlists)
         implementation(projects.domain)
 
-        implementation(libs.kotlin.stdlib)
         implementation(libs.kotlin.test)
         implementation(libs.kotlinx.coroutines.test)
-        implementation(libs.kotlinx.serialization.json)
 
         implementation(libs.ktor.client.content.negotiation)
         implementation(libs.ktor.client.core)

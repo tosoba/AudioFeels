@@ -11,9 +11,6 @@ kotlin {
 
         api(libs.androidx.datastore)
         api(libs.androidx.datastore.preferences)
-
-        implementation(libs.kotlin.stdlib)
-        implementation(libs.kotlininject.runtime)
       }
     }
   }

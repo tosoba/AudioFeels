@@ -30,10 +30,6 @@ kotlin {
         implementation(projects.core.base)
         implementation(projects.core.network)
         implementation(projects.domain)
-
-        implementation(libs.kotlin.stdlib)
-        implementation(libs.kotlinx.coroutines.core)
-        implementation(libs.kotlininject.runtime)
       }
     }
   }

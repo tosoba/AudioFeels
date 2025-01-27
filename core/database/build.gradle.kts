@@ -12,8 +12,6 @@ kotlin {
       dependencies {
         implementation(projects.core.base)
 
-        implementation(libs.kotlin.stdlib)
-        implementation(libs.kotlininject.runtime)
         implementation(libs.kotlinx.serialization.json)
 
         implementation(libs.sqlite.bundled)

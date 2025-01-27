@@ -10,9 +10,6 @@ kotlin {
       dependencies {
         implementation(projects.core.ui.compose)
         implementation(projects.core.ui.resources)
-
-        implementation(libs.kotlin.stdlib)
-        implementation(libs.kotlininject.runtime)
       }
     }
   }
