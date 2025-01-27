@@ -16,6 +16,7 @@ import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.player.PlayerConnection
 import com.trm.audiofeels.domain.repository.PlaybackRepository
+import com.trm.audiofeels.domain.repository.PlaylistsRepository
 import com.trm.audiofeels.domain.usecase.GetPlayerInputUseCase
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -31,6 +32,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
 
@@ -39,6 +41,7 @@ class PlayerViewModel(
   private val playerConnection: PlayerConnection,
   private val getPlayerInputUseCase: GetPlayerInputUseCase,
   private val playbackRepository: PlaybackRepository,
+  private val playlistsRepository: PlaylistsRepository,
   private val imageLoader: ImageLoader,
   private val platformContext: PlatformContext,
 ) : ViewModel() {
@@ -46,7 +49,11 @@ class PlayerViewModel(
     playbackRepository
       .getPlaybackPlaylistFlow()
       .distinctUntilChangedBy { it?.id }
-      .flatMapLatest { playlist ->
+      .scan(Pair<Playlist?, Playlist?>(null, null)) { (_, previous), next -> previous to next }
+      .onEach { (previousPlaylist) ->
+        previousPlaylist?.let { viewModelScope.launch { playlistsRepository.savePlaylist(it) } }
+      }
+      .flatMapLatest { (_, playlist) ->
         playlist?.id?.let { playlistId ->
           loadableStateFlowOf { getPlayerInputUseCase(playlistId) }
             .onEach { input ->

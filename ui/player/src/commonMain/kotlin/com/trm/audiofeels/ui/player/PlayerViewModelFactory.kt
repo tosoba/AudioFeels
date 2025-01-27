@@ -7,6 +7,7 @@ import coil3.ImageLoader
 import coil3.PlatformContext
 import com.trm.audiofeels.domain.player.PlayerConnection
 import com.trm.audiofeels.domain.repository.PlaybackRepository
+import com.trm.audiofeels.domain.repository.PlaylistsRepository
 import com.trm.audiofeels.domain.usecase.GetPlayerInputUseCase
 import kotlin.reflect.KClass
 import kotlin.reflect.cast
@@ -17,6 +18,7 @@ class PlayerViewModelFactory(
   private val playerConnection: PlayerConnection,
   private val getPlayerInputUseCase: GetPlayerInputUseCase,
   private val playbackRepository: PlaybackRepository,
+  private val playlistsRepository: PlaylistsRepository,
   private val imageLoader: ImageLoader,
   private val platformContext: PlatformContext,
 ) : ViewModelProvider.Factory {
@@ -26,6 +28,7 @@ class PlayerViewModelFactory(
         playerConnection = playerConnection,
         getPlayerInputUseCase = getPlayerInputUseCase,
         playbackRepository = playbackRepository,
+        playlistsRepository = playlistsRepository,
         imageLoader = imageLoader,
         platformContext = platformContext,
       )

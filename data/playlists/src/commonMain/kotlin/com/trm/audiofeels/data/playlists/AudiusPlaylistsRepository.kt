@@ -4,6 +4,7 @@ import com.trm.audiofeels.api.audius.AudiusEndpoints
 import com.trm.audiofeels.api.audius.model.PlaylistsResponseItem
 import com.trm.audiofeels.api.audius.model.TrackResponseItem
 import com.trm.audiofeels.core.database.dao.PlaylistDao
+import com.trm.audiofeels.data.playlists.mapper.toEntity
 import com.trm.audiofeels.data.playlists.util.isValid
 import com.trm.audiofeels.data.playlists.util.toPlaylist
 import com.trm.audiofeels.data.playlists.util.toTrack
@@ -17,6 +18,10 @@ class AudiusPlaylistsRepository(
   private val audiusEndpoints: AudiusEndpoints,
   private val playlistDao: PlaylistDao,
 ) : PlaylistsRepository {
+  override suspend fun savePlaylist(playlist: Playlist) {
+    playlistDao.insert(playlist.toEntity())
+  }
+
   override suspend fun getPlaylists(mood: String?): List<Playlist> =
     audiusEndpoints
       .getPlaylists(mood)
