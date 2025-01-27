@@ -41,6 +41,12 @@
             "columnName": "trackCount",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "lastPlayed",
+            "columnName": "lastPlayed",
+            "affinity": "TEXT",
+            "notNull": true
           }
         ],
         "primaryKey": {
