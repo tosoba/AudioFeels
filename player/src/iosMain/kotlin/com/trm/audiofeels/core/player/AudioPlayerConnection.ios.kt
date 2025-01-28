@@ -98,18 +98,9 @@ actual class AudioPlayerConnection : PlayerConnection {
       ) {
         _playerState.update {
           when (it) {
-            is PlayerState.Enqueued -> {
-              it.copy(isPlaying = player.isPlaying)
-            }
+            is PlayerState.Enqueued -> it.copy(isPlaying = player.isPlaying)
             PlayerState.Idle,
-            is PlayerState.Error -> {
-              PlayerState.Enqueued(
-                currentTrack = tracks[currentItemIndex],
-                currentTrackIndex = currentItemIndex,
-                playbackState = PlaybackState.READY,
-                isPlaying = player.isPlaying,
-              )
-            }
+            is PlayerState.Error -> enqueuedWithPlaybackState(PlaybackState.READY) ?: it
           }
         }
       }
@@ -125,31 +116,11 @@ actual class AudioPlayerConnection : PlayerConnection {
       ) {
         _playerState.update {
           when (player.currentItem?.status) {
-            AVPlayerStatusFailed -> {
-              // TODO: check if there's a way to figure out error type
-              PlayerState.Error(PlayerError.OTHER_ERROR, it)
-            }
-            AVPlayerStatusUnknown -> {
-              // TODO: not sure if Enqueued should be returned when current state is idle/error
-              PlayerState.Enqueued(
-                currentTrack = tracks[currentItemIndex],
-                currentTrackIndex = currentItemIndex,
-                playbackState = PlaybackState.BUFFERING,
-                isPlaying = player.isPlaying,
-              )
-            }
-            AVPlayerItemStatusReadyToPlay -> {
-              // TODO: not sure if Enqueued should be returned when current state is idle/error
-              PlayerState.Enqueued(
-                currentTrack = tracks[currentItemIndex],
-                currentTrackIndex = currentItemIndex,
-                playbackState = PlaybackState.READY,
-                isPlaying = player.isPlaying,
-              )
-            }
-            else -> {
-              it
-            }
+            // TODO: check if there's a way to figure out error type
+            AVPlayerStatusUnknown -> enqueuedWithPlaybackState(PlaybackState.BUFFERING) ?: it
+            AVPlayerItemStatusReadyToPlay -> enqueuedWithPlaybackState(PlaybackState.READY) ?: it
+            AVPlayerStatusFailed -> PlayerState.Error(PlayerError.OTHER_ERROR, it)
+            else -> it
           }
         }
       }
@@ -204,6 +175,16 @@ actual class AudioPlayerConnection : PlayerConnection {
       play(trackIndex = startTrackIndex, startPositionMs = startPositionMs)
     }
   }
+
+  private fun enqueuedWithPlaybackState(playbackState: PlaybackState): PlayerState.Enqueued? =
+    tracks.getOrNull(currentItemIndex)?.let { currentTrack ->
+      PlayerState.Enqueued(
+        currentTrack = currentTrack,
+        currentTrackIndex = currentItemIndex,
+        playbackState = playbackState,
+        isPlaying = player.isPlaying,
+      )
+    }
 
   private fun setCurrentItem(index: Int) {
     currentItemIndex = index
