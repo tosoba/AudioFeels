@@ -67,6 +67,6 @@ class AudiusHostsRepository(
       ?: throw NoHostAvailableException
 
   companion object {
-    private val hostPreferenceKey = stringPreferencesKey("host")
+    val hostPreferenceKey = stringPreferencesKey("host")
   }
 }

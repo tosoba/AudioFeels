@@ -11,6 +11,7 @@ kotlin {
         implementation(projects.api.audius)
         implementation(projects.api.hosts)
         implementation(projects.core.base)
+        implementation(projects.core.database)
         implementation(projects.core.network)
         implementation(projects.core.preferences)
         implementation(projects.data.hosts)
