@@ -19,6 +19,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -43,7 +44,11 @@ fun DiscoverPage(
   val trendingPlaylists by viewModel.trendingPlaylists.collectAsStateWithLifecycle()
 
   Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-    Text("Carry on", modifier = Modifier.padding(top = 12.dp, start = 12.dp, end = 12.dp))
+    Text(
+      text = "Carry on",
+      style = MaterialTheme.typography.headlineSmall,
+      modifier = Modifier.padding(top = 12.dp, start = 12.dp, end = 12.dp),
+    )
     Crossfade(targetState = carryOnPlaylists, modifier = modifier) {
       when (it) {
         LoadableState.Loading -> {
@@ -70,7 +75,11 @@ fun DiscoverPage(
       }
     }
 
-    Text("Trending", modifier = Modifier.padding(start = 12.dp, end = 12.dp))
+    Text(
+      text = "Trending",
+      style = MaterialTheme.typography.headlineSmall,
+      modifier = Modifier.padding(start = 12.dp, end = 12.dp),
+    )
     Crossfade(targetState = trendingPlaylists, modifier = modifier) {
       when (it) {
         LoadableState.Loading -> {
