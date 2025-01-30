@@ -90,7 +90,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
     viewState.currentTrackImageBitmap?.let { rememberThemeColor(it, fallbackSeedColor) }
       ?: fallbackSeedColor
 
-  DynamicMaterialTheme(seedColor = seedColor, animate = true) {
+  DynamicMaterialTheme(seedColor = seedColor) {
     val adaptiveInfo = currentWindowAdaptiveInfo()
     val navigationType =
       NavigationType(adaptiveInfo = adaptiveInfo, windowSize = calculateWindowSize())
