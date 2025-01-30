@@ -4,20 +4,23 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,7 +31,6 @@ import com.trm.audiofeels.core.base.model.LoadableState
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.artwork_placeholder
 import com.trm.audiofeels.domain.model.Playlist
-import io.github.aakira.napier.Napier
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
@@ -38,37 +40,64 @@ fun DiscoverPage(
   onPlaylistClick: (Playlist) -> Unit,
 ) {
   val carryOnPlaylists by viewModel.carryOnPlaylists.collectAsStateWithLifecycle()
-  LaunchedEffect(carryOnPlaylists) {
-    Napier.d(tag = "CARRY_ON", message = carryOnPlaylists.toString())
-  }
-
   val trendingPlaylists by viewModel.trendingPlaylists.collectAsStateWithLifecycle()
-  Crossfade(targetState = trendingPlaylists, modifier = modifier) {
-    when (it) {
-      LoadableState.Loading -> {
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-          CircularProgressIndicator()
+
+  Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+    Text("Carry on", modifier = Modifier.padding(top = 12.dp, start = 12.dp, end = 12.dp))
+    Crossfade(targetState = carryOnPlaylists, modifier = modifier) {
+      when (it) {
+        LoadableState.Loading -> {
+          LoadingIndicatorBox()
         }
-      }
-      is LoadableState.Success -> {
-        LazyRow(modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(all = 12.dp)) {
-          itemsIndexed(it.value) { index, playlist ->
-            PlaylistItem(
-              playlist = playlist,
-              modifier =
-                Modifier.width(150.dp)
-                  .padding(
-                    start = if (index > 0) 6.dp else 0.dp,
-                    end = if (index < it.value.lastIndex) 6.dp else 0.dp,
-                  ),
-              onPlaylistClick = onPlaylistClick,
-            )
+        is LoadableState.Success -> {
+          LazyRow(modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(all = 12.dp)) {
+            itemsIndexed(it.value) { index, playlist ->
+              PlaylistItem(
+                playlist = playlist.playlist,
+                modifier =
+                  Modifier.width(150.dp)
+                    .padding(
+                      playlistItemPaddingValues(itemIndex = index, lastIndex = it.value.lastIndex)
+                    ),
+                onPlaylistClick = onPlaylistClick,
+              )
+            }
           }
         }
+        is LoadableState.Error -> {
+          return@Crossfade
+        }
       }
-      is LoadableState.Error -> {
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-          Button(onClick = viewModel.trendingPlaylists::restart) { Text("Retry") }
+    }
+
+    Text("Trending", modifier = Modifier.padding(start = 12.dp, end = 12.dp))
+    Crossfade(targetState = trendingPlaylists, modifier = modifier) {
+      when (it) {
+        LoadableState.Loading -> {
+          LoadingIndicatorBox()
+        }
+        is LoadableState.Success -> {
+          LazyRow(modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(all = 12.dp)) {
+            itemsIndexed(it.value) { index, playlist ->
+              PlaylistItem(
+                playlist = playlist,
+                modifier =
+                  Modifier.width(150.dp)
+                    .padding(
+                      playlistItemPaddingValues(itemIndex = index, lastIndex = it.value.lastIndex)
+                    ),
+                onPlaylistClick = onPlaylistClick,
+              )
+            }
+          }
+        }
+        is LoadableState.Error -> {
+          Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxWidth().height(150.dp),
+          ) {
+            Button(onClick = viewModel.trendingPlaylists::restart) { Text("Retry") }
+          }
         }
       }
     }
@@ -95,7 +124,20 @@ private fun PlaylistItem(
         modifier = Modifier.size(150.dp),
       )
     }
-    // TODO: text shadow/single line marquee
+    // TODO: text shadow
     Text(text = playlist.name, maxLines = 1, modifier = Modifier.padding(8.dp).basicMarquee())
+  }
+}
+
+private fun playlistItemPaddingValues(itemIndex: Int, lastIndex: Int): PaddingValues =
+  PaddingValues(
+    start = if (itemIndex > 0) 6.dp else 0.dp,
+    end = if (itemIndex < lastIndex) 6.dp else 0.dp,
+  )
+
+@Composable
+private fun LoadingIndicatorBox() {
+  Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth().height(150.dp)) {
+    CircularProgressIndicator()
   }
 }
