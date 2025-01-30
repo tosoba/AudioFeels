@@ -1,11 +1,17 @@
 package com.trm.audiofeels.ui.discover
 
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -19,8 +25,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.trm.audiofeels.core.base.model.LoadableState
+import com.trm.audiofeels.core.ui.resources.Res
+import com.trm.audiofeels.core.ui.resources.artwork_placeholder
 import com.trm.audiofeels.domain.model.Playlist
 import io.github.aakira.napier.Napier
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun DiscoverPage(
@@ -42,12 +51,18 @@ fun DiscoverPage(
         }
       }
       is LoadableState.Success -> {
-        LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(all = 12.dp)) {
-          items(it.value) { playlist ->
-            Card(onClick = { onPlaylistClick(playlist) }) {
-              playlist.artworkUrl?.let { url -> AsyncImage(model = url, contentDescription = null) }
-              Text(playlist.name)
-            }
+        LazyRow(modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(all = 12.dp)) {
+          itemsIndexed(it.value) { index, playlist ->
+            PlaylistItem(
+              playlist = playlist,
+              modifier =
+                Modifier.width(150.dp)
+                  .padding(
+                    start = if (index > 0) 6.dp else 0.dp,
+                    end = if (index < it.value.lastIndex) 6.dp else 0.dp,
+                  ),
+              onPlaylistClick = onPlaylistClick,
+            )
           }
         }
       }
@@ -57,5 +72,30 @@ fun DiscoverPage(
         }
       }
     }
+  }
+}
+
+@Composable
+private fun PlaylistItem(
+  playlist: Playlist,
+  modifier: Modifier = Modifier,
+  onPlaylistClick: (Playlist) -> Unit,
+) {
+  Card(onClick = { onPlaylistClick(playlist) }, modifier = modifier) {
+    if (playlist.artworkUrl != null) {
+      AsyncImage(
+        model = playlist.artworkUrl,
+        contentDescription = playlist.name,
+        modifier = Modifier.size(150.dp),
+      )
+    } else {
+      Image(
+        painter = painterResource(Res.drawable.artwork_placeholder),
+        contentDescription = playlist.name,
+        modifier = Modifier.size(150.dp),
+      )
+    }
+    // TODO: text shadow/single line marquee
+    Text(text = playlist.name, maxLines = 1, modifier = Modifier.padding(8.dp).basicMarquee())
   }
 }
