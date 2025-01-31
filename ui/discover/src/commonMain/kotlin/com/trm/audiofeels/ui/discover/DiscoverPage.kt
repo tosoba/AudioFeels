@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -25,6 +26,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
@@ -120,21 +123,27 @@ private fun PlaylistItem(
   onPlaylistClick: (Playlist) -> Unit,
 ) {
   Card(onClick = { onPlaylistClick(playlist) }, modifier = modifier) {
+    val imageModifier = Modifier.size(150.dp).clip(RoundedCornerShape(12.dp))
     if (playlist.artworkUrl != null) {
       AsyncImage(
         model = playlist.artworkUrl,
         contentDescription = playlist.name,
-        modifier = Modifier.size(150.dp),
+        contentScale = ContentScale.FillBounds,
+        modifier = imageModifier,
       )
     } else {
       Image(
         painter = painterResource(Res.drawable.artwork_placeholder),
         contentDescription = playlist.name,
-        modifier = Modifier.size(150.dp),
+        modifier = imageModifier,
       )
     }
-    // TODO: text shadow
-    Text(text = playlist.name, maxLines = 1, modifier = Modifier.padding(8.dp).basicMarquee())
+    Text(
+      text = playlist.name,
+      style = MaterialTheme.typography.labelMedium,
+      maxLines = 1,
+      modifier = Modifier.padding(8.dp).basicMarquee(),
+    )
   }
 }
 
