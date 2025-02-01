@@ -10,5 +10,8 @@ sealed interface PlayerState {
     val isPlaying: Boolean,
   ) : PlayerState
 
-  data class Error(val error: PlayerError, val previousState: PlayerState) : PlayerState
+  data class Error(val error: PlayerError, val previousState: PlayerState) : PlayerState {
+    val previousEnqueuedState: Enqueued?
+      get() = previousState as? Enqueued
+  }
 }

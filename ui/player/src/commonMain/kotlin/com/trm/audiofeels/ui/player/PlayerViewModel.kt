@@ -242,8 +242,7 @@ class PlayerViewModel(
         playerState.currentTrack.artworkUrl
       }
       is PlayerState.Error -> {
-        (playerState.previousState as? PlayerState.Enqueued)?.currentTrack?.artworkUrl
-          ?: input.artworkUrl
+        playerState.previousEnqueuedState?.currentTrack?.artworkUrl ?: input.artworkUrl
       }
     }
 
@@ -256,8 +255,7 @@ class PlayerViewModel(
         playerState.currentTrackIndex
       }
       is PlayerState.Error -> {
-        (playerState.previousState as? PlayerState.Enqueued)?.currentTrackIndex
-          ?: input.start.trackIndex
+        playerState.previousEnqueuedState?.currentTrackIndex ?: input.start.trackIndex
       }
     }
 
