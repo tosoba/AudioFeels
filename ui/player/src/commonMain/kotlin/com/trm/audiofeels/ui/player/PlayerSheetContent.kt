@@ -44,7 +44,7 @@ fun PlayerSheetContent(viewState: PlayerViewState) {
         // TODO: loading shimmer
       }
       is PlayerViewState.Error -> {
-        // TODO: error image maybe with some text
+        // TODO: error image
       }
       is PlayerViewState.Playback -> {
         AsyncImage(
@@ -58,11 +58,14 @@ fun PlayerSheetContent(viewState: PlayerViewState) {
 
     Column(
       verticalArrangement = Arrangement.Center,
-      modifier = Modifier.padding(horizontal = 16.dp),
+      modifier = Modifier.weight(1f).padding(horizontal = 16.dp),
     ) {
       when (viewState) {
         is PlayerViewState.Invisible,
-        is PlayerViewState.Error -> {}
+        is PlayerViewState.Error -> {
+          // TODO: error text?
+          Spacer(modifier = Modifier.weight(1f))
+        }
         is PlayerViewState.Loading -> {
           PlaylistNameText(viewState.playlist)
         }
@@ -72,8 +75,6 @@ fun PlayerSheetContent(viewState: PlayerViewState) {
         }
       }
     }
-
-    Spacer(modifier = Modifier.weight(1f))
 
     when (viewState) {
       is PlayerViewState.Invisible,
