@@ -48,22 +48,15 @@ class PlayerViewModel(
   val viewState: RestartableStateFlow<PlayerViewState> =
     playbackRepository
       .getPlaybackPlaylistFlow()
-      .distinctUntilChangedBy { it?.id }
-      .scan(Pair<Playlist?, Playlist?>(null, null)) { (_, previous), next -> previous to next }
-      .onEach { (previousPlaylist) ->
-        previousPlaylist?.let { viewModelScope.launch { playlistsRepository.savePlaylist(it) } }
+      .distinctUntilChangedBy { playlist -> playlist?.id }
+      .scan(Pair<Playlist?, Playlist?>(null, null)) { (_, previous), current ->
+        previous to current
+      }
+      .onEach { (previous) ->
+        previous?.let { viewModelScope.launch { playlistsRepository.savePlaylist(it) } }
       }
       .flatMapLatest { (_, playlist) ->
-        playlist?.id?.let { playlistId ->
-          loadableStateFlowOf { getPlayerInputUseCase(playlistId) }
-            .onEach { input ->
-              if (input is LoadableState.Success && input.value.start.autoPlay) {
-                enqueue(input.value)
-              }
-            }
-            .flatMapLatest { playerInput -> playerViewStateFlow(playerInput, playlist) }
-            .onEach { if (it is PlayerViewState.Playback) onPlayerViewStatePlayback(it) }
-        }
+        playlist?.let(::playerViewStateFlow)
           ?: flowOf(PlayerViewState.Invisible(playerViewPlaybackActions())).onEach {
             playerConnection.reset()
           }
@@ -74,11 +67,20 @@ class PlayerViewModel(
         initialValue = PlayerViewState.Invisible(playerViewPlaybackActions()),
       )
 
-  private fun playerViewStateFlow(
-    playerInput: LoadableState<PlayerInput>,
-    playlist: Playlist,
+  private fun playerViewStateFlow(playlist: Playlist): Flow<PlayerViewState> =
+    loadableStateFlowOf { getPlayerInputUseCase(playlist.id) }
+      .onEach { input ->
+        if (input is LoadableState.Success && input.value.start.autoPlay) {
+          enqueue(input.value)
+        }
+      }
+      .flatMapLatest { playerInput -> playerInput.toPlayerViewStateFlow(playlist) }
+      .onEach { if (it is PlayerViewState.Playback) onPlayerViewStatePlayback(it) }
+
+  private fun LoadableState<PlayerInput>.toPlayerViewStateFlow(
+    playlist: Playlist
   ): Flow<PlayerViewState> =
-    when (playerInput) {
+    when (this) {
       LoadableState.Loading -> {
         flowOf(
           PlayerViewState.Loading(
@@ -91,7 +93,7 @@ class PlayerViewModel(
         val artworkUrlChannel = Channel<String?>(onBufferOverflow = BufferOverflow.DROP_OLDEST)
         combine(
           playerConnection.playerState.onEach {
-            artworkUrlChannel.send(getTrackArtworkUrl(it, playerInput.value))
+            artworkUrlChannel.send(getTrackArtworkUrl(it, value))
           },
           artworkUrlChannel.receiveAsFlow().distinctUntilChanged().transformLatest { artworkUrl ->
             emit(null)
@@ -100,7 +102,7 @@ class PlayerViewModel(
           playerConnection.currentTrackPositionMs.distinctUntilChanged().onStart { emit(0L) },
         ) { playerState, currentTrackImageBitmap, currentTrackPositionMs ->
           playbackViewState(
-            playerInput = playerInput.value,
+            playerInput = value,
             playlist = playlist,
             playerState = playerState,
             currentTrackPositionMs = currentTrackPositionMs,
