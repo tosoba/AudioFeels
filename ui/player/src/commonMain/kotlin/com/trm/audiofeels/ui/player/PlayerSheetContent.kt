@@ -28,10 +28,10 @@ fun PlayerSheetContent(viewState: PlayerViewState) {
   Row(
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.SpaceAround,
-    modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp),
+    modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
   ) {
     viewState.currentTrackImageBitmap?.let {
-      Image(bitmap = it, contentDescription = null, modifier = Modifier.size(40.dp))
+      Image(bitmap = it, contentDescription = null, modifier = Modifier.size(60.dp))
     }
 
     if (viewState is PlayerViewState.Playback) {

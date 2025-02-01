@@ -154,6 +154,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
       ) {
         BottomSheetScaffold(
           sheetContent = { PlayerSheetContent(viewState) },
+          sheetPeekHeight = 128.dp,
           scaffoldState = appViewState.playerViewState.scaffoldState,
         ) {
           val navigator =
