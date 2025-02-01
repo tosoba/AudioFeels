@@ -1,7 +1,6 @@
 package com.trm.audiofeels.ui.player
 
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -24,7 +23,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.model.Track
@@ -35,13 +36,24 @@ fun PlayerSheetContent(viewState: PlayerViewState) {
     verticalAlignment = Alignment.CenterVertically,
     modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
   ) {
-    // TODO: shimmer loading/error placeholder
-    viewState.currentTrackImageBitmap?.let {
-      Image(
-        bitmap = it,
-        contentDescription = null,
-        modifier = Modifier.size(60.dp).clip(RoundedCornerShape(12.dp)),
-      )
+    // TODO: AsyncImage with playlist artwork with offset behind track artwork?
+
+    when (viewState) {
+      is PlayerViewState.Invisible,
+      is PlayerViewState.Loading -> {
+        // TODO: loading shimmer
+      }
+      is PlayerViewState.Error -> {
+        // TODO: error image maybe with some text
+      }
+      is PlayerViewState.Playback -> {
+        AsyncImage(
+          model = viewState.currentTrack?.artworkUrl,
+          contentDescription = null,
+          contentScale = ContentScale.FillBounds,
+          modifier = Modifier.size(60.dp).clip(RoundedCornerShape(12.dp)),
+        )
+      }
     }
 
     Column(
