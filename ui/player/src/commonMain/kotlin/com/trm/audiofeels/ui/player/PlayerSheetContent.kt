@@ -2,53 +2,65 @@ package com.trm.audiofeels.ui.player
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.Button
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Text
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
-import androidx.compose.material.icons.outlined.SkipNext
-import androidx.compose.material.icons.outlined.SkipPrevious
+import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.trm.audiofeels.domain.model.PlayerState
+import com.trm.audiofeels.domain.model.Playlist
 
 @Composable
 fun PlayerSheetContent(viewState: PlayerViewState) {
   Row(
     verticalAlignment = Alignment.CenterVertically,
-    horizontalArrangement = Arrangement.SpaceAround,
-    modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
+    modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
   ) {
+    // TODO: shimmer loading/error placeholder
     viewState.currentTrackImageBitmap?.let {
-      Image(bitmap = it, contentDescription = null, modifier = Modifier.size(60.dp))
-    }
-
-    if (viewState is PlayerViewState.Playback) {
-      Text(
-        when (val playerState = viewState.playerState) {
-          PlayerState.Idle -> {
-            "Idle"
-          }
-          is PlayerState.Enqueued -> {
-            "Enq ${playerState.currentTrackIndex} - ${viewState.currentTrackProgress}"
-          }
-          is PlayerState.Error -> {
-            "Error"
-          }
-        }
+      Image(
+        bitmap = it,
+        contentDescription = null,
+        modifier = Modifier.size(60.dp).clip(RoundedCornerShape(12.dp)),
       )
     }
+
+    Column(
+      verticalArrangement = Arrangement.Center,
+      modifier = Modifier.padding(horizontal = 16.dp),
+    ) {
+      when (viewState) {
+        is PlayerViewState.Invisible,
+        is PlayerViewState.Error -> {}
+        is PlayerViewState.Loading -> {
+          PlaylistNameText(viewState.playlist)
+        }
+        is PlayerViewState.Playback -> {
+          // TODO: current track name in all caps above playlist name
+          PlaylistNameText(viewState.playlist)
+        }
+      }
+    }
+
+    Spacer(modifier = Modifier.weight(1f))
 
     when (viewState) {
       is PlayerViewState.Invisible,
@@ -63,10 +75,6 @@ fun PlayerSheetContent(viewState: PlayerViewState) {
             }
           }
           is PlayerState.Enqueued -> {
-            IconButton(onClick = viewState.controlActions::onPreviousClick) {
-              Icon(imageVector = Icons.Outlined.SkipPrevious, contentDescription = "Previous")
-            }
-
             IconButton(onClick = viewState.controlActions::onTogglePlayClick) {
               // TODO: only show play/pause on IDLE/READY/maybe ENDED playback state
               // and show loading indicator on BUFFERING
@@ -75,28 +83,36 @@ fun PlayerSheetContent(viewState: PlayerViewState) {
                 else Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
               }
             }
-
-            IconButton(onClick = viewState.controlActions::onNextClick) {
-              Icon(imageVector = Icons.Outlined.SkipNext, contentDescription = "Next")
-            }
           }
           is PlayerState.Error -> {
-            // TODO: retry
+            IconButton(
+              onClick = {
+                // TODO: retry action depending on player error type in VM
+              }
+            ) {
+              Icon(imageVector = Icons.Outlined.Refresh, contentDescription = "Retry")
+            }
           }
         }
       }
-
       is PlayerViewState.Error -> {
-        Button(
+        IconButton(
           onClick = {
-            // TODO: retry
+            // TODO: retry action depending on player error type in VM
           }
         ) {
-          Text("Retry")
+          Icon(imageVector = Icons.Outlined.Refresh, contentDescription = "Retry")
         }
       }
     }
-
-    Button(onClick = viewState.playbackActions::cancel) { Text("Cancel") }
   }
+}
+
+@Composable
+private fun PlaylistNameText(playlist: Playlist) {
+  Text(
+    text = playlist.name,
+    style = MaterialTheme.typography.labelMedium,
+    modifier = Modifier.basicMarquee(),
+  )
 }
