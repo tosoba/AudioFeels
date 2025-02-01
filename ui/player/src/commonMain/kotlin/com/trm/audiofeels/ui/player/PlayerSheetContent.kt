@@ -27,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Playlist
+import com.trm.audiofeels.domain.model.Track
 
 @Composable
 fun PlayerSheetContent(viewState: PlayerViewState) {
@@ -54,7 +55,7 @@ fun PlayerSheetContent(viewState: PlayerViewState) {
           PlaylistNameText(viewState.playlist)
         }
         is PlayerViewState.Playback -> {
-          // TODO: current track name in all caps above playlist name
+          viewState.currentTrack?.let { TrackTitleText(it) }
           PlaylistNameText(viewState.playlist)
         }
       }
@@ -106,6 +107,15 @@ fun PlayerSheetContent(viewState: PlayerViewState) {
       }
     }
   }
+}
+
+@Composable
+private fun TrackTitleText(it: Track) {
+  Text(
+    text = it.title,
+    style = MaterialTheme.typography.labelLarge,
+    modifier = Modifier.basicMarquee(),
+  )
 }
 
 @Composable

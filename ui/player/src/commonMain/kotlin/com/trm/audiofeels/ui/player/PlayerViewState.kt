@@ -28,12 +28,18 @@ sealed interface PlayerViewState {
     val playlist: Playlist,
     val playerState: PlayerState,
     val tracks: List<Track>,
+    val currentTrackIndex: Int,
     val currentTrackProgress: Double,
     // TODO: use a placeholder in case of no artwork
     override val currentTrackImageBitmap: ImageBitmap?,
     val controlActions: PlayerViewControlActions,
     override val playbackActions: PlayerViewPlaybackActions,
-  ) : PlayerViewState
+  ) : PlayerViewState {
+    val currentTrack: Track?
+      get() =
+        if (playerState is PlayerState.Enqueued) playerState.currentTrack
+        else tracks.getOrNull(currentTrackIndex)
+  }
 
   data class Error(
     val playlist: Playlist,

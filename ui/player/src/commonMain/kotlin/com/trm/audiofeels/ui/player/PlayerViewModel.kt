@@ -93,7 +93,7 @@ class PlayerViewModel(
         val artworkUrlChannel = Channel<String?>(onBufferOverflow = BufferOverflow.DROP_OLDEST)
         combine(
           playerConnection.playerState.onEach {
-            artworkUrlChannel.send(getTrackArtworkUrl(it, value))
+            artworkUrlChannel.send(getCurrentTrackArtworkUrl(it, value))
           },
           artworkUrlChannel.receiveAsFlow().distinctUntilChanged().transformLatest { artworkUrl ->
             emit(null)
@@ -124,12 +124,12 @@ class PlayerViewModel(
     currentTrackPositionMs: Long,
     currentTrackImageBitmap: ImageBitmap?,
   ): PlayerViewState.Playback {
-    val controlActions =
-      playerViewControlActions(playerState = playerState, playerInput = playerInput)
+    val controlActions = playerViewControlActions(playerState, playerInput)
     return PlayerViewState.Playback(
       playlist = playlist,
       playerState = playerState,
       tracks = playerInput.tracks,
+      currentTrackIndex = getCurrentTrackIndex(playerState, playerInput),
       currentTrackProgress = currentTrackProgress(playerState, currentTrackPositionMs),
       currentTrackImageBitmap = currentTrackImageBitmap,
       controlActions = controlActions,
@@ -233,7 +233,7 @@ class PlayerViewModel(
     }
   }
 
-  private fun getTrackArtworkUrl(playerState: PlayerState, input: PlayerInput): String? =
+  private fun getCurrentTrackArtworkUrl(playerState: PlayerState, input: PlayerInput): String? =
     when (playerState) {
       PlayerState.Idle -> {
         input.artworkUrl
@@ -244,6 +244,20 @@ class PlayerViewModel(
       is PlayerState.Error -> {
         (playerState.previousState as? PlayerState.Enqueued)?.currentTrack?.artworkUrl
           ?: input.artworkUrl
+      }
+    }
+
+  private fun getCurrentTrackIndex(playerState: PlayerState, input: PlayerInput): Int =
+    when (playerState) {
+      PlayerState.Idle -> {
+        input.start.trackIndex
+      }
+      is PlayerState.Enqueued -> {
+        playerState.currentTrackIndex
+      }
+      is PlayerState.Error -> {
+        (playerState.previousState as? PlayerState.Enqueued)?.currentTrackIndex
+          ?: input.start.trackIndex
       }
     }
 
