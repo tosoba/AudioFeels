@@ -105,7 +105,9 @@ class PlayerViewModel(
             playerInput = value,
             playlist = playlist,
             playerState = playerState,
-            currentTrackPositionMs = currentTrackPositionMs,
+            currentTrackPositionMs =
+              if (playerState is PlayerState.Idle) value.start.trackPositionMs
+              else currentTrackPositionMs,
             currentTrackImageBitmap = currentTrackImageBitmap,
           )
         }
