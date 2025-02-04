@@ -36,98 +36,108 @@ import com.trm.audiofeels.domain.model.Track
 
 @Composable
 fun PlayerSheetContent(viewState: PlayerViewState) {
-  Box(modifier = Modifier.fillMaxWidth()) {
-    TrackProgressIndicator(
-      visible =
-        viewState is PlayerViewState.Playback && viewState.playerState is PlayerState.Enqueued
-    ) {
-      (viewState as? PlayerViewState.Playback)?.currentTrackProgress?.toFloat() ?: 0.0f
+  Box(modifier = Modifier.fillMaxWidth()) { PlayerPartiallyExpandedSheetContent(viewState) }
+}
+
+@Composable
+private fun BoxScope.PlayerPartiallyExpandedSheetContent(viewState: PlayerViewState) {
+  TrackProgressIndicator(
+    visible = viewState is PlayerViewState.Playback && viewState.playerState is PlayerState.Enqueued
+  ) {
+    (viewState as? PlayerViewState.Playback)?.currentTrackProgress?.toFloat() ?: 0.0f
+  }
+
+  Row(
+    verticalAlignment = Alignment.CenterVertically,
+    modifier =
+      Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 12.dp),
+  ) {
+    when (viewState) {
+      is PlayerViewState.Invisible,
+      is PlayerViewState.Loading -> {
+        // TODO: loading shimmer
+      }
+
+      is PlayerViewState.Error -> {
+        // TODO: error image
+      }
+
+      is PlayerViewState.Playback -> {
+        AsyncImage(
+          model = viewState.currentTrack?.artworkUrl,
+          contentDescription = null,
+          contentScale = ContentScale.FillBounds,
+          modifier = Modifier.size(60.dp).clip(RoundedCornerShape(12.dp)),
+        )
+      }
     }
 
-    Row(
-      verticalAlignment = Alignment.CenterVertically,
-      modifier =
-        Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 12.dp),
+    Column(
+      verticalArrangement = Arrangement.Center,
+      modifier = Modifier.weight(1f).padding(horizontal = 16.dp),
     ) {
       when (viewState) {
         is PlayerViewState.Invisible,
-        is PlayerViewState.Loading -> {
-          // TODO: loading shimmer
-        }
         is PlayerViewState.Error -> {
-          // TODO: error image
+          // TODO: error text?
+          Spacer(modifier = Modifier.weight(1f))
         }
+
+        is PlayerViewState.Loading -> {
+          PlaylistNameText(viewState.playlist)
+        }
+
         is PlayerViewState.Playback -> {
-          AsyncImage(
-            model = viewState.currentTrack?.artworkUrl,
-            contentDescription = null,
-            contentScale = ContentScale.FillBounds,
-            modifier = Modifier.size(60.dp).clip(RoundedCornerShape(12.dp)),
-          )
+          viewState.currentTrack?.let { TrackTitleText(it) }
+          PlaylistNameText(viewState.playlist)
+        }
+      }
+    }
+
+    when (viewState) {
+      is PlayerViewState.Invisible,
+      is PlayerViewState.Loading -> {
+        CircularProgressIndicator()
+      }
+
+      is PlayerViewState.Playback -> {
+        when (val playerState = viewState.playerState) {
+          PlayerState.Idle -> {
+            IconButton(onClick = viewState.controlActions::onTogglePlayClick) {
+              Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
+            }
+          }
+
+          is PlayerState.Enqueued -> {
+            IconButton(onClick = viewState.controlActions::onTogglePlayClick) {
+              // TODO: only show play/pause on IDLE/READY/maybe ENDED playback state
+              // and show loading indicator on BUFFERING
+              Crossfade(playerState.isPlaying) {
+                if (it) Icon(imageVector = Icons.Outlined.Pause, contentDescription = "Pause")
+                else Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
+              }
+            }
+          }
+
+          is PlayerState.Error -> {
+            IconButton(
+              onClick = {
+                // TODO: retry action depending on player error type in VM
+              }
+            ) {
+              Icon(imageVector = Icons.Outlined.Refresh, contentDescription = "Retry")
+            }
+          }
         }
       }
 
-      Column(
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier.weight(1f).padding(horizontal = 16.dp),
-      ) {
-        when (viewState) {
-          is PlayerViewState.Invisible,
-          is PlayerViewState.Error -> {
-            // TODO: error text?
-            Spacer(modifier = Modifier.weight(1f))
+      is PlayerViewState.Error -> {
+        IconButton(
+          onClick = {
+            // TODO: retry action depending on player error type in VM
           }
-          is PlayerViewState.Loading -> {
-            PlaylistNameText(viewState.playlist)
-          }
-          is PlayerViewState.Playback -> {
-            viewState.currentTrack?.let { TrackTitleText(it) }
-            PlaylistNameText(viewState.playlist)
-          }
-        }
-      }
-
-      when (viewState) {
-        is PlayerViewState.Invisible,
-        is PlayerViewState.Loading -> {
-          CircularProgressIndicator()
-        }
-        is PlayerViewState.Playback -> {
-          when (val playerState = viewState.playerState) {
-            PlayerState.Idle -> {
-              IconButton(onClick = viewState.controlActions::onTogglePlayClick) {
-                Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
-              }
-            }
-            is PlayerState.Enqueued -> {
-              IconButton(onClick = viewState.controlActions::onTogglePlayClick) {
-                // TODO: only show play/pause on IDLE/READY/maybe ENDED playback state
-                // and show loading indicator on BUFFERING
-                Crossfade(playerState.isPlaying) {
-                  if (it) Icon(imageVector = Icons.Outlined.Pause, contentDescription = "Pause")
-                  else Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
-                }
-              }
-            }
-            is PlayerState.Error -> {
-              IconButton(
-                onClick = {
-                  // TODO: retry action depending on player error type in VM
-                }
-              ) {
-                Icon(imageVector = Icons.Outlined.Refresh, contentDescription = "Retry")
-              }
-            }
-          }
-        }
-        is PlayerViewState.Error -> {
-          IconButton(
-            onClick = {
-              // TODO: retry action depending on player error type in VM
-            }
-          ) {
-            Icon(imageVector = Icons.Outlined.Refresh, contentDescription = "Retry")
-          }
+        ) {
+          Icon(imageVector = Icons.Outlined.Refresh, contentDescription = "Retry")
         }
       }
     }

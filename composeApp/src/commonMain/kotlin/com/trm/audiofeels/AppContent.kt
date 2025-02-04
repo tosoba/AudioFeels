@@ -1,5 +1,6 @@
 package com.trm.audiofeels
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -12,9 +13,13 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -29,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.AnimatedPane
+import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
 import androidx.compose.material3.adaptive.layout.SupportingPaneScaffold
 import androidx.compose.material3.adaptive.layout.SupportingPaneScaffoldRole
 import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
@@ -71,6 +77,7 @@ import com.trm.audiofeels.ui.player.PlayerSheetContent
 import com.trm.audiofeels.ui.player.PlayerViewModel
 import com.trm.audiofeels.ui.search.SearchPage
 import dev.zwander.compose.rememberThemeInfo
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -115,6 +122,16 @@ fun AppContent(applicationComponent: ApplicationComponent) {
           ),
       )
 
+    val bottomSheetState = appViewState.playerViewState.scaffoldState.bottomSheetState
+    LaunchedEffect(bottomSheetState) {
+      Napier.e(message = bottomSheetState.currentValue.name, tag = "SH_CV")
+
+      Napier.e(
+        message = runCatching { bottomSheetState.requireOffset() }.getOrDefault(0f).toString(),
+        tag = "SH_OFFSET",
+      )
+    }
+
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
@@ -152,24 +169,38 @@ fun AppContent(applicationComponent: ApplicationComponent) {
           }
         },
       ) {
+        val navigator =
+          rememberSupportingPaneScaffoldNavigator(
+            scaffoldDirective =
+              calculatePaneScaffoldDirective(currentWindowAdaptiveInfo()).let {
+                if (viewState.playerVisible) it
+                else it.copy(maxHorizontalPartitions = 1, maxVerticalPartitions = 1)
+              }
+          )
+        val supportingPaneValue = navigator.scaffoldValue[SupportingPaneScaffoldRole.Supporting]
+        LaunchedEffect(supportingPaneValue) {
+          scope.launch { appViewState.onSupportingPaneValueChange(supportingPaneValue) }
+        }
+
         BottomSheetScaffold(
           sheetContent = { PlayerSheetContent(viewState) },
           sheetPeekHeight = 128.dp,
           scaffoldState = appViewState.playerViewState.scaffoldState,
+          topBar = {
+            if (supportingPaneValue == PaneAdaptedValue.Hidden) {
+              CenterAlignedTopAppBar(
+                title = { Text("AudioFeels") },
+                actions = {
+                  AnimatedVisibility(viewState.playerVisible) {
+                    IconButton(onClick = viewState.playbackActions::cancel) {
+                      Icon(Icons.Outlined.Close, contentDescription = "Cancel playback")
+                    }
+                  }
+                },
+              )
+            }
+          },
         ) {
-          val navigator =
-            rememberSupportingPaneScaffoldNavigator(
-              scaffoldDirective =
-                calculatePaneScaffoldDirective(currentWindowAdaptiveInfo()).let {
-                  if (viewState.playerVisible) it
-                  else it.copy(maxHorizontalPartitions = 1, maxVerticalPartitions = 1)
-                }
-            )
-          val supportingPaneValue = navigator.scaffoldValue[SupportingPaneScaffoldRole.Supporting]
-          LaunchedEffect(supportingPaneValue) {
-            scope.launch { appViewState.onSupportingPaneValueChange(supportingPaneValue) }
-          }
-
           SupportingPaneScaffold(
             modifier = Modifier.fillMaxSize(),
             directive = navigator.scaffoldDirective,
