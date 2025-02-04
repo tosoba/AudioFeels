@@ -28,6 +28,7 @@ import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.PermanentDrawerSheet
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -75,6 +76,7 @@ import com.trm.audiofeels.ui.favourites.FavouritesPage
 import com.trm.audiofeels.ui.player.PlayerPage
 import com.trm.audiofeels.ui.player.PlayerSheetContent
 import com.trm.audiofeels.ui.player.PlayerViewModel
+import com.trm.audiofeels.ui.player.PlayerViewState
 import com.trm.audiofeels.ui.search.SearchPage
 import dev.zwander.compose.rememberThemeInfo
 import io.github.aakira.napier.Napier
@@ -188,16 +190,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
           scaffoldState = appViewState.playerViewState.scaffoldState,
           topBar = {
             if (supportingPaneValue == PaneAdaptedValue.Hidden) {
-              CenterAlignedTopAppBar(
-                title = { Text("AudioFeels") },
-                actions = {
-                  AnimatedVisibility(viewState.playerVisible) {
-                    IconButton(onClick = viewState.playbackActions::cancel) {
-                      Icon(Icons.Outlined.Close, contentDescription = "Cancel playback")
-                    }
-                  }
-                },
-              )
+              AppTopAppBar(viewState)
             }
           },
         ) {
@@ -217,10 +210,9 @@ fun AppContent(applicationComponent: ApplicationComponent) {
             },
             supportingPane = {
               AnimatedPane {
-                PlayerPage(
-                  modifier = Modifier.fillMaxSize(),
-                  onCancelPlaybackClick = viewState.playbackActions::cancel,
-                )
+                Scaffold(topBar = { AppTopAppBar(viewState) }) {
+                  PlayerPage(modifier = Modifier.fillMaxSize())
+                }
               }
             },
           )
@@ -228,6 +220,21 @@ fun AppContent(applicationComponent: ApplicationComponent) {
       }
     }
   }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AppTopAppBar(viewState: PlayerViewState) {
+  CenterAlignedTopAppBar(
+    title = { Text("AudioFeels") },
+    actions = {
+      AnimatedVisibility(viewState.playerVisible) {
+        IconButton(onClick = viewState.playbackActions::cancel) {
+          Icon(Icons.Outlined.Close, contentDescription = "Cancel playback")
+        }
+      }
+    },
+  )
 }
 
 @Composable
