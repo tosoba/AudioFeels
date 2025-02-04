@@ -3,6 +3,7 @@ package com.trm.audiofeels
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -273,6 +274,10 @@ private fun AppNavigationRail(
       horizontalAlignment = Alignment.CenterHorizontally,
       verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
+      if (navigationContentPosition == NavigationContentPosition.CENTER) {
+        Spacer(modifier = Modifier.weight(1f))
+      }
+
       PAGE_NAVIGATION_DESTINATIONS.forEach { destination ->
         NavigationRailItem(
           selected = currentDestination?.hasRoute(destination.route::class) == true,
@@ -285,6 +290,10 @@ private fun AppNavigationRail(
           },
           label = { Text(stringResource(destination.labelResource)) },
         )
+      }
+
+      if (navigationContentPosition == NavigationContentPosition.CENTER) {
+        Spacer(modifier = Modifier.weight(1f))
       }
     }
   }
@@ -304,6 +313,10 @@ private fun AppPermanentNavigationDrawer(
       modifier = Modifier.verticalScroll(rememberScrollState()).padding(16.dp),
       horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+      if (navigationContentPosition == NavigationContentPosition.CENTER) {
+        Spacer(modifier = Modifier.weight(1f))
+      }
+
       PAGE_NAVIGATION_DESTINATIONS.forEach { destination ->
         NavigationDrawerItem(
           selected = currentDestination?.hasRoute(destination.route::class) == true,
@@ -323,6 +336,10 @@ private fun AppPermanentNavigationDrawer(
             NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
           onClick = { navigatePageDestination(destination) },
         )
+      }
+
+      if (navigationContentPosition == NavigationContentPosition.CENTER) {
+        Spacer(modifier = Modifier.weight(1f))
       }
     }
   }
