@@ -253,6 +253,7 @@ private fun AppBottomNavigationBar(
             contentDescription = stringResource(destination.labelResource),
           )
         },
+        label = { Text(stringResource(destination.labelResource)) },
       )
     }
   }
@@ -282,6 +283,7 @@ private fun AppNavigationRail(
               contentDescription = stringResource(destination.labelResource),
             )
           },
+          label = { Text(stringResource(destination.labelResource)) },
         )
       }
     }
