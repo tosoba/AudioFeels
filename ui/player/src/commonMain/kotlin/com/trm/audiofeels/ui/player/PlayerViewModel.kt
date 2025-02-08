@@ -138,7 +138,7 @@ class PlayerViewModel(
       playbackActions =
         playerViewPlaybackActions(
           currentPlaylist = playlist,
-          toggleCurrentPlayback = controlActions::onTogglePlayClick,
+          toggleCurrentPlayback = controlActions::onTogglePlay,
         ),
     )
   }
@@ -193,7 +193,7 @@ class PlayerViewModel(
     playerInput: PlayerInput,
   ): PlayerViewControlActions =
     object : PlayerViewControlActions {
-      override fun onTogglePlayClick() {
+      override fun onTogglePlay() {
         when (playerState) {
           PlayerState.Idle -> {
             enqueue(playerInput)
@@ -201,16 +201,51 @@ class PlayerViewModel(
           is PlayerState.Enqueued -> {
             if (playerState.isPlaying) playerConnection.pause() else playerConnection.play()
           }
-          is PlayerState.Error -> {}
+          is PlayerState.Error -> {
+            return
+          }
         }
       }
 
-      override fun onPreviousClick() {
-        playerConnection.playPrevious()
+      override fun onPlayPrevious() {
+        when (playerState) {
+          PlayerState.Idle -> {
+            val start = playerInput.start
+            enqueue(
+              playerInput.copy(
+                start = start.copy(trackIndex = (start.trackIndex - 1).coerceAtLeast(0))
+              )
+            )
+          }
+          is PlayerState.Enqueued -> {
+            playerConnection.playPrevious()
+          }
+          is PlayerState.Error -> {
+            return
+          }
+        }
       }
 
-      override fun onNextClick() {
-        playerConnection.playNext()
+      override fun onPlayNext() {
+        when (playerState) {
+          PlayerState.Idle -> {
+            val start = playerInput.start
+            enqueue(
+              playerInput.copy(
+                start =
+                  start.copy(
+                    trackIndex = (start.trackIndex + 1).coerceAtMost(playerInput.tracks.lastIndex)
+                  )
+              )
+            )
+          }
+          is PlayerState.Enqueued -> {
+            playerConnection.playNext()
+          }
+          is PlayerState.Error -> {
+            return
+          }
+        }
       }
     }
 
