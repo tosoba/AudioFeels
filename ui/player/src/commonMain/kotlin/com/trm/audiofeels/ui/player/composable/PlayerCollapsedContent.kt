@@ -31,7 +31,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxDefaults
 import androidx.compose.material3.SwipeToDismissBoxState
-import androidx.compose.material3.SwipeToDismissBoxState.Companion.Saver
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -52,39 +51,8 @@ import com.trm.audiofeels.ui.player.PlayerViewState
 @Composable
 internal fun PlayerCollapsedContent(viewState: PlayerViewState, modifier: Modifier = Modifier) {
   Box(modifier = modifier) {
-    val density = LocalDensity.current
-    val positionalThreshold = SwipeToDismissBoxDefaults.positionalThreshold
-    val confirmValueChange: (SwipeToDismissBoxValue) -> Boolean = { value ->
-      when (value) {
-        SwipeToDismissBoxValue.StartToEnd -> {
-          (viewState as? PlayerViewState.Playback)?.controlActions?.playPrevious()
-        }
-        SwipeToDismissBoxValue.EndToStart -> {
-          (viewState as? PlayerViewState.Playback)?.controlActions?.playNext()
-        }
-        SwipeToDismissBoxValue.Settled -> {}
-      }
-      false
-    }
-
     SwipeToDismissBox(
-      state =
-        rememberSaveable(
-          viewState,
-          saver =
-            Saver(
-              confirmValueChange = confirmValueChange,
-              density = density,
-              positionalThreshold = positionalThreshold,
-            ),
-        ) {
-          SwipeToDismissBoxState(
-            initialValue = SwipeToDismissBoxValue.Settled,
-            density = density,
-            confirmValueChange = confirmValueChange,
-            positionalThreshold = positionalThreshold,
-          )
-        },
+      state = rememberPlayerControlActionsSwipeState(viewState),
       gesturesEnabled = viewState is PlayerViewState.Playback,
       backgroundContent = {
         Row(
@@ -200,6 +168,40 @@ internal fun PlayerCollapsedContent(viewState: PlayerViewState, modifier: Modifi
     ) {
       (viewState as? PlayerViewState.Playback)?.currentTrackProgress?.toFloat() ?: 0.0f
     }
+  }
+}
+
+@Composable
+private fun rememberPlayerControlActionsSwipeState(
+  viewState: PlayerViewState
+): SwipeToDismissBoxState {
+  val density = LocalDensity.current
+  val positionalThreshold = SwipeToDismissBoxDefaults.positionalThreshold
+  val confirmValueChange = { value: SwipeToDismissBoxValue ->
+    if (viewState is PlayerViewState.Playback) {
+      when (value) {
+        SwipeToDismissBoxValue.StartToEnd -> viewState.controlActions.playPrevious()
+        SwipeToDismissBoxValue.EndToStart -> viewState.controlActions.playNext()
+        SwipeToDismissBoxValue.Settled -> {}
+      }
+    }
+    false
+  }
+  return rememberSaveable(
+    viewState,
+    saver =
+      SwipeToDismissBoxState.Saver(
+        confirmValueChange = confirmValueChange,
+        density = density,
+        positionalThreshold = positionalThreshold,
+      ),
+  ) {
+    SwipeToDismissBoxState(
+      initialValue = SwipeToDismissBoxValue.Settled,
+      density = density,
+      confirmValueChange = confirmValueChange,
+      positionalThreshold = positionalThreshold,
+    )
   }
 }
 
