@@ -11,25 +11,28 @@ import androidx.compose.runtime.remember
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
 @Immutable
-class AppViewState(private val playerVisible: Boolean, val playerViewState: AppPlayerViewState) {
+class AppLayoutState(
+  private val playerVisible: Boolean,
+  val playerLayoutState: AppPlayerLayoutState,
+) {
   suspend fun onNavigateToPageDestination() {
-    if (playerVisible && playerViewState.currentSheetValue == SheetValue.Expanded) {
-      playerViewState.scaffoldState.bottomSheetState.partialExpand()
+    if (playerVisible && playerLayoutState.currentSheetValue == SheetValue.Expanded) {
+      playerLayoutState.scaffoldState.bottomSheetState.partialExpand()
     }
   }
 
   suspend fun onSupportingPaneValueChange(paneValue: PaneAdaptedValue) {
-    playerViewState.supportingPaneValue = paneValue
+    playerLayoutState.supportingPaneValue = paneValue
 
     when (paneValue) {
       PaneAdaptedValue.Hidden -> {
         if (playerVisible) {
-          playerViewState.restoreLastVisibleSheetValue()
+          playerLayoutState.restoreLastVisibleSheetValue()
         }
       }
       PaneAdaptedValue.Expanded -> {
         if (playerVisible) {
-          playerViewState.scaffoldState.bottomSheetState.hide()
+          playerLayoutState.scaffoldState.bottomSheetState.hide()
         }
       }
     }
@@ -39,10 +42,10 @@ class AppViewState(private val playerVisible: Boolean, val playerViewState: AppP
 @Composable
 fun rememberAppViewState(
   playerVisible: Boolean,
-  playerViewState: AppPlayerViewState,
-): AppViewState {
+  playerViewState: AppPlayerLayoutState,
+): AppLayoutState {
   val state =
-    remember(playerVisible, playerViewState) { AppViewState(playerVisible, playerViewState) }
+    remember(playerVisible, playerViewState) { AppLayoutState(playerVisible, playerViewState) }
 
   LaunchedEffect(playerVisible) {
     if (playerVisible) {

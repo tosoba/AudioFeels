@@ -93,11 +93,11 @@ fun AppContent(applicationComponent: ApplicationComponent) {
 
   val playerViewModel =
     viewModel<PlayerViewModel>(factory = applicationComponent.playerViewModelFactory)
-  val viewState by playerViewModel.viewState.collectAsStateWithLifecycle()
+  val playerViewState by playerViewModel.viewState.collectAsStateWithLifecycle()
 
   val fallbackSeedColor = rememberThemeInfo().seedColor
   val seedColor =
-    viewState.currentTrackImageBitmap?.let { rememberThemeColor(it, fallbackSeedColor) }
+    playerViewState.currentTrackImageBitmap?.let { rememberThemeColor(it, fallbackSeedColor) }
       ?: fallbackSeedColor
 
   DynamicMaterialTheme(seedColor = seedColor) {
@@ -110,7 +110,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
     val scope = rememberCoroutineScope()
     val appViewState =
       rememberAppViewState(
-        playerVisible = viewState.playerVisible,
+        playerVisible = playerViewState.playerVisible,
         playerViewState =
           rememberAppPlayerViewState(
             scaffoldState =
@@ -118,15 +118,17 @@ fun AppContent(applicationComponent: ApplicationComponent) {
                 bottomSheetState =
                   rememberStandardBottomSheetState(
                     initialValue = SheetValue.Hidden,
-                    confirmValueChange = { it != SheetValue.Hidden || !viewState.playerVisible },
+                    confirmValueChange = {
+                      it != SheetValue.Hidden || !playerViewState.playerVisible
+                    },
                     skipHiddenState = false,
                   )
               )
           ),
       )
 
-    val bottomSheetState = appViewState.playerViewState.currentSheetValue
-    val currentSheetOffset = appViewState.playerViewState.currentSheetOffset
+    val bottomSheetState = appViewState.playerLayoutState.currentSheetValue
+    val currentSheetOffset = appViewState.playerLayoutState.currentSheetOffset
     LaunchedEffect(bottomSheetState, currentSheetOffset) {
       Napier.e(message = bottomSheetState.name, tag = "SH_CV")
       Napier.e(message = currentSheetOffset.toString(), tag = "SH_OFFSET")
@@ -173,7 +175,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
           rememberSupportingPaneScaffoldNavigator(
             scaffoldDirective =
               calculatePaneScaffoldDirective(currentWindowAdaptiveInfo()).let {
-                if (viewState.playerVisible) it
+                if (playerViewState.playerVisible) it
                 else it.copy(maxHorizontalPartitions = 1, maxVerticalPartitions = 1)
               }
           )
@@ -183,12 +185,12 @@ fun AppContent(applicationComponent: ApplicationComponent) {
         }
 
         BottomSheetScaffold(
-          sheetContent = { PlayerSheetContent(viewState) },
+          sheetContent = { PlayerSheetContent(playerViewState, currentSheetOffset) },
           sheetPeekHeight = 128.dp,
-          scaffoldState = appViewState.playerViewState.scaffoldState,
+          scaffoldState = appViewState.playerLayoutState.scaffoldState,
           topBar = {
             if (supportingPaneValue == PaneAdaptedValue.Hidden) {
-              AppTopAppBar(viewState)
+              AppTopAppBar(playerViewState)
             }
           },
         ) {
@@ -202,13 +204,13 @@ fun AppContent(applicationComponent: ApplicationComponent) {
                   navController = navController,
                   discoverViewModelFactory = applicationComponent.discoverViewModelFactory,
                   modifier = Modifier.fillMaxSize(),
-                  onPlaylistClick = viewState.playbackActions::start,
+                  onPlaylistClick = playerViewState.playbackActions::start,
                 )
               }
             },
             supportingPane = {
               AnimatedPane {
-                Scaffold(topBar = { AppTopAppBar(viewState) }) {
+                Scaffold(topBar = { AppTopAppBar(playerViewState) }) {
                   PlayerPage(modifier = Modifier.fillMaxSize())
                 }
               }

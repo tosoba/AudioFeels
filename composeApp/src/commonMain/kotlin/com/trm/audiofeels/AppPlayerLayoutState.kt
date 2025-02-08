@@ -15,7 +15,7 @@ import androidx.compose.runtime.setValue
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
 @Stable
-class AppPlayerViewState(
+class AppPlayerLayoutState(
   val scaffoldState: BottomSheetScaffoldState,
   lastVisibleSheetValue: SheetValue,
   supportingPaneValue: PaneAdaptedValue,
@@ -67,9 +67,9 @@ fun rememberAppPlayerViewState(
   scaffoldState: BottomSheetScaffoldState,
   lastVisibleSheetValue: SheetValue = SheetValue.PartiallyExpanded,
   supportingPaneValue: PaneAdaptedValue = PaneAdaptedValue.Hidden,
-): AppPlayerViewState {
+): AppPlayerLayoutState {
   val state = remember {
-    AppPlayerViewState(scaffoldState, lastVisibleSheetValue, supportingPaneValue)
+    AppPlayerLayoutState(scaffoldState, lastVisibleSheetValue, supportingPaneValue)
   }
 
   LaunchedEffect(scaffoldState.bottomSheetState.currentValue) {
