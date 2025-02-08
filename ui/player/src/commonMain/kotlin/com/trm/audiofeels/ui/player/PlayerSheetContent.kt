@@ -2,8 +2,6 @@ package com.trm.audiofeels.ui.player
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -49,13 +47,12 @@ import com.trm.audiofeels.domain.model.Track
 @Composable
 fun PlayerSheetContent(viewState: PlayerViewState, offset: Float) {
   val density = LocalDensity.current
-  var bottomSheetHeightPx by remember { mutableStateOf(0) } // Height in pixels
-  var bottomSheetHeightDp by remember { mutableStateOf(0.dp) } // Height in dp
+  var bottomSheetHeightPx by remember { mutableStateOf(0f) } // Height in pixels
 
   val progress =
-    remember(offset, bottomSheetHeightDp) {
-      if (bottomSheetHeightDp.value > 0) {
-        (offset / with(density) { bottomSheetHeightDp.toPx() }).coerceIn(0f, 1f)
+    remember(offset, bottomSheetHeightPx) {
+      if (bottomSheetHeightPx > 0f) {
+        (offset / bottomSheetHeightPx).coerceIn(0f, 1f)
       } else {
         0f // Avoid division by zero initially
       }
@@ -65,22 +62,23 @@ fun PlayerSheetContent(viewState: PlayerViewState, offset: Float) {
   val transitionThreshold = 0.5f
 
   // Animate alpha for smooth transition (optional, but enhances visual effect)
-  val expandedAlpha by
-    animateFloatAsState(
-      targetValue = if (progress < transitionThreshold) 1f else 0f,
-      animationSpec = tween(durationMillis = 300),
-    )
-  val partiallyExpandedAlpha by
-    animateFloatAsState(
-      targetValue = if (progress >= transitionThreshold) 1f else 0f,
-      animationSpec = tween(durationMillis = 300),
-    )
+  val expandedAlpha =
+    remember(progress) {
+        1f - ((progress - transitionThreshold) / (1f - transitionThreshold)).coerceIn(0f, 1f)
+      }
+      .coerceIn(0f, 1f)
+
+  val partiallyExpandedAlpha =
+    remember(progress) {
+        ((progress - transitionThreshold) / (1f - transitionThreshold)).coerceIn(0f, 1f)
+      }
+      .coerceIn(0f, 1f)
 
   Box(
     modifier =
       Modifier.fillMaxSize().onGloballyPositioned { layoutCoordinates ->
-        bottomSheetHeightPx = layoutCoordinates.size.height
-        bottomSheetHeightDp = with(density) { layoutCoordinates.size.height.toDp() }
+        bottomSheetHeightPx =
+          layoutCoordinates.size.height.toFloat() - with(density) { 128.dp.toPx() }
       }
   ) {
     Box(modifier = Modifier.alpha(partiallyExpandedAlpha)) {
