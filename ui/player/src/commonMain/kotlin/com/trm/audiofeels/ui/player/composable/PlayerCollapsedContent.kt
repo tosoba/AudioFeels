@@ -124,12 +124,12 @@ internal fun PlayerCollapsedContent(viewState: PlayerViewState, modifier: Modifi
           is PlayerViewState.Playback -> {
             when (val playerState = viewState.playerState) {
               PlayerState.Idle -> {
-                IconButton(onClick = viewState.controlActions::onTogglePlay) {
+                IconButton(onClick = viewState.controlActions::togglePlay) {
                   Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
                 }
               }
               is PlayerState.Enqueued -> {
-                IconButton(onClick = viewState.controlActions::onTogglePlay) {
+                IconButton(onClick = viewState.controlActions::togglePlay) {
                   // TODO: only show play/pause on IDLE/READY/maybe ENDED playback state
                   // and show loading indicator on BUFFERING
                   Crossfade(playerState.isPlaying) {

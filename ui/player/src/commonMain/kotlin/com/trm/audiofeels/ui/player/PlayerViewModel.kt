@@ -11,6 +11,7 @@ import com.trm.audiofeels.core.base.util.RestartableStateFlow
 import com.trm.audiofeels.core.base.util.restartableStateIn
 import com.trm.audiofeels.core.base.util.roundTo
 import com.trm.audiofeels.core.ui.compose.util.loadImageBitmapOrNull
+import com.trm.audiofeels.domain.model.PlaybackStart
 import com.trm.audiofeels.domain.model.PlayerInput
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Playlist
@@ -138,7 +139,7 @@ class PlayerViewModel(
       playbackActions =
         playerViewPlaybackActions(
           currentPlaylist = playlist,
-          toggleCurrentPlayback = controlActions::onTogglePlay,
+          toggleCurrentPlayback = controlActions::togglePlay,
         ),
     )
   }
@@ -193,7 +194,7 @@ class PlayerViewModel(
     playerInput: PlayerInput,
   ): PlayerViewControlActions =
     object : PlayerViewControlActions {
-      override fun onTogglePlay() {
+      override fun togglePlay() {
         when (playerState) {
           PlayerState.Idle -> {
             enqueue(playerInput)
@@ -210,12 +211,11 @@ class PlayerViewModel(
       override fun playPrevious() {
         when (playerState) {
           PlayerState.Idle -> {
-            val start = playerInput.start
             enqueue(
               playerInput.copy(
                 start =
-                  start.copy(
-                    trackIndex = (start.trackIndex - 1).coerceAtLeast(0),
+                  PlaybackStart(
+                    trackIndex = (playerInput.start.trackIndex - 1).coerceAtLeast(0),
                     trackPositionMs = 0L,
                     autoPlay = true,
                   )
@@ -234,12 +234,12 @@ class PlayerViewModel(
       override fun playNext() {
         when (playerState) {
           PlayerState.Idle -> {
-            val start = playerInput.start
             enqueue(
               playerInput.copy(
                 start =
-                  start.copy(
-                    trackIndex = (start.trackIndex + 1).coerceAtMost(playerInput.tracks.lastIndex),
+                  PlaybackStart(
+                    trackIndex =
+                      (playerInput.start.trackIndex + 1).coerceAtMost(playerInput.tracks.lastIndex),
                     trackPositionMs = 0L,
                     autoPlay = true,
                   )
