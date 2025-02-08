@@ -74,10 +74,10 @@ import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.ui.discover.DiscoverPage
 import com.trm.audiofeels.ui.discover.DiscoverViewModelFactory
 import com.trm.audiofeels.ui.favourites.FavouritesPage
-import com.trm.audiofeels.ui.player.PlayerPage
-import com.trm.audiofeels.ui.player.PlayerSheetContent
 import com.trm.audiofeels.ui.player.PlayerViewModel
 import com.trm.audiofeels.ui.player.PlayerViewState
+import com.trm.audiofeels.ui.player.composable.PlayerExpandedContent
+import com.trm.audiofeels.ui.player.composable.PlayerSheetContent
 import com.trm.audiofeels.ui.search.SearchPage
 import dev.zwander.compose.rememberThemeInfo
 import io.github.aakira.napier.Napier
@@ -211,7 +211,10 @@ fun AppContent(applicationComponent: ApplicationComponent) {
             supportingPane = {
               AnimatedPane {
                 Scaffold(topBar = { AppTopAppBar(playerViewState) }) {
-                  PlayerPage(modifier = Modifier.fillMaxSize())
+                  PlayerExpandedContent(
+                    viewState = playerViewState,
+                    modifier = Modifier.fillMaxSize().padding(it),
+                  )
                 }
               }
             },
