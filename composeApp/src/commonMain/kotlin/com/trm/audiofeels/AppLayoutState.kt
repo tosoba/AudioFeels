@@ -40,7 +40,7 @@ class AppLayoutState(
 }
 
 @Composable
-fun rememberAppViewState(
+fun rememberAppLayoutState(
   playerVisible: Boolean,
   playerViewState: AppPlayerLayoutState,
 ): AppLayoutState {

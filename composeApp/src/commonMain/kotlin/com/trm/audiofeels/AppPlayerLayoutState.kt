@@ -63,7 +63,7 @@ class AppPlayerLayoutState(
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
-fun rememberAppPlayerViewState(
+fun rememberAppPlayerLayoutState(
   scaffoldState: BottomSheetScaffoldState,
   lastVisibleSheetValue: SheetValue = SheetValue.PartiallyExpanded,
   supportingPaneValue: PaneAdaptedValue = PaneAdaptedValue.Hidden,

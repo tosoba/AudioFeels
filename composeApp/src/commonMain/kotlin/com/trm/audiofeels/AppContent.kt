@@ -80,7 +80,6 @@ import com.trm.audiofeels.ui.player.composable.PlayerExpandedContent
 import com.trm.audiofeels.ui.player.composable.PlayerSheetContent
 import com.trm.audiofeels.ui.search.SearchPage
 import dev.zwander.compose.rememberThemeInfo
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -108,11 +107,11 @@ fun AppContent(applicationComponent: ApplicationComponent) {
       NavigationContentPosition(adaptiveInfo.windowSizeClass.windowHeightSizeClass)
 
     val scope = rememberCoroutineScope()
-    val appViewState =
-      rememberAppViewState(
+    val appLayoutState =
+      rememberAppLayoutState(
         playerVisible = playerViewState.playerVisible,
         playerViewState =
-          rememberAppPlayerViewState(
+          rememberAppPlayerLayoutState(
             scaffoldState =
               rememberBottomSheetScaffoldState(
                 bottomSheetState =
@@ -127,19 +126,12 @@ fun AppContent(applicationComponent: ApplicationComponent) {
           ),
       )
 
-    val bottomSheetState = appViewState.playerLayoutState.currentSheetValue
-    val currentSheetOffset = appViewState.playerLayoutState.currentSheetOffset
-    LaunchedEffect(bottomSheetState, currentSheetOffset) {
-      Napier.e(message = bottomSheetState.name, tag = "SH_CV")
-      Napier.e(message = currentSheetOffset.toString(), tag = "SH_OFFSET")
-    }
-
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
     fun navigateToPageDestination(destination: AppPageNavigationDestination) {
-      scope.launch { appViewState.onNavigateToPageDestination() }
+      scope.launch { appLayoutState.onNavigateToPageDestination() }
       navController.navigateToPageDestination(destination)
     }
 
@@ -181,13 +173,18 @@ fun AppContent(applicationComponent: ApplicationComponent) {
           )
         val supportingPaneValue = navigator.scaffoldValue[SupportingPaneScaffoldRole.Supporting]
         LaunchedEffect(supportingPaneValue) {
-          scope.launch { appViewState.onSupportingPaneValueChange(supportingPaneValue) }
+          scope.launch { appLayoutState.onSupportingPaneValueChange(supportingPaneValue) }
         }
 
         BottomSheetScaffold(
-          sheetContent = { PlayerSheetContent(playerViewState, currentSheetOffset) },
+          sheetContent = {
+            PlayerSheetContent(
+              viewState = playerViewState,
+              sheetOffset = appLayoutState.playerLayoutState.currentSheetOffset,
+            )
+          },
           sheetPeekHeight = 128.dp,
-          scaffoldState = appViewState.playerLayoutState.scaffoldState,
+          scaffoldState = appLayoutState.playerLayoutState.scaffoldState,
           topBar = {
             if (supportingPaneValue == PaneAdaptedValue.Hidden) {
               AppTopAppBar(playerViewState)
