@@ -125,14 +125,11 @@ fun AppContent(applicationComponent: ApplicationComponent) {
           ),
       )
 
-    val bottomSheetState = appViewState.playerViewState.scaffoldState.bottomSheetState
-    LaunchedEffect(bottomSheetState) {
-      Napier.e(message = bottomSheetState.currentValue.name, tag = "SH_CV")
-
-      Napier.e(
-        message = runCatching { bottomSheetState.requireOffset() }.getOrDefault(0f).toString(),
-        tag = "SH_OFFSET",
-      )
+    val bottomSheetState = appViewState.playerViewState.currentSheetValue
+    val currentSheetOffset = appViewState.playerViewState.currentSheetOffset
+    LaunchedEffect(bottomSheetState, currentSheetOffset) {
+      Napier.e(message = bottomSheetState.name, tag = "SH_CV")
+      Napier.e(message = currentSheetOffset.toString(), tag = "SH_OFFSET")
     }
 
     val navController = rememberNavController()

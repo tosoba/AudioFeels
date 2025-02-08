@@ -26,6 +26,14 @@ class AppPlayerViewState(
   val currentSheetValue: SheetValue
     get() = scaffoldState.bottomSheetState.currentValue
 
+  val currentSheetOffset: Float
+    get() =
+      try {
+        scaffoldState.bottomSheetState.requireOffset()
+      } catch (ex: Exception) {
+        0f
+      }
+
   suspend fun restoreLastVisibleSheetValue() {
     scaffoldState.bottomSheetState.run {
       when (lastVisibleSheetValue) {
