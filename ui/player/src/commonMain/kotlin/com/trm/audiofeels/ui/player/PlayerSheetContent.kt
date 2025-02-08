@@ -45,55 +45,49 @@ import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.model.Track
 
 @Composable
-fun PlayerSheetContent(viewState: PlayerViewState, offset: Float) {
+fun PlayerSheetContent(viewState: PlayerViewState, sheetOffset: Float) {
   val density = LocalDensity.current
-  var bottomSheetHeightPx by remember { mutableStateOf(0f) } // Height in pixels
+  var sheetHeightPx by remember { mutableStateOf(0f) }
 
-  val progress =
-    remember(offset, bottomSheetHeightPx) {
-      if (bottomSheetHeightPx > 0f) {
-        (offset / bottomSheetHeightPx).coerceIn(0f, 1f)
-      } else {
-        0f // Avoid division by zero initially
-      }
+  val transitionProgress =
+    remember(sheetOffset, sheetHeightPx) {
+      if (sheetHeightPx > 0f) (sheetOffset / sheetHeightPx).coerceIn(0f, 1f) else 0f
     }
 
-  // Threshold for switching layouts (adjust as needed - e.g., 0.5 for halfway)
   val transitionThreshold = 0.5f
+  val thresholdProgress =
+    remember(transitionProgress) {
+      ((transitionProgress - transitionThreshold) / (1f - transitionThreshold)).coerceIn(0f, 1f)
+    }
 
-  // Animate alpha for smooth transition (optional, but enhances visual effect)
-  val expandedAlpha =
-    remember(progress) {
-        1f - ((progress - transitionThreshold) / (1f - transitionThreshold)).coerceIn(0f, 1f)
-      }
-      .coerceIn(0f, 1f)
-
-  val partiallyExpandedAlpha =
-    remember(progress) {
-        ((progress - transitionThreshold) / (1f - transitionThreshold)).coerceIn(0f, 1f)
-      }
-      .coerceIn(0f, 1f)
+  val expandedAlpha = remember(thresholdProgress) { 1f - thresholdProgress }.coerceIn(0f, 1f)
+  val partiallyExpandedAlpha = remember(thresholdProgress) { thresholdProgress }.coerceIn(0f, 1f)
 
   Box(
     modifier =
       Modifier.fillMaxSize().onGloballyPositioned { layoutCoordinates ->
-        bottomSheetHeightPx =
-          layoutCoordinates.size.height.toFloat() - with(density) { 128.dp.toPx() }
+        sheetHeightPx = layoutCoordinates.size.height.toFloat() - with(density) { 128.dp.toPx() }
       }
   ) {
-    Box(modifier = Modifier.alpha(partiallyExpandedAlpha)) {
-      if (partiallyExpandedAlpha > 0f) PlayerPartiallyExpandedSheetContent(viewState)
+    if (partiallyExpandedAlpha > 0f) {
+      PlayerPartiallyExpandedSheetContent(
+        viewState = viewState,
+        modifier = Modifier.fillMaxWidth().alpha(partiallyExpandedAlpha),
+      )
     }
 
-    Box(modifier = Modifier.alpha(expandedAlpha)) {
-      if (expandedAlpha > 0f) PlayerExpandedSheetContent(viewState)
+    if (expandedAlpha > 0f) {
+      PlayerExpandedSheetContent(
+        viewState = viewState,
+        modifier = Modifier.fillMaxSize().alpha(expandedAlpha),
+      )
     }
   }
 }
 
 @Composable
-private fun PlayerExpandedSheetContent(viewState: PlayerViewState) {
-  Box(modifier = Modifier.fillMaxSize()) {
+private fun PlayerExpandedSheetContent(viewState: PlayerViewState, modifier: Modifier = Modifier) {
+  Box(modifier = modifier) {
     LazyColumn {
       when (viewState) {
         is PlayerViewState.Invisible,
@@ -108,96 +102,102 @@ private fun PlayerExpandedSheetContent(viewState: PlayerViewState) {
 }
 
 @Composable
-private fun BoxScope.PlayerPartiallyExpandedSheetContent(viewState: PlayerViewState) {
-  TrackProgressIndicator(
-    visible = viewState is PlayerViewState.Playback && viewState.playerState is PlayerState.Enqueued
-  ) {
-    (viewState as? PlayerViewState.Playback)?.currentTrackProgress?.toFloat() ?: 0.0f
-  }
-
-  Row(
-    verticalAlignment = Alignment.CenterVertically,
-    modifier =
-      Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 12.dp),
-  ) {
-    when (viewState) {
-      is PlayerViewState.Invisible,
-      is PlayerViewState.Loading -> {
-        // TODO: loading shimmer
-      }
-      is PlayerViewState.Error -> {
-        // TODO: error image
-      }
-      is PlayerViewState.Playback -> {
-        AsyncImage(
-          model = viewState.currentTrack?.artworkUrl,
-          contentDescription = null,
-          contentScale = ContentScale.FillBounds,
-          modifier = Modifier.size(60.dp).clip(RoundedCornerShape(12.dp)),
-        )
-      }
+private fun PlayerPartiallyExpandedSheetContent(
+  viewState: PlayerViewState,
+  modifier: Modifier = Modifier,
+) {
+  Box(modifier = modifier) {
+    TrackProgressIndicator(
+      visible =
+        viewState is PlayerViewState.Playback && viewState.playerState is PlayerState.Enqueued
+    ) {
+      (viewState as? PlayerViewState.Playback)?.currentTrackProgress?.toFloat() ?: 0.0f
     }
 
-    Column(
-      verticalArrangement = Arrangement.Center,
-      modifier = Modifier.weight(1f).padding(horizontal = 16.dp),
+    Row(
+      verticalAlignment = Alignment.CenterVertically,
+      modifier =
+        Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 12.dp),
     ) {
       when (viewState) {
         is PlayerViewState.Invisible,
-        is PlayerViewState.Error -> {
-          // TODO: error text?
-          Spacer(modifier = Modifier.weight(1f))
-        }
         is PlayerViewState.Loading -> {
-          PlaylistNameText(viewState.playlist)
+          // TODO: loading shimmer
+        }
+        is PlayerViewState.Error -> {
+          // TODO: error image
         }
         is PlayerViewState.Playback -> {
-          viewState.currentTrack?.let { TrackTitleText(it) }
-          PlaylistNameText(viewState.playlist)
+          AsyncImage(
+            model = viewState.currentTrack?.artworkUrl,
+            contentDescription = null,
+            contentScale = ContentScale.FillBounds,
+            modifier = Modifier.size(60.dp).clip(RoundedCornerShape(12.dp)),
+          )
         }
       }
-    }
 
-    when (viewState) {
-      is PlayerViewState.Invisible,
-      is PlayerViewState.Loading -> {
-        CircularProgressIndicator()
-      }
-      is PlayerViewState.Playback -> {
-        when (val playerState = viewState.playerState) {
-          PlayerState.Idle -> {
-            IconButton(onClick = viewState.controlActions::onTogglePlayClick) {
-              Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
-            }
+      Column(
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier.weight(1f).padding(horizontal = 16.dp),
+      ) {
+        when (viewState) {
+          is PlayerViewState.Invisible,
+          is PlayerViewState.Error -> {
+            // TODO: error text?
+            Spacer(modifier = Modifier.weight(1f))
           }
-          is PlayerState.Enqueued -> {
-            IconButton(onClick = viewState.controlActions::onTogglePlayClick) {
-              // TODO: only show play/pause on IDLE/READY/maybe ENDED playback state
-              // and show loading indicator on BUFFERING
-              Crossfade(playerState.isPlaying) {
-                if (it) Icon(imageVector = Icons.Outlined.Pause, contentDescription = "Pause")
-                else Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
-              }
-            }
+          is PlayerViewState.Loading -> {
+            PlaylistNameText(viewState.playlist)
           }
-          is PlayerState.Error -> {
-            IconButton(
-              onClick = {
-                // TODO: retry action depending on player error type in VM
-              }
-            ) {
-              Icon(imageVector = Icons.Outlined.Refresh, contentDescription = "Retry")
-            }
+          is PlayerViewState.Playback -> {
+            viewState.currentTrack?.let { TrackTitleText(it) }
+            PlaylistNameText(viewState.playlist)
           }
         }
       }
-      is PlayerViewState.Error -> {
-        IconButton(
-          onClick = {
-            // TODO: retry action depending on player error type in VM
+
+      when (viewState) {
+        is PlayerViewState.Invisible,
+        is PlayerViewState.Loading -> {
+          CircularProgressIndicator()
+        }
+        is PlayerViewState.Playback -> {
+          when (val playerState = viewState.playerState) {
+            PlayerState.Idle -> {
+              IconButton(onClick = viewState.controlActions::onTogglePlayClick) {
+                Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
+              }
+            }
+            is PlayerState.Enqueued -> {
+              IconButton(onClick = viewState.controlActions::onTogglePlayClick) {
+                // TODO: only show play/pause on IDLE/READY/maybe ENDED playback state
+                // and show loading indicator on BUFFERING
+                Crossfade(playerState.isPlaying) {
+                  if (it) Icon(imageVector = Icons.Outlined.Pause, contentDescription = "Pause")
+                  else Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
+                }
+              }
+            }
+            is PlayerState.Error -> {
+              IconButton(
+                onClick = {
+                  // TODO: retry action depending on player error type in VM
+                }
+              ) {
+                Icon(imageVector = Icons.Outlined.Refresh, contentDescription = "Retry")
+              }
+            }
           }
-        ) {
-          Icon(imageVector = Icons.Outlined.Refresh, contentDescription = "Retry")
+        }
+        is PlayerViewState.Error -> {
+          IconButton(
+            onClick = {
+              // TODO: retry action depending on player error type in VM
+            }
+          ) {
+            Icon(imageVector = Icons.Outlined.Refresh, contentDescription = "Retry")
+          }
         }
       }
     }
