@@ -207,13 +207,18 @@ class PlayerViewModel(
         }
       }
 
-      override fun onPlayPrevious() {
+      override fun playPrevious() {
         when (playerState) {
           PlayerState.Idle -> {
             val start = playerInput.start
             enqueue(
               playerInput.copy(
-                start = start.copy(trackIndex = (start.trackIndex - 1).coerceAtLeast(0))
+                start =
+                  start.copy(
+                    trackIndex = (start.trackIndex - 1).coerceAtLeast(0),
+                    trackPositionMs = 0L,
+                    autoPlay = true,
+                  )
               )
             )
           }
@@ -226,7 +231,7 @@ class PlayerViewModel(
         }
       }
 
-      override fun onPlayNext() {
+      override fun playNext() {
         when (playerState) {
           PlayerState.Idle -> {
             val start = playerInput.start
@@ -234,7 +239,9 @@ class PlayerViewModel(
               playerInput.copy(
                 start =
                   start.copy(
-                    trackIndex = (start.trackIndex + 1).coerceAtMost(playerInput.tracks.lastIndex)
+                    trackIndex = (start.trackIndex + 1).coerceAtMost(playerInput.tracks.lastIndex),
+                    trackPositionMs = 0L,
+                    autoPlay = true,
                   )
               )
             )

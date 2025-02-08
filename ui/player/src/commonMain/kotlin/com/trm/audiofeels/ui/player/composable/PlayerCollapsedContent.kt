@@ -29,61 +29,62 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxDefaults
+import androidx.compose.material3.SwipeToDismissBoxState
+import androidx.compose.material3.SwipeToDismissBoxState.Companion.Saver
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.model.Track
 import com.trm.audiofeels.ui.player.PlayerViewState
-import io.github.aakira.napier.Napier
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun PlayerCollapsedContent(viewState: PlayerViewState, modifier: Modifier = Modifier) {
   Box(modifier = modifier) {
-    LaunchedEffect(viewState) {
-      Napier.e(tag = "PV", message = viewState::class.simpleName.toString())
-    }
-
-    TrackProgressIndicator(
-      visible =
-        viewState is PlayerViewState.Playback && viewState.playerState is PlayerState.Enqueued
-    ) {
-      (viewState as? PlayerViewState.Playback)?.currentTrackProgress?.toFloat() ?: 0.0f
-    }
-
-    val playPrevious =
-      remember(viewState) {
-        { (viewState as? PlayerViewState.Playback)?.controlActions?.onPlayPrevious() }
-      }
-    val playNext =
-      remember(viewState) {
-        { (viewState as? PlayerViewState.Playback)?.controlActions?.onPlayNext() }
-      }
-
-    val swipeBoxState =
-      rememberSwipeToDismissBoxState(
-        confirmValueChange = { value ->
-          when (value) {
-            SwipeToDismissBoxValue.StartToEnd -> playPrevious()
-            SwipeToDismissBoxValue.EndToStart -> playNext()
-            SwipeToDismissBoxValue.Settled -> {}
-          }
-          false
+    val density = LocalDensity.current
+    val positionalThreshold = SwipeToDismissBoxDefaults.positionalThreshold
+    val confirmValueChange: (SwipeToDismissBoxValue) -> Boolean = { value ->
+      when (value) {
+        SwipeToDismissBoxValue.StartToEnd -> {
+          (viewState as? PlayerViewState.Playback)?.controlActions?.playPrevious()
         }
-      )
+        SwipeToDismissBoxValue.EndToStart -> {
+          (viewState as? PlayerViewState.Playback)?.controlActions?.playNext()
+        }
+        SwipeToDismissBoxValue.Settled -> {}
+      }
+      false
+    }
+
     SwipeToDismissBox(
-      state = swipeBoxState,
+      state =
+        rememberSaveable(
+          viewState,
+          saver =
+            Saver(
+              confirmValueChange = confirmValueChange,
+              density = density,
+              positionalThreshold = positionalThreshold,
+            ),
+        ) {
+          SwipeToDismissBoxState(
+            initialValue = SwipeToDismissBoxValue.Settled,
+            density = density,
+            confirmValueChange = confirmValueChange,
+            positionalThreshold = positionalThreshold,
+          )
+        },
       gesturesEnabled = viewState is PlayerViewState.Playback,
       backgroundContent = {
         Row(
@@ -191,6 +192,13 @@ internal fun PlayerCollapsedContent(viewState: PlayerViewState, modifier: Modifi
           }
         }
       }
+    }
+
+    TrackProgressIndicator(
+      visible =
+        viewState is PlayerViewState.Playback && viewState.playerState is PlayerState.Enqueued
+    ) {
+      (viewState as? PlayerViewState.Playback)?.currentTrackProgress?.toFloat() ?: 0.0f
     }
   }
 }
