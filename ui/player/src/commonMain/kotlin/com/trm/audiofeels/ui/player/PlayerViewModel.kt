@@ -278,19 +278,23 @@ class PlayerViewModel(
     playerState: PlayerState,
     input: PlayerInput,
     playback: PlaylistPlayback,
-  ): String? =
-    when (playerState) {
+  ): String? {
+    fun initialTrackArtworkUrl(input: PlayerInput, playback: PlaylistPlayback) =
+      input.tracks.getOrNull(playback.currentTrackIndex)?.artworkUrl
+
+    return when (playerState) {
       PlayerState.Idle -> {
-        input.tracks.getOrNull(playback.currentTrackIndex)?.artworkUrl
+        initialTrackArtworkUrl(input, playback)
       }
       is PlayerState.Enqueued -> {
         playerState.currentTrack.artworkUrl
       }
       is PlayerState.Error -> {
         playerState.previousEnqueuedState?.currentTrack?.artworkUrl
-          ?: input.tracks.getOrNull(playback.currentTrackIndex)?.artworkUrl
+          ?: initialTrackArtworkUrl(input, playback)
       }
     }
+  }
 
   private fun getCurrentTrackIndex(playerState: PlayerState, playback: PlaylistPlayback): Int =
     when (playerState) {
