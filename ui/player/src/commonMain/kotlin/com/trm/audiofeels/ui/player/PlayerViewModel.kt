@@ -302,10 +302,9 @@ class PlayerViewModel(
     }
 
   private fun enqueue(input: PlayerInput, playback: PlaylistPlayback) {
-    val (tracks, host) = input
     playerConnection.enqueue(
-      tracks = tracks,
-      host = "https://$host",
+      tracks = input.tracks,
+      host = "https://${input.host}",
       startTrackIndex = playback.currentTrackIndex,
       startPositionMs = playback.currentTrackPositionMs,
     )

@@ -165,15 +165,12 @@ actual class AudioPlayerConnection : PlayerConnection {
   override fun enqueue(
     tracks: List<Track>,
     host: String,
-    autoPlay: Boolean,
     startTrackIndex: Int,
     startPositionMs: Long,
   ) {
     this.tracks = tracks
     this.host = host
-    if (autoPlay) {
-      play(trackIndex = startTrackIndex, startPositionMs = startPositionMs)
-    }
+    play(trackIndex = startTrackIndex, startPositionMs = startPositionMs)
   }
 
   private fun enqueuedWithPlaybackState(playbackState: PlaybackState): PlayerState.Enqueued? =

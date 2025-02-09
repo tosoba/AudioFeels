@@ -1,6 +1,5 @@
 package com.trm.audiofeels.domain.player
 
-import com.trm.audiofeels.domain.model.PlayerConstants
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Track
 import kotlinx.coroutines.flow.Flow
@@ -20,13 +19,7 @@ interface PlayerConnection {
 
   fun skipTo(positionMs: Long)
 
-  fun enqueue(
-    tracks: List<Track>,
-    host: String,
-    autoPlay: Boolean = true,
-    startTrackIndex: Int = PlayerConstants.DEFAULT_START_TRACK_INDEX,
-    startPositionMs: Long = PlayerConstants.DEFAULT_START_POSITION_MS,
-  )
+  fun enqueue(tracks: List<Track>, host: String, startTrackIndex: Int, startPositionMs: Long)
 
   fun reset()
 }

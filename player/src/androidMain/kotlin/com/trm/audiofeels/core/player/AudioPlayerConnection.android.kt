@@ -133,14 +133,13 @@ actual class AudioPlayerConnection(
   override fun enqueue(
     tracks: List<Track>,
     host: String,
-    autoPlay: Boolean,
     startTrackIndex: Int,
     startPositionMs: Long,
   ) {
     withMediaBrowser {
       setMediaItems(tracks.toMediaItems(host), startTrackIndex, startPositionMs)
       prepare()
-      if (autoPlay) play()
+      play()
       repeatMode = Player.REPEAT_MODE_ALL
     }
   }
