@@ -70,13 +70,14 @@ class PlayerViewModel(
           )
         }
       }
-      .flatMapLatest { playerInput -> playerInput.toPlayerViewStateFlow(playback) }
+      .flatMapLatest { playerInput -> playerViewStateFlow(playerInput, playback) }
       .onEach { if (it is PlayerViewState.Playback) onPlayerViewStatePlayback(it) }
 
-  private fun LoadableState<PlayerInput>.toPlayerViewStateFlow(
-    playback: PlaylistPlayback
+  private fun playerViewStateFlow(
+    input: LoadableState<PlayerInput>,
+    playback: PlaylistPlayback,
   ): Flow<PlayerViewState> =
-    when (this) {
+    when (input) {
       LoadableState.Loading -> {
         flowOf(
           PlayerViewState.Loading(
@@ -86,27 +87,7 @@ class PlayerViewModel(
         )
       }
       is LoadableState.Success -> {
-        val artworkUrlChannel = Channel<String?>(onBufferOverflow = BufferOverflow.DROP_OLDEST)
-        combine(
-          playerConnection.playerState.onEach {
-            artworkUrlChannel.send(getCurrentTrackArtworkUrl(it, value, playback))
-          },
-          artworkUrlChannel.receiveAsFlow().distinctUntilChanged().transformLatest { artworkUrl ->
-            emit(null)
-            artworkUrl?.let { emit(imageLoader.loadImageBitmapOrNull(it, platformContext)) }
-          },
-          playerConnection.currentTrackPositionMs.distinctUntilChanged().onStart { emit(0L) },
-        ) { playerState, currentTrackImageBitmap, currentTrackPositionMs ->
-          playbackViewState(
-            playerInput = value,
-            playback = playback,
-            playerState = playerState,
-            currentTrackPositionMs =
-              if (playerState is PlayerState.Idle) playback.currentTrackPositionMs
-              else currentTrackPositionMs,
-            currentTrackImageBitmap = currentTrackImageBitmap,
-          )
-        }
+        playbackViewStateFlow(input.value, playback)
       }
       is LoadableState.Error -> {
         flowOf(
@@ -117,6 +98,33 @@ class PlayerViewModel(
         )
       }
     }
+
+  private fun playbackViewStateFlow(
+    input: PlayerInput,
+    playback: PlaylistPlayback,
+  ): Flow<PlayerViewState> {
+    val artworkUrlChannel = Channel<String?>(onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    return combine(
+      playerConnection.playerState.onEach {
+        artworkUrlChannel.send(getCurrentTrackArtworkUrl(it, input, playback))
+      },
+      artworkUrlChannel.receiveAsFlow().distinctUntilChanged().transformLatest { artworkUrl ->
+        emit(null)
+        artworkUrl?.let { emit(imageLoader.loadImageBitmapOrNull(it, platformContext)) }
+      },
+      playerConnection.currentTrackPositionMs.distinctUntilChanged().onStart { emit(0L) },
+    ) { playerState, currentTrackImageBitmap, currentTrackPositionMs ->
+      playbackViewState(
+        playerInput = input,
+        playback = playback,
+        playerState = playerState,
+        currentTrackPositionMs =
+          if (playerState is PlayerState.Idle) playback.currentTrackPositionMs
+          else currentTrackPositionMs,
+        currentTrackImageBitmap = currentTrackImageBitmap,
+      )
+    }
+  }
 
   private fun playbackViewState(
     playerInput: PlayerInput,
