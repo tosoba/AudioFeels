@@ -54,6 +54,9 @@ internal fun PlayerCollapsedContent(viewState: PlayerViewState, modifier: Modifi
     SwipeToDismissBox(
       state = rememberPlayerControlActionsSwipeState(viewState),
       gesturesEnabled = viewState is PlayerViewState.Playback,
+      enableDismissFromStartToEnd =
+        viewState is PlayerViewState.Playback && viewState.canPlayPrevious,
+      enableDismissFromEndToStart = viewState is PlayerViewState.Playback && viewState.canPlayNext,
       backgroundContent = {
         Row(
           modifier =

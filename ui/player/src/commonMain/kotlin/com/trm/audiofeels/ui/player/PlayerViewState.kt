@@ -39,6 +39,12 @@ sealed interface PlayerViewState {
       get() =
         if (playerState is PlayerState.Enqueued) playerState.currentTrack
         else tracks.getOrNull(currentTrackIndex)
+
+    val canPlayPrevious: Boolean
+      get() = currentTrackIndex > 0
+
+    val canPlayNext: Boolean
+      get() = currentTrackIndex < tracks.lastIndex
   }
 
   data class Error(
