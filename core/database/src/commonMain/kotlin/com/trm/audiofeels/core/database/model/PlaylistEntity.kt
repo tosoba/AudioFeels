@@ -16,5 +16,8 @@ data class PlaylistEntity(
   val artworkUrl: String?,
   val score: Double,
   val trackCount: Int,
-  @TypeConverters(InstantConverter::class) val lastPlayed: Instant,
+  @TypeConverters(InstantConverter::class) val lastPlayed: Instant? = null,
+  val currentTrackIndex: Int = 0,
+  val currentTrackPositionMs: Long = 0L,
+  val autoPlay: Boolean = true,
 )

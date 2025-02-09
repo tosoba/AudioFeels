@@ -42,7 +42,6 @@ include(
   ":core:ui:compose",
   ":core:ui:resources",
   ":data:hosts",
-  ":data:playback",
   ":data:playlists",
   ":data:test",
   ":domain",

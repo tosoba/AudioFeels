@@ -11,12 +11,11 @@ import com.trm.audiofeels.core.base.util.RestartableStateFlow
 import com.trm.audiofeels.core.base.util.restartableStateIn
 import com.trm.audiofeels.core.base.util.roundTo
 import com.trm.audiofeels.core.ui.compose.util.loadImageBitmapOrNull
-import com.trm.audiofeels.domain.model.PlaybackStart
 import com.trm.audiofeels.domain.model.PlayerInput
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Playlist
+import com.trm.audiofeels.domain.model.PlaylistPlayback
 import com.trm.audiofeels.domain.player.PlayerConnection
-import com.trm.audiofeels.domain.repository.PlaybackRepository
 import com.trm.audiofeels.domain.repository.PlaylistsRepository
 import com.trm.audiofeels.domain.usecase.GetPlayerInputUseCase
 import io.github.aakira.napier.Napier
@@ -33,7 +32,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
 
@@ -41,23 +39,16 @@ import kotlinx.coroutines.launch
 class PlayerViewModel(
   private val playerConnection: PlayerConnection,
   private val getPlayerInputUseCase: GetPlayerInputUseCase,
-  private val playbackRepository: PlaybackRepository,
   private val playlistsRepository: PlaylistsRepository,
   private val imageLoader: ImageLoader,
   private val platformContext: PlatformContext,
 ) : ViewModel() {
   val viewState: RestartableStateFlow<PlayerViewState> =
-    playbackRepository
-      .getPlaybackPlaylistFlow()
-      .distinctUntilChangedBy { playlist -> playlist?.id }
-      .scan(Pair<Playlist?, Playlist?>(null, null)) { (_, previous), current ->
-        previous to current
-      }
-      .onEach { (previous) ->
-        previous?.let { viewModelScope.launch { playlistsRepository.savePlaylist(it) } }
-      }
-      .flatMapLatest { (_, playlist) ->
-        playlist?.let(::playerViewStateFlow)
+    playlistsRepository
+      .getCurrentPlaylistPlaybackFlow()
+      .distinctUntilChangedBy { playback -> playback?.playlist?.id }
+      .flatMapLatest { playback ->
+        playback?.let(::playerViewStateFlow)
           ?: flowOf(PlayerViewState.Invisible(playerViewPlaybackActions())).onEach {
             playerConnection.reset()
           }
@@ -68,24 +59,24 @@ class PlayerViewModel(
         initialValue = PlayerViewState.Invisible(playerViewPlaybackActions()),
       )
 
-  private fun playerViewStateFlow(playlist: Playlist): Flow<PlayerViewState> =
-    loadableStateFlowOf { getPlayerInputUseCase(playlist.id) }
+  private fun playerViewStateFlow(playback: PlaylistPlayback): Flow<PlayerViewState> =
+    loadableStateFlowOf { getPlayerInputUseCase(playback.playlist.id) }
       .onEach { input ->
-        if (input is LoadableState.Success && input.value.start.autoPlay) {
-          enqueue(input.value)
+        if (input is LoadableState.Success && playback.autoPlay) {
+          enqueue(input.value, playback)
         }
       }
-      .flatMapLatest { playerInput -> playerInput.toPlayerViewStateFlow(playlist) }
+      .flatMapLatest { playerInput -> playerInput.toPlayerViewStateFlow(playback) }
       .onEach { if (it is PlayerViewState.Playback) onPlayerViewStatePlayback(it) }
 
   private fun LoadableState<PlayerInput>.toPlayerViewStateFlow(
-    playlist: Playlist
+    playback: PlaylistPlayback
   ): Flow<PlayerViewState> =
     when (this) {
       LoadableState.Loading -> {
         flowOf(
           PlayerViewState.Loading(
-            playlist = playlist,
+            playlist = playback.playlist,
             playbackActions = playerViewPlaybackActions(),
           )
         )
@@ -94,7 +85,7 @@ class PlayerViewModel(
         val artworkUrlChannel = Channel<String?>(onBufferOverflow = BufferOverflow.DROP_OLDEST)
         combine(
           playerConnection.playerState.onEach {
-            artworkUrlChannel.send(getCurrentTrackArtworkUrl(it, value))
+            artworkUrlChannel.send(getCurrentTrackArtworkUrl(it, value, playback))
           },
           artworkUrlChannel.receiveAsFlow().distinctUntilChanged().transformLatest { artworkUrl ->
             emit(null)
@@ -104,10 +95,10 @@ class PlayerViewModel(
         ) { playerState, currentTrackImageBitmap, currentTrackPositionMs ->
           playbackViewState(
             playerInput = value,
-            playlist = playlist,
+            playback = playback,
             playerState = playerState,
             currentTrackPositionMs =
-              if (playerState is PlayerState.Idle) value.start.trackPositionMs
+              if (playerState is PlayerState.Idle) playback.currentTrackPositionMs
               else currentTrackPositionMs,
             currentTrackImageBitmap = currentTrackImageBitmap,
           )
@@ -115,30 +106,33 @@ class PlayerViewModel(
       }
       is LoadableState.Error -> {
         flowOf(
-          PlayerViewState.Error(playlist = playlist, playbackActions = playerViewPlaybackActions())
+          PlayerViewState.Error(
+            playlist = playback.playlist,
+            playbackActions = playerViewPlaybackActions(),
+          )
         )
       }
     }
 
   private fun playbackViewState(
     playerInput: PlayerInput,
-    playlist: Playlist,
+    playback: PlaylistPlayback,
     playerState: PlayerState,
     currentTrackPositionMs: Long,
     currentTrackImageBitmap: ImageBitmap?,
   ): PlayerViewState.Playback {
-    val controlActions = playerViewControlActions(playerState, playerInput)
+    val controlActions = playerViewControlActions(playerState, playerInput, playback)
     return PlayerViewState.Playback(
-      playlist = playlist,
+      playlist = playback.playlist,
       playerState = playerState,
       tracks = playerInput.tracks,
-      currentTrackIndex = getCurrentTrackIndex(playerState, playerInput),
+      currentTrackIndex = getCurrentTrackIndex(playerState, playback),
       currentTrackProgress = currentTrackProgress(playerState, currentTrackPositionMs),
       currentTrackImageBitmap = currentTrackImageBitmap,
       controlActions = controlActions,
       playbackActions =
         playerViewPlaybackActions(
-          currentPlaylist = playlist,
+          currentPlaylist = playback.playlist,
           toggleCurrentPlayback = controlActions::togglePlay,
         ),
     )
@@ -182,22 +176,23 @@ class PlayerViewModel(
     }
 
   private fun startNewPlaylistPlayback(playlist: Playlist) {
-    viewModelScope.launch { playbackRepository.updatePlaybackPlaylist(playlist) }
+    viewModelScope.launch { playlistsRepository.setNewCurrentPlaylist(playlist) }
   }
 
   private fun cancelPlayback() {
-    viewModelScope.launch { playbackRepository.clear() }
+    viewModelScope.launch { playlistsRepository.clearCurrentPlaylist() }
   }
 
   private fun playerViewControlActions(
     playerState: PlayerState,
     playerInput: PlayerInput,
+    playback: PlaylistPlayback,
   ): PlayerViewControlActions =
     object : PlayerViewControlActions {
       override fun togglePlay() {
         when (playerState) {
           PlayerState.Idle -> {
-            enqueue(playerInput)
+            enqueue(playerInput, playback)
           }
           is PlayerState.Enqueued -> {
             if (playerState.isPlaying) playerConnection.pause() else playerConnection.play()
@@ -212,14 +207,11 @@ class PlayerViewModel(
         when (playerState) {
           PlayerState.Idle -> {
             enqueue(
-              playerInput.copy(
-                start =
-                  PlaybackStart(
-                    trackIndex = (playerInput.start.trackIndex - 1).coerceAtLeast(0),
-                    trackPositionMs = 0L,
-                    autoPlay = true,
-                  )
-              )
+              playerInput,
+              playback.copy(
+                currentTrackIndex = (playback.currentTrackIndex - 1).coerceAtLeast(0),
+                currentTrackPositionMs = 0L,
+              ),
             )
           }
           is PlayerState.Enqueued -> {
@@ -235,15 +227,12 @@ class PlayerViewModel(
         when (playerState) {
           PlayerState.Idle -> {
             enqueue(
-              playerInput.copy(
-                start =
-                  PlaybackStart(
-                    trackIndex =
-                      (playerInput.start.trackIndex + 1).coerceAtMost(playerInput.tracks.lastIndex),
-                    trackPositionMs = 0L,
-                    autoPlay = true,
-                  )
-              )
+              playerInput,
+              playback.copy(
+                currentTrackIndex =
+                  (playback.currentTrackIndex + 1).coerceAtMost(playerInput.tracks.lastIndex),
+                currentTrackPositionMs = 0L,
+              ),
             )
           }
           is PlayerState.Enqueued -> {
@@ -264,10 +253,14 @@ class PlayerViewModel(
       }
       is PlayerState.Enqueued -> {
         viewModelScope.launch {
-          playbackRepository.updatePlaybackTrack(
-            trackIndex = playerState.currentTrackIndex,
-            trackPositionMs =
-              playerState.currentTrack.positionMsOf(playbackState.currentTrackProgress),
+          playlistsRepository.updateCurrentPlaylist(
+            PlaylistPlayback(
+              playlist = playbackState.playlist,
+              currentTrackIndex = playerState.currentTrackIndex,
+              currentTrackPositionMs =
+                playerState.currentTrack.positionMsOf(playbackState.currentTrackProgress),
+              autoPlay = false,
+            )
           )
         }
       }
@@ -277,39 +270,44 @@ class PlayerViewModel(
     }
   }
 
-  private fun getCurrentTrackArtworkUrl(playerState: PlayerState, input: PlayerInput): String? =
+  private fun getCurrentTrackArtworkUrl(
+    playerState: PlayerState,
+    input: PlayerInput,
+    playback: PlaylistPlayback,
+  ): String? =
     when (playerState) {
       PlayerState.Idle -> {
-        input.artworkUrl
+        input.tracks.getOrNull(playback.currentTrackIndex)?.artworkUrl
       }
       is PlayerState.Enqueued -> {
         playerState.currentTrack.artworkUrl
       }
       is PlayerState.Error -> {
-        playerState.previousEnqueuedState?.currentTrack?.artworkUrl ?: input.artworkUrl
+        playerState.previousEnqueuedState?.currentTrack?.artworkUrl
+          ?: input.tracks.getOrNull(playback.currentTrackIndex)?.artworkUrl
       }
     }
 
-  private fun getCurrentTrackIndex(playerState: PlayerState, input: PlayerInput): Int =
+  private fun getCurrentTrackIndex(playerState: PlayerState, playback: PlaylistPlayback): Int =
     when (playerState) {
       PlayerState.Idle -> {
-        input.start.trackIndex
+        playback.currentTrackIndex
       }
       is PlayerState.Enqueued -> {
         playerState.currentTrackIndex
       }
       is PlayerState.Error -> {
-        playerState.previousEnqueuedState?.currentTrackIndex ?: input.start.trackIndex
+        playerState.previousEnqueuedState?.currentTrackIndex ?: playback.currentTrackIndex
       }
     }
 
-  private fun enqueue(input: PlayerInput) {
-    val (tracks, host, start) = input
+  private fun enqueue(input: PlayerInput, playback: PlaylistPlayback) {
+    val (tracks, host) = input
     playerConnection.enqueue(
       tracks = tracks,
       host = "https://$host",
-      startTrackIndex = start.trackIndex,
-      startPositionMs = start.trackPositionMs,
+      startTrackIndex = playback.currentTrackIndex,
+      startPositionMs = playback.currentTrackPositionMs,
     )
   }
 }

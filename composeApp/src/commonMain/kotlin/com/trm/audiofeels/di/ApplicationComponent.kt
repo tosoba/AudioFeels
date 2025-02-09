@@ -10,7 +10,6 @@ import com.trm.audiofeels.core.network.di.NetworkCoreComponent
 import com.trm.audiofeels.core.player.di.PlayerComponent
 import com.trm.audiofeels.core.preferences.di.PreferencesCoreComponent
 import com.trm.audiofeels.data.hosts.di.HostsDataComponent
-import com.trm.audiofeels.data.playback.di.PlaybackDataComponent
 import com.trm.audiofeels.data.playlists.di.PlaylistsDataComponent
 import com.trm.audiofeels.ui.discover.di.DiscoverUiComponent
 import com.trm.audiofeels.ui.player.di.PlayerUiComponent
@@ -27,7 +26,6 @@ interface ApplicationComponent :
   NetworkCoreComponent,
   PreferencesCoreComponent,
   HostsDataComponent,
-  PlaybackDataComponent,
   PlaylistsDataComponent,
   PlayerComponent,
   DiscoverUiComponent,

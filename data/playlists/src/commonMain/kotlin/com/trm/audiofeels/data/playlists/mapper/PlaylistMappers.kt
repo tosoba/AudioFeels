@@ -3,9 +3,9 @@ package com.trm.audiofeels.data.playlists.mapper
 import com.trm.audiofeels.core.database.model.PlaylistEntity
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import com.trm.audiofeels.domain.model.Playlist
-import kotlinx.datetime.Clock
+import com.trm.audiofeels.domain.model.PlaylistPlayback
 
-fun Playlist.toEntity(): PlaylistEntity =
+internal fun Playlist.toCurrentPlaylistEntity(): PlaylistEntity =
   PlaylistEntity(
     id = id,
     name = name,
@@ -13,11 +13,36 @@ fun Playlist.toEntity(): PlaylistEntity =
     artworkUrl = artworkUrl,
     score = score,
     trackCount = trackCount,
-    lastPlayed = Clock.System.now(),
   )
 
-fun PlaylistEntity.toCarryOn(): CarryOnPlaylist =
-  CarryOnPlaylist(
+internal fun PlaylistPlayback.toCurrentPlaylistEntity(): PlaylistEntity =
+  PlaylistEntity(
+    id = playlist.id,
+    name = playlist.name,
+    description = playlist.description,
+    artworkUrl = playlist.artworkUrl,
+    score = playlist.score,
+    trackCount = playlist.trackCount,
+    currentTrackIndex = currentTrackIndex,
+    currentTrackPositionMs = currentTrackPositionMs,
+    autoPlay = autoPlay,
+  )
+
+internal fun PlaylistEntity.toCarryOn(): CarryOnPlaylist =
+  CarryOnPlaylist(playlist = toPlaylist(), lastPlayed = requireNotNull(lastPlayed))
+
+internal fun PlaylistEntity.toPlaylist(): Playlist =
+  Playlist(
+    id = id,
+    name = name,
+    description = description,
+    artworkUrl = artworkUrl,
+    score = score,
+    trackCount = trackCount,
+  )
+
+internal fun PlaylistEntity.toPlaylistPlayback(): PlaylistPlayback =
+  PlaylistPlayback(
     playlist =
       Playlist(
         id = id,
@@ -27,5 +52,7 @@ fun PlaylistEntity.toCarryOn(): CarryOnPlaylist =
         score = score,
         trackCount = trackCount,
       ),
-    lastPlayed = lastPlayed,
+    currentTrackIndex = currentTrackIndex,
+    currentTrackPositionMs = currentTrackPositionMs,
+    autoPlay = autoPlay,
   )
