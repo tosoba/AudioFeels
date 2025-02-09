@@ -15,6 +15,6 @@ class GetPlayerInputUseCase(
   suspend operator fun invoke(playlistId: String): PlayerInput = coroutineScope {
     val tracks = async { playlistsRepository.getPlaylistTracks(playlistId) }
     val host = async { hostsRepository.retrieveHost() }
-    PlayerInput(tracks = tracks.await(), host = host.await())
+    PlayerInput(tracks = tracks.await(), host = "https://${host.await()}")
   }
 }

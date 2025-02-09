@@ -63,7 +63,11 @@ class PlayerViewModel(
     loadableStateFlowOf { getPlayerInputUseCase(playback.playlist.id) }
       .onEach { input ->
         if (input is LoadableState.Success && playback.autoPlay) {
-          enqueue(input.value, playback)
+          playerConnection.enqueue(
+            input = input.value,
+            startTrackIndex = playback.currentTrackIndex,
+            startPositionMs = playback.currentTrackPositionMs,
+          )
         }
       }
       .flatMapLatest { playerInput -> playerInput.toPlayerViewStateFlow(playback) }
@@ -192,7 +196,11 @@ class PlayerViewModel(
       override fun togglePlay() {
         when (playerState) {
           PlayerState.Idle -> {
-            enqueue(playerInput, playback)
+            playerConnection.enqueue(
+              input = playerInput,
+              startTrackIndex = playback.currentTrackIndex,
+              startPositionMs = playback.currentTrackPositionMs,
+            )
           }
           is PlayerState.Enqueued -> {
             if (playerState.isPlaying) playerConnection.pause() else playerConnection.play()
@@ -206,12 +214,10 @@ class PlayerViewModel(
       override fun playPrevious() {
         when (playerState) {
           PlayerState.Idle -> {
-            enqueue(
-              playerInput,
-              playback.copy(
-                currentTrackIndex = (playback.currentTrackIndex - 1).coerceAtLeast(0),
-                currentTrackPositionMs = 0L,
-              ),
+            playerConnection.enqueue(
+              input = playerInput,
+              startTrackIndex = (playback.currentTrackIndex - 1).coerceAtLeast(0),
+              startPositionMs = 0L,
             )
           }
           is PlayerState.Enqueued -> {
@@ -226,13 +232,11 @@ class PlayerViewModel(
       override fun playNext() {
         when (playerState) {
           PlayerState.Idle -> {
-            enqueue(
-              playerInput,
-              playback.copy(
-                currentTrackIndex =
-                  (playback.currentTrackIndex + 1).coerceAtMost(playerInput.tracks.lastIndex),
-                currentTrackPositionMs = 0L,
-              ),
+            playerConnection.enqueue(
+              input = playerInput,
+              startTrackIndex =
+                (playback.currentTrackIndex + 1).coerceAtMost(playerInput.tracks.lastIndex),
+              startPositionMs = 0L,
             )
           }
           is PlayerState.Enqueued -> {
@@ -300,13 +304,4 @@ class PlayerViewModel(
         playerState.previousEnqueuedState?.currentTrackIndex ?: playback.currentTrackIndex
       }
     }
-
-  private fun enqueue(input: PlayerInput, playback: PlaylistPlayback) {
-    playerConnection.enqueue(
-      tracks = input.tracks,
-      host = "https://${input.host}",
-      startTrackIndex = playback.currentTrackIndex,
-      startPositionMs = playback.currentTrackPositionMs,
-    )
-  }
 }

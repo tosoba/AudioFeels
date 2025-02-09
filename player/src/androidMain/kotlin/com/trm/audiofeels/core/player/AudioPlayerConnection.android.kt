@@ -15,8 +15,8 @@ import com.trm.audiofeels.core.base.util.lazyAsync
 import com.trm.audiofeels.core.player.mapper.toMediaItem
 import com.trm.audiofeels.core.player.mapper.toPlayerError
 import com.trm.audiofeels.core.player.mapper.toState
+import com.trm.audiofeels.domain.model.PlayerInput
 import com.trm.audiofeels.domain.model.PlayerState
-import com.trm.audiofeels.domain.model.Track
 import com.trm.audiofeels.domain.player.PlayerConnection
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.Deferred
@@ -130,23 +130,17 @@ actual class AudioPlayerConnection(
     }
   }
 
-  override fun enqueue(
-    tracks: List<Track>,
-    host: String,
-    startTrackIndex: Int,
-    startPositionMs: Long,
-  ) {
+  override fun enqueue(input: PlayerInput, startTrackIndex: Int, startPositionMs: Long) {
     withMediaBrowser {
-      setMediaItems(tracks.toMediaItems(host), startTrackIndex, startPositionMs)
+      setMediaItems(input.toMediaItems(), startTrackIndex, startPositionMs)
       prepare()
       play()
       repeatMode = Player.REPEAT_MODE_ALL
     }
   }
 
-  private fun Iterable<Track>.toMediaItems(host: String): List<MediaItem> = map { track ->
-    track.toMediaItem(host)
-  }
+  private fun PlayerInput.toMediaItems(): List<MediaItem> =
+    tracks.map { track -> track.toMediaItem(host) }
 
   override fun reset() {
     withMediaBrowser(MediaBrowser::clearMediaItems)

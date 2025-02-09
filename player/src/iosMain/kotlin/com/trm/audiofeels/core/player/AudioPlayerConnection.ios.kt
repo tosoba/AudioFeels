@@ -6,6 +6,7 @@ import com.trm.audiofeels.core.player.util.isPlaying
 import com.trm.audiofeels.domain.model.PlaybackState
 import com.trm.audiofeels.domain.model.PlayerConstants
 import com.trm.audiofeels.domain.model.PlayerError
+import com.trm.audiofeels.domain.model.PlayerInput
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Track
 import com.trm.audiofeels.domain.player.PlayerConnection
@@ -162,14 +163,9 @@ actual class AudioPlayerConnection : PlayerConnection {
     )
   }
 
-  override fun enqueue(
-    tracks: List<Track>,
-    host: String,
-    startTrackIndex: Int,
-    startPositionMs: Long,
-  ) {
-    this.tracks = tracks
-    this.host = host
+  override fun enqueue(input: PlayerInput, startTrackIndex: Int, startPositionMs: Long) {
+    tracks = input.tracks
+    host = input.host
     play(trackIndex = startTrackIndex, startPositionMs = startPositionMs)
   }
 
