@@ -28,7 +28,7 @@ sealed interface PlayerViewState {
     val playlist: Playlist,
     val playerState: PlayerState,
     val tracks: List<Track>,
-    private val currentTrackIndex: Int,
+    val currentTrackIndex: Int,
     val currentTrackProgress: Double,
     // TODO: use a placeholder in case of no artwork
     override val currentTrackImageBitmap: ImageBitmap?,
