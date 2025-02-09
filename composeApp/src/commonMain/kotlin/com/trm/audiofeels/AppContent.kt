@@ -1,17 +1,19 @@
 package com.trm.audiofeels
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -21,7 +23,6 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationDrawerItem
@@ -29,14 +30,11 @@ import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.PermanentDrawerSheet
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetValue
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.AnimatedPane
-import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
 import androidx.compose.material3.adaptive.layout.SupportingPaneScaffold
 import androidx.compose.material3.adaptive.layout.SupportingPaneScaffoldRole
 import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
@@ -51,6 +49,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -66,6 +65,7 @@ import androidx.navigation.compose.rememberNavController
 import coil3.compose.setSingletonImageLoaderFactory
 import com.materialkolor.DynamicMaterialTheme
 import com.materialkolor.ktx.rememberThemeColor
+import com.trm.audiofeels.core.ui.compose.theme.UpdateEdgeToEdge
 import com.trm.audiofeels.core.ui.compose.util.NavigationContentPosition
 import com.trm.audiofeels.core.ui.compose.util.NavigationType
 import com.trm.audiofeels.core.ui.compose.util.calculateWindowSize
@@ -89,6 +89,8 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Preview
 fun AppContent(applicationComponent: ApplicationComponent) {
   setSingletonImageLoaderFactory { applicationComponent.imageLoader }
+
+  UpdateEdgeToEdge(isSystemInDarkTheme())
 
   val playerViewModel =
     viewModel<PlayerViewModel>(factory = applicationComponent.playerViewModelFactory)
@@ -135,88 +137,80 @@ fun AppContent(applicationComponent: ApplicationComponent) {
       navController.navigateToPageDestination(destination)
     }
 
-    Surface(modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing)) {
-      NavigationSuiteScaffoldLayout(
-        layoutType = navigationType.suiteType,
-        navigationSuite = {
-          when (navigationType) {
-            NavigationType.NAVIGATION_BAR -> {
-              AppBottomNavigationBar(
-                currentDestination = currentDestination,
-                navigatePageDestination = ::navigateToPageDestination,
-              )
-            }
-            NavigationType.NAVIGATION_RAIL -> {
-              AppNavigationRail(
-                currentDestination = currentDestination,
-                navigationContentPosition = navigationContentPosition,
-                navigatePageDestination = ::navigateToPageDestination,
-              )
-            }
-            NavigationType.PERMANENT_NAVIGATION_DRAWER -> {
-              AppPermanentNavigationDrawer(
-                currentDestination = currentDestination,
-                navigationContentPosition = navigationContentPosition,
-                navigatePageDestination = ::navigateToPageDestination,
-              )
-            }
-          }
-        },
-      ) {
-        val navigator =
-          rememberSupportingPaneScaffoldNavigator(
-            scaffoldDirective =
-              calculatePaneScaffoldDirective(currentWindowAdaptiveInfo()).let {
-                if (playerViewState.playerVisible) it
-                else it.copy(maxHorizontalPartitions = 1, maxVerticalPartitions = 1)
-              }
-          )
-        val supportingPaneValue = navigator.scaffoldValue[SupportingPaneScaffoldRole.Supporting]
-        LaunchedEffect(supportingPaneValue) {
-          scope.launch { appLayoutState.onSupportingPaneValueChange(supportingPaneValue) }
-        }
-
-        BottomSheetScaffold(
-          sheetContent = {
-            PlayerSheetContent(
-              viewState = playerViewState,
-              sheetOffset = appLayoutState.playerLayoutState.currentSheetOffset,
+    NavigationSuiteScaffoldLayout(
+      layoutType = navigationType.suiteType,
+      navigationSuite = {
+        when (navigationType) {
+          NavigationType.NAVIGATION_BAR -> {
+            AppBottomNavigationBar(
+              currentDestination = currentDestination,
+              navigatePageDestination = ::navigateToPageDestination,
             )
-          },
-          sheetPeekHeight = 128.dp,
-          scaffoldState = appLayoutState.playerLayoutState.scaffoldState,
-          topBar = {
-            if (supportingPaneValue == PaneAdaptedValue.Hidden) {
-              AppTopAppBar(playerViewState)
+          }
+          NavigationType.NAVIGATION_RAIL -> {
+            AppNavigationRail(
+              currentDestination = currentDestination,
+              navigationContentPosition = navigationContentPosition,
+              navigatePageDestination = ::navigateToPageDestination,
+            )
+          }
+          NavigationType.PERMANENT_NAVIGATION_DRAWER -> {
+            AppPermanentNavigationDrawer(
+              currentDestination = currentDestination,
+              navigationContentPosition = navigationContentPosition,
+              navigatePageDestination = ::navigateToPageDestination,
+            )
+          }
+        }
+      },
+    ) {
+      val navigator =
+        rememberSupportingPaneScaffoldNavigator(
+          scaffoldDirective =
+            calculatePaneScaffoldDirective(currentWindowAdaptiveInfo()).let {
+              if (playerViewState.playerVisible) it
+              else it.copy(maxHorizontalPartitions = 1, maxVerticalPartitions = 1)
+            }
+        )
+      val supportingPaneValue = navigator.scaffoldValue[SupportingPaneScaffoldRole.Supporting]
+      LaunchedEffect(supportingPaneValue) {
+        scope.launch { appLayoutState.onSupportingPaneValueChange(supportingPaneValue) }
+      }
+
+      BottomSheetScaffold(
+        sheetContent = {
+          PlayerSheetContent(
+            viewState = playerViewState,
+            sheetOffset = appLayoutState.playerLayoutState.currentSheetOffset,
+          )
+        },
+        sheetPeekHeight = 128.dp,
+        scaffoldState = appLayoutState.playerLayoutState.scaffoldState,
+        topBar = { AppTopAppBar(playerViewState) },
+      ) {
+        SupportingPaneScaffold(
+          modifier = Modifier.fillMaxSize(),
+          directive = navigator.scaffoldDirective,
+          value = navigator.scaffoldValue,
+          mainPane = {
+            AnimatedPane {
+              AppNavHost(
+                navController = navController,
+                discoverViewModelFactory = applicationComponent.discoverViewModelFactory,
+                modifier = Modifier.fillMaxSize(),
+                onPlaylistClick = playerViewState.playbackActions::start,
+              )
             }
           },
-        ) {
-          SupportingPaneScaffold(
-            modifier = Modifier.fillMaxSize(),
-            directive = navigator.scaffoldDirective,
-            value = navigator.scaffoldValue,
-            mainPane = {
-              AnimatedPane {
-                AppNavHost(
-                  navController = navController,
-                  discoverViewModelFactory = applicationComponent.discoverViewModelFactory,
-                  modifier = Modifier.fillMaxSize(),
-                  onPlaylistClick = playerViewState.playbackActions::start,
-                )
-              }
-            },
-            supportingPane = {
-              AnimatedPane {
-                Scaffold(topBar = { AppTopAppBar(playerViewState) }) {
-                  PlayerExpandedContent(
-                    viewState = playerViewState,
-                    modifier = Modifier.fillMaxSize().padding(it),
-                  )
-                }
-              }
-            },
-          )
-        }
+          supportingPane = {
+            AnimatedPane {
+              PlayerExpandedContent(
+                viewState = playerViewState,
+                modifier = Modifier.fillMaxSize().padding(it),
+              )
+            }
+          },
+        )
       }
     }
   }
@@ -265,11 +259,15 @@ private fun AppNavigationRail(
   navigationContentPosition: NavigationContentPosition,
   navigatePageDestination: (AppPageNavigationDestination) -> Unit,
 ) {
-  NavigationRail(
-    modifier = Modifier.fillMaxHeight(),
-    containerColor = MaterialTheme.colorScheme.inverseOnSurface,
-  ) {
+  NavigationRail(modifier = Modifier.fillMaxHeight()) {
+    val paddingValues = WindowInsets.safeDrawing.asPaddingValues()
     Column(
+      modifier =
+        Modifier.padding(
+          top = paddingValues.calculateTopPadding(),
+          bottom = paddingValues.calculateBottomPadding(),
+          start = paddingValues.calculateStartPadding(LocalLayoutDirection.current),
+        ),
       horizontalAlignment = Alignment.CenterHorizontally,
       verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
@@ -304,12 +302,17 @@ private fun AppPermanentNavigationDrawer(
   navigationContentPosition: NavigationContentPosition,
   navigatePageDestination: (AppPageNavigationDestination) -> Unit,
 ) {
-  PermanentDrawerSheet(
-    modifier = Modifier.sizeIn(minWidth = 200.dp, maxWidth = 300.dp),
-    drawerContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-  ) {
+  PermanentDrawerSheet(modifier = Modifier.sizeIn(minWidth = 200.dp, maxWidth = 300.dp)) {
+    val paddingValues = WindowInsets.safeDrawing.asPaddingValues()
     Column(
-      modifier = Modifier.verticalScroll(rememberScrollState()).padding(16.dp),
+      modifier =
+        Modifier.verticalScroll(rememberScrollState())
+          .padding(
+            top = paddingValues.calculateTopPadding() + 16.dp,
+            bottom = paddingValues.calculateBottomPadding() + 16.dp,
+            start = paddingValues.calculateStartPadding(LocalLayoutDirection.current) + 16.dp,
+            end = 16.dp,
+          ),
       horizontalAlignment = Alignment.CenterHorizontally,
     ) {
       if (navigationContentPosition == NavigationContentPosition.CENTER) {
