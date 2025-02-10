@@ -98,8 +98,9 @@ fun AppContent(applicationComponent: ApplicationComponent) {
 
   val fallbackSeedColor = rememberThemeInfo().seedColor
   val seedColor =
-    playerViewState.currentTrackImageBitmap?.let { rememberThemeColor(it, fallbackSeedColor) }
-      ?: fallbackSeedColor
+    playerViewState.currentTrackImageBitmap.valueOrNull?.let {
+      rememberThemeColor(it, fallbackSeedColor)
+    } ?: fallbackSeedColor
 
   DynamicMaterialTheme(seedColor = seedColor) {
     val adaptiveInfo = currentWindowAdaptiveInfo()

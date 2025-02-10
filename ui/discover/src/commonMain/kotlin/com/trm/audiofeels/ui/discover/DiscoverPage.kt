@@ -57,7 +57,7 @@ fun DiscoverPage(
         LoadableState.Loading -> {
           LoadingIndicatorBox()
         }
-        is LoadableState.Success -> {
+        is LoadableState.Idle -> {
           LazyRow(modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(all = 12.dp)) {
             itemsIndexed(it.value) { index, playlist ->
               PlaylistItem(
@@ -88,7 +88,7 @@ fun DiscoverPage(
         LoadableState.Loading -> {
           LoadingIndicatorBox()
         }
-        is LoadableState.Success -> {
+        is LoadableState.Idle -> {
           LazyRow(modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(all = 12.dp)) {
             itemsIndexed(it.value) { index, playlist ->
               PlaylistItem(

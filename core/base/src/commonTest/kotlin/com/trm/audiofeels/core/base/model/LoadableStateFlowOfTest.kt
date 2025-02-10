@@ -12,13 +12,13 @@ import kotlinx.coroutines.test.runTest
 
 class LoadableStateFlowOfTest {
   @Test
-  fun `loadableStateFlowOf emits Loading then Success states when load succeeds`() = runTest {
+  fun `loadableStateFlowOf emits Loading then Idle states when load succeeds`() = runTest {
     val expectedValue = "test-value"
 
     loadableStateFlowOf { expectedValue }
       .test {
         assertEquals(expected = LoadableState.Loading, actual = awaitItem())
-        assertEquals(expected = LoadableState.Success(expectedValue), actual = awaitItem())
+        assertEquals(expected = LoadableState.Idle(expectedValue), actual = awaitItem())
         awaitComplete()
         ensureAllEventsConsumed()
       }
@@ -71,7 +71,7 @@ class LoadableStateFlowOfTest {
       }
       .test {
         assertEquals(expected = LoadableState.Loading, actual = awaitItem())
-        assertEquals(expected = LoadableState.Success("success"), actual = awaitItem())
+        assertEquals(expected = LoadableState.Idle("success"), actual = awaitItem())
         awaitComplete()
         ensureAllEventsConsumed()
       }
@@ -89,7 +89,7 @@ class LoadableStateFlowOfTest {
       }
       .test {
         assertEquals(expected = LoadableState.Loading, actual = awaitItem())
-        assertEquals(expected = LoadableState.Success(expectedValue), actual = awaitItem())
+        assertEquals(expected = LoadableState.Idle(expectedValue), actual = awaitItem())
         awaitComplete()
         ensureAllEventsConsumed()
       }

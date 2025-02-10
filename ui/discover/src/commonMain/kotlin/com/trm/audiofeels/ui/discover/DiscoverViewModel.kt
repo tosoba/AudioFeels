@@ -18,7 +18,7 @@ class DiscoverViewModel(private val playlistsRepository: PlaylistsRepository) : 
   val carryOnPlaylists: StateFlow<LoadableState<List<CarryOnPlaylist>>> =
     playlistsRepository
       .getCarryOnPlaylistsFlow()
-      .map { LoadableState.Success(it) }
+      .map { LoadableState.Idle(it) }
       .stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000L),

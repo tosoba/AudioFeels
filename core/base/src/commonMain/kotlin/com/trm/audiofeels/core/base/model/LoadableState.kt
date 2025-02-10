@@ -11,15 +11,18 @@ import kotlinx.coroutines.withTimeout
 sealed interface LoadableState<out T> {
   data object Loading : LoadableState<Nothing>
 
-  data class Success<T>(val value: T) : LoadableState<T>
+  data class Idle<T>(val value: T) : LoadableState<T>
 
   data class Error(val throwable: Throwable?) : LoadableState<Nothing>
+
+  val valueOrNull: T?
+    get() = if (this is Idle) value else null
 }
 
 fun <T, R> LoadableState<T>.map(mapper: (T) -> R): LoadableState<R> =
   when (this) {
     LoadableState.Loading -> LoadableState.Loading
-    is LoadableState.Success -> LoadableState.Success(mapper(value))
+    is LoadableState.Idle -> LoadableState.Idle(mapper(value))
     is LoadableState.Error -> LoadableState.Error(throwable)
   }
 
@@ -29,7 +32,7 @@ fun <T> loadableStateFlowOf(
 ): Flow<LoadableState<T>> =
   flow {
       emit(LoadableState.Loading)
-      emit(LoadableState.Success(withTimeout(timeout) { load() }))
+      emit(LoadableState.Idle(withTimeout(timeout) { load() }))
     }
     .catch {
       Napier.e(message = "LoadableStateError", throwable = it)

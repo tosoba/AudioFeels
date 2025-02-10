@@ -1,6 +1,7 @@
 package com.trm.audiofeels.ui.player
 
 import androidx.compose.ui.graphics.ImageBitmap
+import com.trm.audiofeels.core.base.model.LoadableState
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.model.Track
@@ -9,19 +10,21 @@ sealed interface PlayerViewState {
   val playerVisible: Boolean
     get() = this !is Invisible
 
-  val currentTrackImageBitmap: ImageBitmap?
+  val currentTrackImageBitmap: LoadableState<ImageBitmap?>
 
   val playbackActions: PlayerViewPlaybackActions
 
   data class Invisible(override val playbackActions: PlayerViewPlaybackActions) : PlayerViewState {
-    override val currentTrackImageBitmap: ImageBitmap? = null
+    override val currentTrackImageBitmap: LoadableState.Idle<ImageBitmap?> =
+      LoadableState.Idle(null)
   }
 
   data class Loading(
     val playlist: Playlist,
     override val playbackActions: PlayerViewPlaybackActions,
   ) : PlayerViewState {
-    override val currentTrackImageBitmap: ImageBitmap? = null
+    override val currentTrackImageBitmap: LoadableState.Idle<ImageBitmap?> =
+      LoadableState.Idle(null)
   }
 
   data class Playback(
@@ -31,7 +34,7 @@ sealed interface PlayerViewState {
     val currentTrackIndex: Int,
     val currentTrackProgress: Double,
     // TODO: use a placeholder in case of no artwork
-    override val currentTrackImageBitmap: ImageBitmap?,
+    override val currentTrackImageBitmap: LoadableState<ImageBitmap?>,
     val controlActions: PlayerViewControlActions,
     override val playbackActions: PlayerViewPlaybackActions,
   ) : PlayerViewState {
@@ -51,6 +54,7 @@ sealed interface PlayerViewState {
     val playlist: Playlist,
     override val playbackActions: PlayerViewPlaybackActions,
   ) : PlayerViewState {
-    override val currentTrackImageBitmap: ImageBitmap? = null
+    override val currentTrackImageBitmap: LoadableState.Idle<ImageBitmap?> =
+      LoadableState.Idle(null)
   }
 }

@@ -62,7 +62,7 @@ class PlayerViewModel(
   private fun playerViewStateFlow(playback: PlaylistPlayback): Flow<PlayerViewState> =
     loadableStateFlowOf { getPlayerInputUseCase(playback.playlist.id) }
       .onEach { input ->
-        if (input is LoadableState.Success && playback.autoPlay) {
+        if (input is LoadableState.Idle && playback.autoPlay) {
           playerConnection.enqueue(
             input = input.value,
             startTrackIndex = playback.currentTrackIndex,
@@ -86,7 +86,7 @@ class PlayerViewModel(
           )
         )
       }
-      is LoadableState.Success -> {
+      is LoadableState.Idle -> {
         playbackViewStateFlow(input.value, playback)
       }
       is LoadableState.Error -> {
@@ -109,8 +109,14 @@ class PlayerViewModel(
         artworkUrlChannel.send(getCurrentTrackArtworkUrl(it, input, playback))
       },
       artworkUrlChannel.receiveAsFlow().distinctUntilChanged().transformLatest { artworkUrl ->
-        emit(null)
-        artworkUrl?.let { emit(imageLoader.loadImageBitmapOrNull(it, platformContext)) }
+        artworkUrl?.let {
+          emit(LoadableState.Loading)
+          emit(
+            imageLoader.loadImageBitmapOrNull(it, platformContext)?.let { artwork ->
+              LoadableState.Idle(artwork)
+            } ?: LoadableState.Error(Exception("Error loading artwork"))
+          )
+        } ?: run { emit(LoadableState.Error(Exception("Missing artworkUrl"))) }
       },
       playerConnection.currentTrackPositionMs.distinctUntilChanged().onStart { emit(0L) },
     ) { playerState, currentTrackImageBitmap, currentTrackPositionMs ->
@@ -131,7 +137,7 @@ class PlayerViewModel(
     playback: PlaylistPlayback,
     playerState: PlayerState,
     currentTrackPositionMs: Long,
-    currentTrackImageBitmap: ImageBitmap?,
+    currentTrackImageBitmap: LoadableState<ImageBitmap?>,
   ): PlayerViewState.Playback {
     val controlActions = playerViewControlActions(playerState, playerInput, playback)
     return PlayerViewState.Playback(
