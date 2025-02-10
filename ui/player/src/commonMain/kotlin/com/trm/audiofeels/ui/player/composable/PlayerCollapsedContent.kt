@@ -34,7 +34,10 @@ import androidx.compose.material3.SwipeToDismissBoxState
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,6 +45,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import coil3.compose.AsyncImagePainter
+import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.model.Track
@@ -81,21 +86,50 @@ internal fun PlayerCollapsedContent(viewState: PlayerViewState, modifier: Modifi
             .background(BottomSheetDefaults.ContainerColor)
             .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 12.dp),
       ) {
-        when (viewState) {
-          is PlayerViewState.Invisible,
-          is PlayerViewState.Loading -> {
-            // TODO: loading shimmer
-          }
-          is PlayerViewState.Error -> {
-            // TODO: error image
-          }
-          is PlayerViewState.Playback -> {
-            AsyncImage(
-              model = viewState.currentTrack?.artworkUrl,
-              contentDescription = null,
-              contentScale = ContentScale.FillBounds,
-              modifier = Modifier.size(60.dp).clip(RoundedCornerShape(12.dp)),
-            )
+        // TODO: prevent shimmer from appearing while playback is going on
+        var showShimmer by rememberSaveable {
+          mutableStateOf(
+            viewState is PlayerViewState.Invisible || viewState is PlayerViewState.Loading
+          )
+        }
+        Crossfade(viewState) {
+          when (it) {
+            is PlayerViewState.Invisible,
+            is PlayerViewState.Loading -> {
+              Box(
+                modifier =
+                  Modifier.size(60.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .shimmerBackground(RoundedCornerShape(12.dp))
+              )
+            }
+            is PlayerViewState.Error -> {
+              // TODO: error image
+            }
+            is PlayerViewState.Playback -> {
+              AsyncImage(
+                model = it.currentTrack?.artworkUrl,
+                contentDescription = null,
+                contentScale = ContentScale.FillBounds,
+                // TODO: error = ...
+                onState = { imageState ->
+                  when (imageState) {
+                    AsyncImagePainter.State.Empty,
+                    is AsyncImagePainter.State.Loading -> return@AsyncImage
+                    is AsyncImagePainter.State.Error,
+                    is AsyncImagePainter.State.Success -> showShimmer = false
+                  }
+                },
+                modifier =
+                  if (showShimmer) {
+                    Modifier.size(60.dp)
+                      .clip(RoundedCornerShape(12.dp))
+                      .shimmerBackground(RoundedCornerShape(12.dp))
+                  } else {
+                    Modifier.size(60.dp).clip(RoundedCornerShape(12.dp))
+                  },
+              )
+            }
           }
         }
 
