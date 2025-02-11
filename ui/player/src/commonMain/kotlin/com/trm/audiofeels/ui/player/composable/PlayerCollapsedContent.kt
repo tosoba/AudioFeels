@@ -36,6 +36,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -86,50 +87,45 @@ internal fun PlayerCollapsedContent(viewState: PlayerViewState, modifier: Modifi
             .background(BottomSheetDefaults.ContainerColor)
             .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 12.dp),
       ) {
-        // TODO: prevent shimmer from appearing while playback is going on
-        var showShimmer by rememberSaveable {
+        var showShimmer by remember {
           mutableStateOf(
             viewState is PlayerViewState.Invisible || viewState is PlayerViewState.Loading
           )
         }
-        Crossfade(viewState) {
-          when (it) {
-            is PlayerViewState.Invisible,
-            is PlayerViewState.Loading -> {
-              Box(
-                modifier =
-                  Modifier.size(60.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .shimmerBackground(RoundedCornerShape(12.dp))
-              )
-            }
-            is PlayerViewState.Error -> {
-              // TODO: error image
-            }
-            is PlayerViewState.Playback -> {
-              AsyncImage(
-                model = it.currentTrack?.artworkUrl,
-                contentDescription = null,
-                contentScale = ContentScale.FillBounds,
-                // TODO: error = ...
-                onState = { imageState ->
+
+        when (viewState) {
+          is PlayerViewState.Invisible,
+          is PlayerViewState.Loading -> {
+            Box(
+              modifier =
+                Modifier.size(60.dp)
+                  .clip(RoundedCornerShape(12.dp))
+                  .shimmerBackground(enabled = showShimmer, shape = RoundedCornerShape(12.dp))
+            )
+          }
+          is PlayerViewState.Error -> {
+            // TODO: error image
+          }
+          is PlayerViewState.Playback -> {
+            AsyncImage(
+              model = viewState.currentTrack?.artworkUrl,
+              contentDescription = null,
+              contentScale = ContentScale.FillBounds,
+              // TODO: error = ...
+              onState = { imageState ->
+                showShimmer =
                   when (imageState) {
                     AsyncImagePainter.State.Empty,
-                    is AsyncImagePainter.State.Loading -> return@AsyncImage
+                    is AsyncImagePainter.State.Loading -> true
                     is AsyncImagePainter.State.Error,
-                    is AsyncImagePainter.State.Success -> showShimmer = false
+                    is AsyncImagePainter.State.Success -> false
                   }
-                },
-                modifier =
-                  if (showShimmer) {
-                    Modifier.size(60.dp)
-                      .clip(RoundedCornerShape(12.dp))
-                      .shimmerBackground(RoundedCornerShape(12.dp))
-                  } else {
-                    Modifier.size(60.dp).clip(RoundedCornerShape(12.dp))
-                  },
-              )
-            }
+              },
+              modifier =
+                Modifier.size(60.dp)
+                  .clip(RoundedCornerShape(12.dp))
+                  .shimmerBackground(enabled = showShimmer, shape = RoundedCornerShape(12.dp)),
+            )
           }
         }
 

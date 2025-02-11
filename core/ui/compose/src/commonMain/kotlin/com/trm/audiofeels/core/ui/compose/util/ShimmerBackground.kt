@@ -17,25 +17,31 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.TileMode
 
-fun Modifier.shimmerBackground(shape: Shape = RectangleShape): Modifier = composed {
-  val transition = rememberInfiniteTransition()
-  val translateAnimation by
-    transition.animateFloat(
-      initialValue = 0f,
-      targetValue = 400f,
-      animationSpec =
-        infiniteRepeatable(
-          tween(durationMillis = 1500, easing = LinearOutSlowInEasing),
-          RepeatMode.Restart,
-        ),
+fun Modifier.shimmerBackground(enabled: Boolean, shape: Shape = RectangleShape): Modifier =
+  composed {
+    if (!enabled) return@composed this
+
+    val translateAnimation by
+      rememberInfiniteTransition()
+        .animateFloat(
+          initialValue = 0f,
+          targetValue = 400f,
+          animationSpec =
+            infiniteRepeatable(
+              tween(durationMillis = 1500, easing = LinearOutSlowInEasing),
+              RepeatMode.Restart,
+            ),
+        )
+    return@composed this.then(
+      background(
+        brush =
+          Brush.linearGradient(
+            colors = listOf(Color.LightGray.copy(alpha = 0.9f), Color.LightGray.copy(alpha = 0.4f)),
+            start = Offset(translateAnimation, translateAnimation),
+            end = Offset(translateAnimation + 100f, translateAnimation + 100f),
+            tileMode = TileMode.Mirror,
+          ),
+        shape = shape,
+      )
     )
-  val shimmerColors = listOf(Color.LightGray.copy(alpha = 0.9f), Color.LightGray.copy(alpha = 0.4f))
-  val brush =
-    Brush.linearGradient(
-      colors = shimmerColors,
-      start = Offset(translateAnimation, translateAnimation),
-      end = Offset(translateAnimation + 100f, translateAnimation + 100f),
-      tileMode = TileMode.Mirror,
-    )
-  return@composed this.then(background(brush, shape))
-}
+  }
