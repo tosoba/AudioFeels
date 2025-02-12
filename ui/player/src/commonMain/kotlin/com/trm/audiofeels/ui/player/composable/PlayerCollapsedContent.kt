@@ -42,16 +42,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import coil3.compose.AsyncImagePainter
 import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
+import com.trm.audiofeels.core.ui.resources.Res
+import com.trm.audiofeels.core.ui.resources.artwork_placeholder
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.model.Track
 import com.trm.audiofeels.ui.player.PlayerViewState
+import org.jetbrains.compose.resources.vectorResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -111,16 +114,11 @@ internal fun PlayerCollapsedContent(viewState: PlayerViewState, modifier: Modifi
               model = viewState.currentTrack?.artworkUrl,
               contentDescription = null,
               contentScale = ContentScale.FillBounds,
-              // TODO: error = ...
-              onState = { imageState ->
-                showShimmer =
-                  when (imageState) {
-                    AsyncImagePainter.State.Empty,
-                    is AsyncImagePainter.State.Loading -> true
-                    is AsyncImagePainter.State.Error,
-                    is AsyncImagePainter.State.Success -> false
-                  }
-              },
+              fallback = rememberVectorPainter(vectorResource(Res.drawable.artwork_placeholder)),
+              error = rememberVectorPainter(vectorResource(Res.drawable.artwork_placeholder)),
+              onLoading = { showShimmer = true },
+              onSuccess = { showShimmer = false },
+              onError = { showShimmer = false },
               modifier =
                 Modifier.size(60.dp)
                   .clip(RoundedCornerShape(12.dp))
