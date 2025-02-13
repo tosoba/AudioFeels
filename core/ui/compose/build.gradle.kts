@@ -16,6 +16,7 @@ kotlin {
     commonMain {
       dependencies {
         implementation(projects.core.base)
+        implementation(projects.core.ui.resources)
         implementation(projects.core.network)
 
         api(compose.components.resources)
@@ -28,6 +29,7 @@ kotlin {
         api(compose.ui)
 
         implementation(libs.coil.core)
+        implementation(libs.coil.compose)
 
         implementation(compose.material3AdaptiveNavigationSuite)
         implementation(libs.material3.adaptive)
@@ -39,6 +41,4 @@ kotlin {
   }
 }
 
-android {
-  namespace = "com.trm.audiofeels.core.ui.compose"
-}
+android { namespace = "com.trm.audiofeels.core.ui.compose" }

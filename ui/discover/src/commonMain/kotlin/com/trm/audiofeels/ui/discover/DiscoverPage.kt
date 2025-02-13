@@ -23,23 +23,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.AsyncImage
 import com.trm.audiofeels.core.base.model.LoadableState
+import com.trm.audiofeels.core.ui.compose.AsyncShimmerImage
 import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
-import com.trm.audiofeels.core.ui.resources.Res
-import com.trm.audiofeels.core.ui.resources.artwork_placeholder
 import com.trm.audiofeels.domain.model.Playlist
-import org.jetbrains.compose.resources.vectorResource
 
 @Composable
 fun DiscoverPage(
@@ -127,21 +119,16 @@ private fun PlaylistItem(
   onPlaylistClick: (Playlist) -> Unit,
 ) {
   Card(onClick = { onPlaylistClick(playlist) }, modifier = modifier) {
-    var showShimmer by remember { mutableStateOf(false) }
-    AsyncImage(
+    AsyncShimmerImage(
       model = playlist.artworkUrl,
       contentDescription = playlist.name,
-      contentScale = ContentScale.FillBounds,
-      fallback = rememberVectorPainter(vectorResource(Res.drawable.artwork_placeholder)),
-      error = rememberVectorPainter(vectorResource(Res.drawable.artwork_placeholder)),
-      onLoading = { showShimmer = true },
-      onSuccess = { showShimmer = false },
-      onError = { showShimmer = false },
-      modifier =
+      modifier = { enabled ->
         Modifier.size(150.dp)
           .clip(RoundedCornerShape(12.dp))
-          .shimmerBackground(enabled = showShimmer, shape = RoundedCornerShape(12.dp)),
+          .shimmerBackground(enabled = enabled, shape = RoundedCornerShape(12.dp))
+      },
     )
+
     Text(
       text = playlist.name,
       style = MaterialTheme.typography.labelMedium,

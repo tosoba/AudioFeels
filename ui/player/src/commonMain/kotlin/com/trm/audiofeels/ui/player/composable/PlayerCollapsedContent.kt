@@ -2,6 +2,7 @@ package com.trm.audiofeels.ui.player.composable
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
@@ -34,19 +35,14 @@ import androidx.compose.material3.SwipeToDismissBoxState
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import com.trm.audiofeels.core.ui.compose.AsyncShimmerImage
 import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.artwork_placeholder
@@ -90,12 +86,6 @@ internal fun PlayerCollapsedContent(viewState: PlayerViewState, modifier: Modifi
             .background(BottomSheetDefaults.ContainerColor)
             .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 12.dp),
       ) {
-        var showShimmer by remember {
-          mutableStateOf(
-            viewState is PlayerViewState.Invisible || viewState is PlayerViewState.Loading
-          )
-        }
-
         when (viewState) {
           is PlayerViewState.Invisible,
           is PlayerViewState.Loading -> {
@@ -103,26 +93,24 @@ internal fun PlayerCollapsedContent(viewState: PlayerViewState, modifier: Modifi
               modifier =
                 Modifier.size(60.dp)
                   .clip(RoundedCornerShape(12.dp))
-                  .shimmerBackground(enabled = showShimmer, shape = RoundedCornerShape(12.dp))
+                  .shimmerBackground(enabled = true, shape = RoundedCornerShape(12.dp))
             )
           }
           is PlayerViewState.Error -> {
-            // TODO: error image
+            Image(
+              painter = rememberVectorPainter(vectorResource(Res.drawable.artwork_placeholder)),
+              contentDescription = null,
+            )
           }
           is PlayerViewState.Playback -> {
-            AsyncImage(
+            AsyncShimmerImage(
               model = viewState.currentTrack?.artworkUrl,
               contentDescription = null,
-              contentScale = ContentScale.FillBounds,
-              fallback = rememberVectorPainter(vectorResource(Res.drawable.artwork_placeholder)),
-              error = rememberVectorPainter(vectorResource(Res.drawable.artwork_placeholder)),
-              onLoading = { showShimmer = true },
-              onSuccess = { showShimmer = false },
-              onError = { showShimmer = false },
-              modifier =
+              modifier = { enabled ->
                 Modifier.size(60.dp)
                   .clip(RoundedCornerShape(12.dp))
-                  .shimmerBackground(enabled = showShimmer, shape = RoundedCornerShape(12.dp)),
+                  .shimmerBackground(enabled = enabled, shape = RoundedCornerShape(12.dp))
+              },
             )
           }
         }
