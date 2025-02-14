@@ -13,7 +13,6 @@ import com.trm.audiofeels.core.base.util.AppCoroutineScope
 import com.trm.audiofeels.core.base.util.PlatformContext
 import com.trm.audiofeels.core.base.util.lazyAsync
 import com.trm.audiofeels.core.player.mapper.toMediaItem
-import com.trm.audiofeels.core.player.mapper.toPlayerError
 import com.trm.audiofeels.core.player.mapper.toState
 import com.trm.audiofeels.domain.model.PlayerInput
 import com.trm.audiofeels.domain.model.PlayerState
@@ -47,13 +46,13 @@ actual class AudioPlayerConnection(
 
   override val playerState: Flow<PlayerState> =
     callbackFlow {
+        var previousState: PlayerState = PlayerState.Idle
+
         val browser = mediaBrowser.await()
-        trySend(browser.toState())
+        trySend(browser.toState(previousState))
 
         val listener =
           object : Player.Listener {
-            private var previousState: PlayerState = PlayerState.Idle
-
             override fun onEvents(player: Player, events: Player.Events) {
               if (
                 events.containsAny(
@@ -62,12 +61,15 @@ actual class AudioPlayerConnection(
                   Player.EVENT_PLAY_WHEN_READY_CHANGED,
                 )
               ) {
-                val state = player.toState()
-                Napier.d(
-                  message = state.toString(),
-                  tag = this@AudioPlayerConnection.javaClass.simpleName,
+                trySend(
+                  player.toState(previousState).also {
+                    previousState = it
+                    Napier.d(
+                      message = it.toString(),
+                      tag = this@AudioPlayerConnection.javaClass.simpleName,
+                    )
+                  }
                 )
-                trySend(state.also { previousState = it })
               }
             }
 
@@ -77,15 +79,9 @@ actual class AudioPlayerConnection(
                 throwable = error,
                 tag = this@AudioPlayerConnection.javaClass.simpleName,
               )
-
-              trySend(
-                PlayerState.Error(error = error.toPlayerError(), previousState = previousState)
-                  .also { previousState = it }
-              )
             }
           }
         browser.addListener(listener)
-
         awaitClose { browser.removeListener(listener) }
       }
       .conflate()

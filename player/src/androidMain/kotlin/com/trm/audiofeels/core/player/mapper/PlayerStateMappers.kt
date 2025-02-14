@@ -8,22 +8,24 @@ import com.trm.audiofeels.domain.model.PlaybackState
 import com.trm.audiofeels.domain.model.PlayerError
 import com.trm.audiofeels.domain.model.PlayerState
 
-internal fun Player.toState(): PlayerState =
-  currentMediaItem?.let { mediaItem ->
-    PlayerState.Enqueued(
-      currentTrack = mediaItem.toTrack(),
-      currentTrackIndex = currentMediaItemIndex,
-      playbackState =
-        when (playbackState) {
-          Player.STATE_IDLE -> PlaybackState.IDLE
-          Player.STATE_BUFFERING -> PlaybackState.BUFFERING
-          Player.STATE_READY -> PlaybackState.READY
-          Player.STATE_ENDED -> PlaybackState.ENDED
-          else -> throw IllegalArgumentException()
-        },
-      isPlaying = isPlaying,
-    )
-  } ?: PlayerState.Idle
+internal fun Player.toState(previousState: PlayerState): PlayerState =
+  playerError?.let { PlayerState.Error(error = it.toPlayerError(), previousState = previousState) }
+    ?: currentMediaItem?.let { mediaItem ->
+      PlayerState.Enqueued(
+        currentTrack = mediaItem.toTrack(),
+        currentTrackIndex = currentMediaItemIndex,
+        playbackState =
+          when (playbackState) {
+            Player.STATE_IDLE -> PlaybackState.IDLE
+            Player.STATE_BUFFERING -> PlaybackState.BUFFERING
+            Player.STATE_READY -> PlaybackState.READY
+            Player.STATE_ENDED -> PlaybackState.ENDED
+            else -> throw IllegalArgumentException()
+          },
+        isPlaying = isPlaying,
+      )
+    }
+    ?: PlayerState.Idle
 
 internal fun PlaybackException.toPlayerError(): PlayerError =
   when (cause) {
