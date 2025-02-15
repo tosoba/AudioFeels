@@ -11,7 +11,6 @@ import com.trm.audiofeels.core.base.util.BuildInfo
 import com.trm.audiofeels.core.base.util.PlatformContext
 import com.trm.audiofeels.core.base.util.cachePath
 import com.trm.audiofeels.core.network.host.HostValidator
-import com.trm.audiofeels.core.network.monitor.NetworkMonitor
 import com.vipulasri.kachetor.KachetorStorage
 import io.github.aakira.napier.LogLevel
 import io.github.aakira.napier.Napier
@@ -22,11 +21,6 @@ interface NetworkCoreComponent : NetworkPlatformComponent {
   val imageLoader: ImageLoader
 
   @Provides @ApplicationScope fun hostValidator(): HostValidator = HostValidator()
-
-  @Provides
-  @ApplicationScope
-  fun networkMonitor(platformContext: PlatformContext): NetworkMonitor =
-    NetworkMonitor(platformContext = platformContext)
 
   @Provides
   @ApplicationScope
