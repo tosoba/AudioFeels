@@ -49,11 +49,10 @@ sealed interface PlayerViewState {
     val tracks: List<Track>,
     val currentTrackIndex: Int,
     val currentTrackProgress: Double,
-    // TODO: use a placeholder in case of no artwork
     override val currentTrackImageBitmap: LoadableState<ImageBitmap?>,
     override val primaryControlState: PrimaryControlState,
-    val controlActions: PlayerViewControlActions,
     override val playbackActions: PlayerViewPlaybackActions,
+    val controlActions: PlayerViewControlActions,
   ) : PlayerViewState {
     val currentTrack: Track?
       get() =

@@ -146,6 +146,7 @@ class PlayerViewModel(
     currentTrackImageBitmap: LoadableState<ImageBitmap?>,
   ): PlayerViewState.Playback {
     val controlActions = playerViewControlActions(playerState, playerInput, playback)
+    val togglePlay = { togglePlay(playerState, playerInput, playback) }
     return PlayerViewState.Playback(
       playlist = playback.playlist,
       playerState = playerState,
@@ -153,23 +154,20 @@ class PlayerViewModel(
       currentTrackIndex = getCurrentTrackIndex(playerState, playback),
       currentTrackProgress = currentTrackProgress(playerState, currentTrackPositionMs),
       currentTrackImageBitmap = currentTrackImageBitmap,
-      primaryControlState = primaryControlState(playerState, controlActions),
-      controlActions = controlActions,
+      primaryControlState = primaryControlState(playerState, togglePlay),
       playbackActions =
-        playerViewPlaybackActions(
-          currentPlaylist = playback.playlist,
-          toggleCurrentPlayback = controlActions::togglePlay,
-        ),
+        playerViewPlaybackActions(currentPlaylist = playback.playlist, togglePlay = togglePlay),
+      controlActions = controlActions,
     )
   }
 
   private fun primaryControlState(
     playerState: PlayerState,
-    controlActions: PlayerViewControlActions,
+    togglePlay: () -> Unit,
   ): PlayerViewState.PrimaryControlState =
     when (playerState) {
       PlayerState.Idle -> {
-        playAction(controlActions)
+        playAction(togglePlay)
       }
       is PlayerState.Enqueued -> {
         when {
@@ -177,10 +175,10 @@ class PlayerViewModel(
             PlayerViewState.PrimaryControlState.Loading
           }
           playerState.isPlaying -> {
-            pauseAction(controlActions)
+            pauseAction(togglePlay)
           }
           else -> {
-            playAction(controlActions)
+            playAction(togglePlay)
           }
         }
       }
@@ -189,18 +187,18 @@ class PlayerViewModel(
       }
     }
 
-  private fun pauseAction(controlActions: PlayerViewControlActions) =
+  private fun pauseAction(togglePlay: () -> Unit) =
     PlayerViewState.PrimaryControlState.Action(
       imageVector = Icons.Outlined.Pause,
       contentDescription = "Pause",
-      action = controlActions::togglePlay,
+      action = togglePlay,
     )
 
-  private fun playAction(controlActions: PlayerViewControlActions) =
+  private fun playAction(togglePlay: () -> Unit) =
     PlayerViewState.PrimaryControlState.Action(
       imageVector = Icons.Outlined.PlayArrow,
       contentDescription = "Play",
-      action = controlActions::togglePlay,
+      action = togglePlay,
     )
 
   private fun restartViewStateAction(): PlayerViewState.PrimaryControlState.Action =
@@ -223,12 +221,11 @@ class PlayerViewModel(
 
   private fun playerViewPlaybackActions(
     currentPlaylist: Playlist,
-    toggleCurrentPlayback: () -> Unit,
+    togglePlay: () -> Unit,
   ): PlayerViewPlaybackActions =
     object : PlayerViewPlaybackActions {
       override fun start(playlist: Playlist) {
-        if (playlist != currentPlaylist) startNewPlaylistPlayback(playlist)
-        else toggleCurrentPlayback()
+        if (playlist != currentPlaylist) startNewPlaylistPlayback(playlist) else togglePlay()
       }
 
       override fun cancel() {
@@ -255,30 +252,34 @@ class PlayerViewModel(
     viewModelScope.launch { playlistsRepository.clearCurrentPlaylist() }
   }
 
+  private fun togglePlay(
+    playerState: PlayerState,
+    playerInput: PlayerInput,
+    playback: PlaylistPlayback,
+  ) {
+    when (playerState) {
+      PlayerState.Idle -> {
+        playerConnection.enqueue(
+          input = playerInput,
+          startTrackIndex = playback.currentTrackIndex,
+          startPositionMs = playback.currentTrackPositionMs,
+        )
+      }
+      is PlayerState.Enqueued -> {
+        if (playerState.isPlaying) playerConnection.pause() else playerConnection.play()
+      }
+      is PlayerState.Error -> {
+        return
+      }
+    }
+  }
+
   private fun playerViewControlActions(
     playerState: PlayerState,
     playerInput: PlayerInput,
     playback: PlaylistPlayback,
   ): PlayerViewControlActions =
     object : PlayerViewControlActions {
-      override fun togglePlay() {
-        when (playerState) {
-          PlayerState.Idle -> {
-            playerConnection.enqueue(
-              input = playerInput,
-              startTrackIndex = playback.currentTrackIndex,
-              startPositionMs = playback.currentTrackPositionMs,
-            )
-          }
-          is PlayerState.Enqueued -> {
-            if (playerState.isPlaying) playerConnection.pause() else playerConnection.play()
-          }
-          is PlayerState.Error -> {
-            return
-          }
-        }
-      }
-
       override fun playPrevious() {
         when (playerState) {
           PlayerState.Idle -> {
