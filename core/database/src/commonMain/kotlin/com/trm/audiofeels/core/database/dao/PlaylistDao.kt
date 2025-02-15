@@ -13,7 +13,8 @@ import kotlinx.datetime.Instant
 interface PlaylistDao {
   @Upsert suspend fun upsert(playlist: PlaylistEntity)
 
-  @Query("SELECT * FROM playlist WHERE id = :id") fun selectPlaylistById(id: String): PlaylistEntity?
+  @Query("SELECT * FROM playlist WHERE id = :id")
+  suspend fun selectPlaylistById(id: String): PlaylistEntity?
 
   @Query("SELECT * FROM playlist WHERE lastPlayed IS NOT NULL ORDER BY lastPlayed DESC")
   fun selectAllOrderByLastPlayed(): Flow<List<PlaylistEntity>>
