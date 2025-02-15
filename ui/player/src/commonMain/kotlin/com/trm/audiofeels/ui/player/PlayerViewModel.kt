@@ -25,6 +25,7 @@ import com.trm.audiofeels.domain.repository.PlaylistsRepository
 import com.trm.audiofeels.domain.usecase.GetPlayerInputUseCase
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -99,7 +100,7 @@ class PlayerViewModel(
           PlayerViewState.Error(
             playlist = playback.playlist,
             playbackActions = playerViewPlaybackActions(),
-            primaryControlState = restartViewStateAction(),
+            primaryControlState = retryAction(playback.playlist),
           )
         )
       }
@@ -154,7 +155,7 @@ class PlayerViewModel(
       currentTrackIndex = getCurrentTrackIndex(playerState, playback),
       currentTrackProgress = currentTrackProgress(playerState, currentTrackPositionMs),
       currentTrackImageBitmap = currentTrackImageBitmap,
-      primaryControlState = primaryControlState(playerState, togglePlay),
+      primaryControlState = primaryControlState(playback.playlist, playerState, togglePlay),
       playbackActions =
         playerViewPlaybackActions(currentPlaylist = playback.playlist, togglePlay = togglePlay),
       trackActions = trackActions,
@@ -162,6 +163,7 @@ class PlayerViewModel(
   }
 
   private fun primaryControlState(
+    playlist: Playlist,
     playerState: PlayerState,
     togglePlay: () -> Unit,
   ): PlayerViewState.PrimaryControlState =
@@ -183,7 +185,7 @@ class PlayerViewModel(
         }
       }
       is PlayerState.Error -> {
-        restartViewStateAction()
+        retryAction(playlist)
       }
     }
 
@@ -201,11 +203,11 @@ class PlayerViewModel(
       action = togglePlay,
     )
 
-  private fun restartViewStateAction(): PlayerViewState.PrimaryControlState.Action =
+  private fun retryAction(playlist: Playlist) =
     PlayerViewState.PrimaryControlState.Action(
       imageVector = Icons.Outlined.Refresh,
       contentDescription = "Retry",
-      action = viewState::restart,
+      action = { startNewPlaylistPlayback(playlist).invokeOnCompletion { viewState.restart() } },
     )
 
   private fun currentTrackProgress(playerState: PlayerState, currentTrackPositionMs: Long): Double =
@@ -244,9 +246,8 @@ class PlayerViewModel(
       }
     }
 
-  private fun startNewPlaylistPlayback(playlist: Playlist) {
+  private fun startNewPlaylistPlayback(playlist: Playlist): Job =
     viewModelScope.launch { playlistsRepository.setNewCurrentPlaylist(playlist) }
-  }
 
   private fun cancelPlayback() {
     viewModelScope.launch { playlistsRepository.clearCurrentPlaylist() }
@@ -321,9 +322,6 @@ class PlayerViewModel(
   private fun onPlayerViewStatePlayback(playbackState: PlayerViewState.Playback) {
     Napier.d(tag = "PLAYER_STATE", message = playbackState.playerState.toString())
     when (val playerState = playbackState.playerState) {
-      PlayerState.Idle -> {
-        return
-      }
       is PlayerState.Enqueued -> {
         viewModelScope.launch {
           playlistsRepository.updateCurrentPlaylist(
@@ -337,8 +335,9 @@ class PlayerViewModel(
           )
         }
       }
+      is PlayerState.Idle,
       is PlayerState.Error -> {
-        // TODO: error handling
+        return
       }
     }
   }

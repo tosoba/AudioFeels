@@ -135,12 +135,12 @@ actual class AudioPlayerConnection(
     }
   }
 
-  private fun PlayerInput.toMediaItems(): List<MediaItem> =
-    tracks.map { track -> track.toMediaItem(host) }
-
   override fun reset() {
     withMediaBrowser(MediaBrowser::clearMediaItems)
   }
+
+  private fun PlayerInput.toMediaItems(): List<MediaItem> =
+    tracks.map { track -> track.toMediaItem(host) }
 
   private fun withMediaBrowser(action: MediaBrowser.() -> Unit) {
     scope.launch { mediaBrowser.await().run(action) }
