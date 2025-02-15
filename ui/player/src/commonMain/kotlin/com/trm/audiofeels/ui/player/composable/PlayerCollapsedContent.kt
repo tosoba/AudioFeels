@@ -119,7 +119,6 @@ internal fun PlayerCollapsedContent(viewState: PlayerViewState, modifier: Modifi
           when (viewState) {
             is PlayerViewState.Invisible,
             is PlayerViewState.Error -> {
-              // TODO: error text?
               Spacer(modifier = Modifier.weight(1f))
             }
             is PlayerViewState.Loading -> {
