@@ -146,7 +146,6 @@ class PlayerViewModel(
     currentTrackPositionMs: Long,
     currentTrackImageBitmap: LoadableState<ImageBitmap?>,
   ): PlayerViewState.Playback {
-    val trackActions = playerViewTrackActions(playerState, playerInput, playback)
     val togglePlay = { togglePlay(playerState, playerInput, playback) }
     return PlayerViewState.Playback(
       playlist = playback.playlist,
@@ -156,9 +155,8 @@ class PlayerViewModel(
       currentTrackProgress = currentTrackProgress(playerState, currentTrackPositionMs),
       currentTrackImageBitmap = currentTrackImageBitmap,
       primaryControlState = primaryControlState(playback.playlist, playerState, togglePlay),
-      playbackActions =
-        playerViewPlaybackActions(currentPlaylist = playback.playlist, togglePlay = togglePlay),
-      trackActions = trackActions,
+      playbackActions = playerViewPlaybackActions(playback.playlist, togglePlay),
+      trackActions = playerViewTrackActions(playerState, playerInput, playback),
     )
   }
 
@@ -169,7 +167,7 @@ class PlayerViewModel(
   ): PlayerViewState.PrimaryControlState =
     when (playerState) {
       PlayerState.Idle -> {
-        playAction(togglePlay)
+        playAction(PlayerViewState.PrimaryControlState.ActionType.ENQUEUE, togglePlay)
       }
       is PlayerState.Enqueued -> {
         when {
@@ -180,7 +178,7 @@ class PlayerViewModel(
             pauseAction(togglePlay)
           }
           else -> {
-            playAction(togglePlay)
+            playAction(PlayerViewState.PrimaryControlState.ActionType.PLAY, togglePlay)
           }
         }
       }
@@ -193,13 +191,18 @@ class PlayerViewModel(
     PlayerViewState.PrimaryControlState.Action(
       imageVector = Icons.Outlined.Pause,
       contentDescription = "Pause",
+      actionType = PlayerViewState.PrimaryControlState.ActionType.PAUSE,
       action = togglePlay,
     )
 
-  private fun playAction(togglePlay: () -> Unit) =
+  private fun playAction(
+    actionType: PlayerViewState.PrimaryControlState.ActionType,
+    togglePlay: () -> Unit,
+  ) =
     PlayerViewState.PrimaryControlState.Action(
       imageVector = Icons.Outlined.PlayArrow,
       contentDescription = "Play",
+      actionType = actionType,
       action = togglePlay,
     )
 
@@ -207,6 +210,7 @@ class PlayerViewModel(
     PlayerViewState.PrimaryControlState.Action(
       imageVector = Icons.Outlined.Refresh,
       contentDescription = "Retry",
+      actionType = PlayerViewState.PrimaryControlState.ActionType.RETRY,
       action = { startNewPlaylistPlayback(playlist).invokeOnCompletion { viewState.restart() } },
     )
 

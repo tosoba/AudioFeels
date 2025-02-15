@@ -132,18 +132,7 @@ internal fun PlayerCollapsedContent(viewState: PlayerViewState, modifier: Modifi
           }
         }
 
-        Crossfade(viewState.primaryControlState) {
-          when (it) {
-            PlayerViewState.PrimaryControlState.Loading -> {
-              CircularProgressIndicator()
-            }
-            is PlayerViewState.PrimaryControlState.Action -> {
-              IconButton(onClick = it.action) {
-                Icon(imageVector = it.imageVector, contentDescription = it.contentDescription)
-              }
-            }
-          }
-        }
+        PrimaryControl(controlState = viewState.primaryControlState)
       }
     }
 
@@ -187,6 +176,22 @@ private fun rememberPlayerTrackActionsSwipeState(
       confirmValueChange = confirmValueChange,
       positionalThreshold = positionalThreshold,
     )
+  }
+}
+
+@Composable
+private fun PrimaryControl(controlState: PlayerViewState.PrimaryControlState) {
+  Crossfade(controlState) {
+    when (it) {
+      PlayerViewState.PrimaryControlState.Loading -> {
+        CircularProgressIndicator()
+      }
+      is PlayerViewState.PrimaryControlState.Action -> {
+        IconButton(onClick = it.action) {
+          Icon(imageVector = it.imageVector, contentDescription = it.contentDescription)
+        }
+      }
+    }
   }
 }
 
