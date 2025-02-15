@@ -17,9 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Pause
-import androidx.compose.material.icons.outlined.PlayArrow
-import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.SkipNext
 import androidx.compose.material.icons.outlined.SkipPrevious
 import androidx.compose.material3.BottomSheetDefaults
@@ -135,46 +132,15 @@ internal fun PlayerCollapsedContent(viewState: PlayerViewState, modifier: Modifi
           }
         }
 
-        when (viewState) {
-          is PlayerViewState.Invisible,
-          is PlayerViewState.Loading -> {
-            CircularProgressIndicator()
-          }
-          is PlayerViewState.Playback -> {
-            when (val playerState = viewState.playerState) {
-              PlayerState.Idle -> {
-                IconButton(onClick = viewState.controlActions::togglePlay) {
-                  Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
-                }
-              }
-              is PlayerState.Enqueued -> {
-                IconButton(onClick = viewState.controlActions::togglePlay) {
-                  // TODO: only show play/pause on IDLE/READY/maybe ENDED playback state
-                  // and show loading indicator on BUFFERING
-                  Crossfade(playerState.isPlaying) {
-                    if (it) Icon(imageVector = Icons.Outlined.Pause, contentDescription = "Pause")
-                    else Icon(imageVector = Icons.Outlined.PlayArrow, contentDescription = "Play")
-                  }
-                }
-              }
-              is PlayerState.Error -> {
-                IconButton(
-                  onClick = {
-                    // TODO: retry action depending on player error type in VM
-                  }
-                ) {
-                  Icon(imageVector = Icons.Outlined.Refresh, contentDescription = "Retry")
-                }
-              }
+        Crossfade(viewState.primaryControlState) {
+          when (it) {
+            PlayerViewState.PrimaryControlState.Loading -> {
+              CircularProgressIndicator()
             }
-          }
-          is PlayerViewState.Error -> {
-            IconButton(
-              onClick = {
-                // TODO: retry action depending on player error type in VM
+            is PlayerViewState.PrimaryControlState.Action -> {
+              IconButton(onClick = it.action) {
+                Icon(imageVector = it.imageVector, contentDescription = it.contentDescription)
               }
-            ) {
-              Icon(imageVector = Icons.Outlined.Refresh, contentDescription = "Retry")
             }
           }
         }

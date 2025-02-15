@@ -1,5 +1,9 @@
 package com.trm.audiofeels.ui.player
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Pause
+import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,6 +15,7 @@ import com.trm.audiofeels.core.base.util.RestartableStateFlow
 import com.trm.audiofeels.core.base.util.restartableStateIn
 import com.trm.audiofeels.core.base.util.roundTo
 import com.trm.audiofeels.core.ui.compose.util.loadImageBitmapOrNull
+import com.trm.audiofeels.domain.model.PlaybackState
 import com.trm.audiofeels.domain.model.PlayerInput
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Playlist
@@ -94,10 +99,18 @@ class PlayerViewModel(
           PlayerViewState.Error(
             playlist = playback.playlist,
             playbackActions = playerViewPlaybackActions(),
+            primaryControlState = restartViewStateAction(),
           )
         )
       }
     }
+
+  private fun restartViewStateAction(): PlayerViewState.PrimaryControlState.Action =
+    PlayerViewState.PrimaryControlState.Action(
+      imageVector = Icons.Outlined.Refresh,
+      contentDescription = "Retry",
+      action = viewState::restart,
+    )
 
   private fun playbackViewStateFlow(
     input: PlayerInput,
@@ -147,6 +160,40 @@ class PlayerViewModel(
       currentTrackIndex = getCurrentTrackIndex(playerState, playback),
       currentTrackProgress = currentTrackProgress(playerState, currentTrackPositionMs),
       currentTrackImageBitmap = currentTrackImageBitmap,
+      primaryControlState =
+        when (playerState) {
+          PlayerState.Idle -> {
+            PlayerViewState.PrimaryControlState.Action(
+              imageVector = Icons.Outlined.PlayArrow,
+              contentDescription = "Play",
+              action = controlActions::togglePlay,
+            )
+          }
+          is PlayerState.Enqueued -> {
+            when {
+              playerState.playbackState == PlaybackState.BUFFERING -> {
+                PlayerViewState.PrimaryControlState.Loading
+              }
+              playerState.isPlaying -> {
+                PlayerViewState.PrimaryControlState.Action(
+                  imageVector = Icons.Outlined.Pause,
+                  contentDescription = "Pause",
+                  action = controlActions::togglePlay,
+                )
+              }
+              else -> {
+                PlayerViewState.PrimaryControlState.Action(
+                  imageVector = Icons.Outlined.PlayArrow,
+                  contentDescription = "Play",
+                  action = controlActions::togglePlay,
+                )
+              }
+            }
+          }
+          is PlayerState.Error -> {
+            restartViewStateAction()
+          }
+        },
       controlActions = controlActions,
       playbackActions =
         playerViewPlaybackActions(
@@ -293,7 +340,7 @@ class PlayerViewModel(
     input: PlayerInput,
     playback: PlaylistPlayback,
   ): String? {
-    fun initialTrackArtworkUrl(input: PlayerInput, playback: PlaylistPlayback) =
+    fun initialTrackArtworkUrl(input: PlayerInput, playback: PlaylistPlayback): String? =
       input.tracks.getOrNull(playback.currentTrackIndex)?.artworkUrl
 
     return when (playerState) {

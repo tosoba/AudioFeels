@@ -1,6 +1,7 @@
 package com.trm.audiofeels.ui.player
 
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.vector.ImageVector
 import com.trm.audiofeels.core.base.model.LoadableState
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Playlist
@@ -13,10 +14,23 @@ sealed interface PlayerViewState {
   val currentTrackImageBitmap: LoadableState<ImageBitmap?>
 
   val playbackActions: PlayerViewPlaybackActions
+  val primaryControlState: PrimaryControlState
+
+  sealed interface PrimaryControlState {
+    data object Loading : PrimaryControlState
+
+    data class Action(
+      val imageVector: ImageVector,
+      val contentDescription: String?,
+      val action: () -> Unit,
+    ) : PrimaryControlState
+  }
 
   data class Invisible(override val playbackActions: PlayerViewPlaybackActions) : PlayerViewState {
     override val currentTrackImageBitmap: LoadableState.Idle<ImageBitmap?> =
       LoadableState.Idle(null)
+
+    override val primaryControlState: PrimaryControlState.Loading = PrimaryControlState.Loading
   }
 
   data class Loading(
@@ -25,6 +39,8 @@ sealed interface PlayerViewState {
   ) : PlayerViewState {
     override val currentTrackImageBitmap: LoadableState.Idle<ImageBitmap?> =
       LoadableState.Idle(null)
+
+    override val primaryControlState: PrimaryControlState.Loading = PrimaryControlState.Loading
   }
 
   data class Playback(
@@ -35,6 +51,7 @@ sealed interface PlayerViewState {
     val currentTrackProgress: Double,
     // TODO: use a placeholder in case of no artwork
     override val currentTrackImageBitmap: LoadableState<ImageBitmap?>,
+    override val primaryControlState: PrimaryControlState,
     val controlActions: PlayerViewControlActions,
     override val playbackActions: PlayerViewPlaybackActions,
   ) : PlayerViewState {
@@ -52,6 +69,7 @@ sealed interface PlayerViewState {
 
   data class Error(
     val playlist: Playlist,
+    override val primaryControlState: PrimaryControlState.Action,
     override val playbackActions: PlayerViewPlaybackActions,
   ) : PlayerViewState {
     override val currentTrackImageBitmap: LoadableState.Idle<ImageBitmap?> =
