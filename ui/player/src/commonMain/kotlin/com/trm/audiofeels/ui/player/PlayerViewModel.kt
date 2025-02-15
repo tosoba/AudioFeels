@@ -145,7 +145,7 @@ class PlayerViewModel(
     currentTrackPositionMs: Long,
     currentTrackImageBitmap: LoadableState<ImageBitmap?>,
   ): PlayerViewState.Playback {
-    val controlActions = playerViewControlActions(playerState, playerInput, playback)
+    val trackActions = playerViewTrackActions(playerState, playerInput, playback)
     val togglePlay = { togglePlay(playerState, playerInput, playback) }
     return PlayerViewState.Playback(
       playlist = playback.playlist,
@@ -157,7 +157,7 @@ class PlayerViewModel(
       primaryControlState = primaryControlState(playerState, togglePlay),
       playbackActions =
         playerViewPlaybackActions(currentPlaylist = playback.playlist, togglePlay = togglePlay),
-      controlActions = controlActions,
+      trackActions = trackActions,
     )
   }
 
@@ -274,12 +274,12 @@ class PlayerViewModel(
     }
   }
 
-  private fun playerViewControlActions(
+  private fun playerViewTrackActions(
     playerState: PlayerState,
     playerInput: PlayerInput,
     playback: PlaylistPlayback,
-  ): PlayerViewControlActions =
-    object : PlayerViewControlActions {
+  ): PlayerViewTrackActions =
+    object : PlayerViewTrackActions {
       override fun playPrevious() {
         when (playerState) {
           PlayerState.Idle -> {

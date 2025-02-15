@@ -54,7 +54,7 @@ import org.jetbrains.compose.resources.vectorResource
 internal fun PlayerCollapsedContent(viewState: PlayerViewState, modifier: Modifier = Modifier) {
   Box(modifier = modifier) {
     SwipeToDismissBox(
-      state = rememberPlayerControlActionsSwipeState(viewState),
+      state = rememberPlayerTrackActionsSwipeState(viewState),
       gesturesEnabled = viewState is PlayerViewState.Playback,
       enableDismissFromStartToEnd =
         viewState is PlayerViewState.Playback && viewState.canPlayPrevious,
@@ -157,7 +157,7 @@ internal fun PlayerCollapsedContent(viewState: PlayerViewState, modifier: Modifi
 }
 
 @Composable
-private fun rememberPlayerControlActionsSwipeState(
+private fun rememberPlayerTrackActionsSwipeState(
   viewState: PlayerViewState
 ): SwipeToDismissBoxState {
   val density = LocalDensity.current
@@ -165,8 +165,8 @@ private fun rememberPlayerControlActionsSwipeState(
   val confirmValueChange = { value: SwipeToDismissBoxValue ->
     if (viewState is PlayerViewState.Playback) {
       when (value) {
-        SwipeToDismissBoxValue.StartToEnd -> viewState.controlActions.playPrevious()
-        SwipeToDismissBoxValue.EndToStart -> viewState.controlActions.playNext()
+        SwipeToDismissBoxValue.StartToEnd -> viewState.trackActions.playPrevious()
+        SwipeToDismissBoxValue.EndToStart -> viewState.trackActions.playNext()
         SwipeToDismissBoxValue.Settled -> {}
       }
     }

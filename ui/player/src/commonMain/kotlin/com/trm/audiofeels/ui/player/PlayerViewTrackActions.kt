@@ -1,6 +1,6 @@
 package com.trm.audiofeels.ui.player
 
-interface PlayerViewControlActions {
+interface PlayerViewTrackActions {
   fun playPrevious()
 
   fun playNext()
