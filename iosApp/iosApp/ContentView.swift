@@ -24,6 +24,6 @@ struct ContentView: View {
     }
 
     var body: some View {
-        ComposeView(applicationComponent: applicationComponent).ignoresSafeArea(.keyboard) // Compose has own keyboard handler
+        ComposeView(applicationComponent: applicationComponent).ignoresSafeArea(.all)
     }
 }
