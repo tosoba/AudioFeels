@@ -172,89 +172,106 @@ fun AppContent(applicationComponent: ApplicationComponent) {
         }
       },
     ) {
-      val navigator =
-        rememberSupportingPaneScaffoldNavigator(
-          scaffoldDirective =
-            calculatePaneScaffoldDirective(currentWindowAdaptiveInfo()).let {
-              if (playerViewState.playerVisible) it
-              else it.copy(maxHorizontalPartitions = 1, maxVerticalPartitions = 1)
-            }
-        )
-      val supportingPaneValue = navigator.scaffoldValue[SupportingPaneScaffoldRole.Supporting]
-      LaunchedEffect(supportingPaneValue) {
-        scope.launch { appLayoutState.onSupportingPaneValueChange(supportingPaneValue) }
-      }
-
-      val paddingValues = WindowInsets.safeDrawing.asPaddingValues()
-      val density = LocalDensity.current
-
-      val sheetOffset = appLayoutState.playerLayoutState.currentSheetOffset
-      val sheetPeekHeight = 128.dp
-      var sheetHeightPx by remember { mutableStateOf(0f) }
-
-      val transitionProgress =
-        remember(sheetOffset, sheetHeightPx) {
-          if (sheetHeightPx > 0f) (sheetOffset / sheetHeightPx).coerceIn(0f, 1f) else 0f
-        }
-
-      val transitionThreshold = 0.5f
-      val thresholdProgress =
-        remember(transitionProgress) {
-          ((transitionProgress - transitionThreshold) / (1f - transitionThreshold)).coerceIn(0f, 1f)
-        }
-
-      val expandedAlpha = remember(thresholdProgress) { 1f - thresholdProgress }.coerceIn(0f, 1f)
-      val partiallyExpandedAlpha =
-        remember(thresholdProgress) { thresholdProgress }.coerceIn(0f, 1f)
-
-      BottomSheetScaffold(
-        sheetContent = {
-          PlayerSheetContent(
-            viewState = playerViewState,
-            partiallyExpandedAlpha = partiallyExpandedAlpha,
-            expandedAlpha = expandedAlpha,
-            modifier =
-              Modifier.fillMaxSize().onGloballyPositioned { layoutCoordinates ->
-                sheetHeightPx =
-                  layoutCoordinates.size.height.toFloat() - with(density) { sheetPeekHeight.toPx() }
-              },
-          )
-        },
-        sheetDragHandle = {
-          Column {
-            Spacer(modifier = Modifier.height(paddingValues.calculateTopPadding() * expandedAlpha))
-            BottomSheetDefaults.DragHandle()
-          }
-        },
-        sheetPeekHeight = sheetPeekHeight,
-        scaffoldState = appLayoutState.playerLayoutState.scaffoldState,
-        topBar = { AppTopAppBar(playerViewState) },
-      ) {
-        SupportingPaneScaffold(
-          modifier = Modifier.fillMaxSize(),
-          directive = navigator.scaffoldDirective,
-          value = navigator.scaffoldValue,
-          mainPane = {
-            AnimatedPane {
-              AppNavHost(
-                navController = navController,
-                discoverViewModelFactory = applicationComponent.discoverViewModelFactory,
-                modifier = Modifier.fillMaxSize(),
-                onPlaylistClick = playerViewState.playbackActions::start,
-              )
-            }
-          },
-          supportingPane = {
-            AnimatedPane {
-              PlayerExpandedContent(
-                viewState = playerViewState,
-                modifier = Modifier.fillMaxSize().padding(it),
-              )
-            }
-          },
-        )
-      }
+      AppBottomSheetScaffold(
+        appLayoutState = appLayoutState,
+        playerViewState = playerViewState,
+        navController = navController,
+        applicationComponent = applicationComponent,
+      )
     }
+  }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
+@Composable
+private fun AppBottomSheetScaffold(
+  appLayoutState: AppLayoutState,
+  playerViewState: PlayerViewState,
+  navController: NavHostController,
+  applicationComponent: ApplicationComponent,
+) {
+  val scope = rememberCoroutineScope()
+
+  val paneNavigator =
+    rememberSupportingPaneScaffoldNavigator(
+      scaffoldDirective =
+        calculatePaneScaffoldDirective(currentWindowAdaptiveInfo()).let {
+          if (playerViewState.playerVisible) it
+          else it.copy(maxHorizontalPartitions = 1, maxVerticalPartitions = 1)
+        }
+    )
+  val supportingPaneValue = paneNavigator.scaffoldValue[SupportingPaneScaffoldRole.Supporting]
+  LaunchedEffect(supportingPaneValue) {
+    scope.launch { appLayoutState.onSupportingPaneValueChange(supportingPaneValue) }
+  }
+
+  val paddingValues = WindowInsets.safeDrawing.asPaddingValues()
+  val density = LocalDensity.current
+
+  val sheetOffset = appLayoutState.playerLayoutState.currentSheetOffset
+  val sheetPeekHeight = 128.dp
+  var sheetHeightPx by remember { mutableStateOf(0f) }
+
+  val transitionProgress =
+    remember(sheetOffset, sheetHeightPx) {
+      if (sheetHeightPx > 0f) (sheetOffset / sheetHeightPx).coerceIn(0f, 1f) else 0f
+    }
+
+  val transitionThreshold = 0.5f
+  val thresholdProgress =
+    remember(transitionProgress) {
+      ((transitionProgress - transitionThreshold) / (1f - transitionThreshold)).coerceIn(0f, 1f)
+    }
+
+  val expandedAlpha = remember(thresholdProgress) { 1f - thresholdProgress }.coerceIn(0f, 1f)
+  val partiallyExpandedAlpha = remember(thresholdProgress) { thresholdProgress }.coerceIn(0f, 1f)
+
+  BottomSheetScaffold(
+    sheetContent = {
+      PlayerSheetContent(
+        viewState = playerViewState,
+        partiallyExpandedAlpha = partiallyExpandedAlpha,
+        expandedAlpha = expandedAlpha,
+        modifier =
+          Modifier.fillMaxSize().onGloballyPositioned { layoutCoordinates ->
+            sheetHeightPx =
+              layoutCoordinates.size.height.toFloat() - with(density) { sheetPeekHeight.toPx() }
+          },
+      )
+    },
+    sheetDragHandle = {
+      Column {
+        Spacer(modifier = Modifier.height(paddingValues.calculateTopPadding() * expandedAlpha))
+        BottomSheetDefaults.DragHandle()
+      }
+    },
+    sheetPeekHeight = sheetPeekHeight,
+    scaffoldState = appLayoutState.playerLayoutState.scaffoldState,
+    topBar = { AppTopAppBar(playerViewState) },
+  ) {
+    SupportingPaneScaffold(
+      modifier = Modifier.fillMaxSize(),
+      directive = paneNavigator.scaffoldDirective,
+      value = paneNavigator.scaffoldValue,
+      mainPane = {
+        AnimatedPane {
+          AppNavHost(
+            navController = navController,
+            discoverViewModelFactory = applicationComponent.discoverViewModelFactory,
+            modifier = Modifier.fillMaxSize(),
+            onPlaylistClick = playerViewState.playbackActions::start,
+          )
+        }
+      },
+      supportingPane = {
+        AnimatedPane {
+          PlayerExpandedContent(
+            viewState = playerViewState,
+            modifier = Modifier.fillMaxSize().padding(it),
+          )
+        }
+      },
+    )
   }
 }
 
