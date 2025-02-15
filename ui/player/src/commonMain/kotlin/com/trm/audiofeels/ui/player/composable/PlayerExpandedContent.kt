@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
@@ -23,7 +24,10 @@ import com.trm.audiofeels.ui.player.PlayerViewState
 @Composable
 fun PlayerExpandedContent(viewState: PlayerViewState, modifier: Modifier = Modifier) {
   Column(modifier = modifier) {
-    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+    BoxWithConstraints(
+      modifier =
+        Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 12.dp)
+    ) {
       when (viewState) {
         is PlayerViewState.Invisible,
         is PlayerViewState.Error,
@@ -31,8 +35,10 @@ fun PlayerExpandedContent(viewState: PlayerViewState, modifier: Modifier = Modif
           CircularProgressIndicator()
         }
         is PlayerViewState.Playback -> {
+          val carouselState =
+            rememberCarouselState(viewState.currentTrackIndex) { viewState.tracks.size }
           HorizontalMultiBrowseCarousel(
-            state = rememberCarouselState(viewState.currentTrackIndex) { viewState.tracks.size },
+            state = carouselState,
             preferredItemWidth = maxWidth / 2,
             contentPadding = PaddingValues(8.dp),
           ) {
@@ -49,7 +55,10 @@ fun PlayerExpandedContent(viewState: PlayerViewState, modifier: Modifier = Modif
       }
     }
 
-    LazyColumn {
+    LazyColumn(
+      contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 12.dp),
+      modifier = Modifier.fillMaxWidth().weight(1f),
+    ) {
       when (viewState) {
         is PlayerViewState.Invisible,
         is PlayerViewState.Error,

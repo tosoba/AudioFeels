@@ -265,10 +265,7 @@ private fun AppBottomSheetScaffold(
       },
       supportingPane = {
         AnimatedPane {
-          PlayerExpandedContent(
-            viewState = playerViewState,
-            modifier = Modifier.fillMaxSize().padding(it),
-          )
+          PlayerExpandedContent(viewState = playerViewState, modifier = Modifier.fillMaxSize())
         }
       },
     )
