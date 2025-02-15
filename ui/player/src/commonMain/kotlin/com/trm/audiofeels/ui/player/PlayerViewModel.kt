@@ -105,13 +105,6 @@ class PlayerViewModel(
       }
     }
 
-  private fun restartViewStateAction(): PlayerViewState.PrimaryControlState.Action =
-    PlayerViewState.PrimaryControlState.Action(
-      imageVector = Icons.Outlined.Refresh,
-      contentDescription = "Retry",
-      action = viewState::restart,
-    )
-
   private fun playbackViewStateFlow(
     input: PlayerInput,
     playback: PlaylistPlayback,
@@ -160,40 +153,7 @@ class PlayerViewModel(
       currentTrackIndex = getCurrentTrackIndex(playerState, playback),
       currentTrackProgress = currentTrackProgress(playerState, currentTrackPositionMs),
       currentTrackImageBitmap = currentTrackImageBitmap,
-      primaryControlState =
-        when (playerState) {
-          PlayerState.Idle -> {
-            PlayerViewState.PrimaryControlState.Action(
-              imageVector = Icons.Outlined.PlayArrow,
-              contentDescription = "Play",
-              action = controlActions::togglePlay,
-            )
-          }
-          is PlayerState.Enqueued -> {
-            when {
-              playerState.playbackState == PlaybackState.BUFFERING -> {
-                PlayerViewState.PrimaryControlState.Loading
-              }
-              playerState.isPlaying -> {
-                PlayerViewState.PrimaryControlState.Action(
-                  imageVector = Icons.Outlined.Pause,
-                  contentDescription = "Pause",
-                  action = controlActions::togglePlay,
-                )
-              }
-              else -> {
-                PlayerViewState.PrimaryControlState.Action(
-                  imageVector = Icons.Outlined.PlayArrow,
-                  contentDescription = "Play",
-                  action = controlActions::togglePlay,
-                )
-              }
-            }
-          }
-          is PlayerState.Error -> {
-            restartViewStateAction()
-          }
-        },
+      primaryControlState = primaryControlState(playerState, controlActions),
       controlActions = controlActions,
       playbackActions =
         playerViewPlaybackActions(
@@ -202,6 +162,53 @@ class PlayerViewModel(
         ),
     )
   }
+
+  private fun primaryControlState(
+    playerState: PlayerState,
+    controlActions: PlayerViewControlActions,
+  ): PlayerViewState.PrimaryControlState =
+    when (playerState) {
+      PlayerState.Idle -> {
+        playAction(controlActions)
+      }
+      is PlayerState.Enqueued -> {
+        when {
+          playerState.playbackState == PlaybackState.BUFFERING -> {
+            PlayerViewState.PrimaryControlState.Loading
+          }
+          playerState.isPlaying -> {
+            pauseAction(controlActions)
+          }
+          else -> {
+            playAction(controlActions)
+          }
+        }
+      }
+      is PlayerState.Error -> {
+        restartViewStateAction()
+      }
+    }
+
+  private fun pauseAction(controlActions: PlayerViewControlActions) =
+    PlayerViewState.PrimaryControlState.Action(
+      imageVector = Icons.Outlined.Pause,
+      contentDescription = "Pause",
+      action = controlActions::togglePlay,
+    )
+
+  private fun playAction(controlActions: PlayerViewControlActions) =
+    PlayerViewState.PrimaryControlState.Action(
+      imageVector = Icons.Outlined.PlayArrow,
+      contentDescription = "Play",
+      action = controlActions::togglePlay,
+    )
+
+  private fun restartViewStateAction(): PlayerViewState.PrimaryControlState.Action =
+    PlayerViewState.PrimaryControlState.Action(
+      imageVector = Icons.Outlined.Refresh,
+      contentDescription = "Retry",
+      action = viewState::restart,
+    )
 
   private fun currentTrackProgress(playerState: PlayerState, currentTrackPositionMs: Long): Double =
     when (playerState) {
