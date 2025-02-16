@@ -1,5 +1,6 @@
 package com.trm.audiofeels.ui.player.composable
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -29,56 +30,58 @@ import kotlin.math.absoluteValue
 @Composable
 fun PlayerExpandedContent(viewState: PlayerViewState, modifier: Modifier = Modifier) {
   Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-    when (viewState) {
-      is PlayerViewState.Invisible,
-      is PlayerViewState.Error, // TODO: retry
-      is PlayerViewState.Loading -> {
-        CircularProgressIndicator()
-      }
-      is PlayerViewState.Playback -> {
-        val pagerState =
-          rememberPagerState(
-            initialPage = viewState.currentTrackIndex,
-            pageCount = viewState.tracks::size,
-          )
-        LaunchedEffect(pagerState.settledPage) {
-          viewState.trackActions.playAtIndex(pagerState.settledPage)
+    Crossfade(viewState::class) {
+      when (viewState) {
+        is PlayerViewState.Invisible,
+        is PlayerViewState.Error, // TODO: retry
+        is PlayerViewState.Loading -> {
+          CircularProgressIndicator()
         }
+        is PlayerViewState.Playback -> {
+          val pagerState =
+            rememberPagerState(
+              initialPage = viewState.currentTrackIndex,
+              pageCount = viewState.tracks::size,
+            )
+          LaunchedEffect(pagerState.settledPage) {
+            viewState.trackActions.playAtIndex(pagerState.settledPage)
+          }
 
-        BoxWithConstraints(modifier = Modifier.weight(1f)) {
-          HorizontalPager(
-            state = pagerState,
-            contentPadding = PaddingValues(horizontal = 64.dp, vertical = 16.dp),
-            modifier = Modifier.fillMaxWidth(),
-          ) {
-            val track = viewState.tracks.getOrNull(it) ?: return@HorizontalPager
-            val pageOffset = (pagerState.currentPage - it) + pagerState.currentPageOffsetFraction
-
-            Card(
-              modifier =
-                Modifier.graphicsLayer {
-                  val fraction = 1f - pageOffset.absoluteValue.coerceIn(0f, 1f)
-                  val scale = lerp(start = 0.85.dp, stop = 1.dp, fraction = fraction)
-                  scaleX = scale.value
-                  scaleY = scale.value
-                  alpha = lerp(start = 0.5.dp, stop = 1.dp, fraction = fraction).value
-                },
-              shape = MaterialTheme.shapes.extraLarge,
+          BoxWithConstraints(modifier = Modifier.weight(1f)) {
+            HorizontalPager(
+              state = pagerState,
+              contentPadding = PaddingValues(horizontal = 64.dp, vertical = 16.dp),
+              modifier = Modifier.fillMaxWidth(),
             ) {
-              AsyncShimmerImage(
-                model = track.artworkUrl,
-                contentDescription = null,
-                modifier = { enabled ->
-                  Modifier.aspectRatio(1f).shimmerBackground(enabled = enabled)
-                },
-              )
-              Text(
-                text = track.title,
-                style = MaterialTheme.typography.labelLarge,
-                textAlign = TextAlign.Center,
-                maxLines = 1,
-                modifier = Modifier.fillMaxWidth().padding(12.dp).basicMarquee(),
-              )
+              val track = viewState.tracks.getOrNull(it) ?: return@HorizontalPager
+              val pageOffset = (pagerState.currentPage - it) + pagerState.currentPageOffsetFraction
+
+              Card(
+                modifier =
+                  Modifier.graphicsLayer {
+                    val fraction = 1f - pageOffset.absoluteValue.coerceIn(0f, 1f)
+                    val scale = lerp(start = 0.85.dp, stop = 1.dp, fraction = fraction)
+                    scaleX = scale.value
+                    scaleY = scale.value
+                    alpha = lerp(start = 0.5.dp, stop = 1.dp, fraction = fraction).value
+                  },
+                shape = MaterialTheme.shapes.extraLarge,
+              ) {
+                AsyncShimmerImage(
+                  model = track.artworkUrl,
+                  contentDescription = null,
+                  modifier = { enabled ->
+                    Modifier.aspectRatio(1f).shimmerBackground(enabled = enabled)
+                  },
+                )
+                Text(
+                  text = track.title,
+                  style = MaterialTheme.typography.labelLarge,
+                  textAlign = TextAlign.Center,
+                  maxLines = 1,
+                  modifier = Modifier.fillMaxWidth().padding(12.dp).basicMarquee(),
+                )
+              }
             }
           }
         }
