@@ -157,6 +157,11 @@ actual class AudioPlayerConnection : PlayerConnection {
     play(currentItemIndex)
   }
 
+  override fun playAtIndex(index: Int) {
+    currentItemIndex = index
+    play(currentItemIndex)
+  }
+
   override fun skipTo(positionMs: Long) {
     player.seekToTime(
       CMTimeMakeWithSeconds(seconds = positionMs.toDouble() / 1_000, preferredTimescale = 1)

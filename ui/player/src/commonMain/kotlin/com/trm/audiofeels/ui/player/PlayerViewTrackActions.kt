@@ -4,4 +4,6 @@ interface PlayerViewTrackActions {
   fun playPrevious()
 
   fun playNext()
+
+  fun playAtIndex(index: Int)
 }

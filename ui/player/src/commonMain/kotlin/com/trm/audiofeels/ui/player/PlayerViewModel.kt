@@ -321,6 +321,28 @@ class PlayerViewModel(
           }
         }
       }
+
+      override fun playAtIndex(index: Int) {
+        when (playerState) {
+          PlayerState.Idle -> {
+            if (playback.currentTrackIndex != index) {
+              playerConnection.enqueue(
+                input = playerInput,
+                startTrackIndex = index.coerceIn(0..playerInput.tracks.lastIndex),
+                startPositionMs = 0L,
+              )
+            }
+          }
+          is PlayerState.Enqueued -> {
+            if (playerState.currentTrackIndex != index) {
+              playerConnection.playAtIndex(index)
+            }
+          }
+          is PlayerState.Error -> {
+            return
+          }
+        }
+      }
     }
 
   private fun onPlayerViewStatePlayback(playbackState: PlayerViewState.Playback) {

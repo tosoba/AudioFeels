@@ -17,6 +17,8 @@ interface PlayerConnection {
   fun playPrevious()
 
   fun playNext()
+  
+  fun playAtIndex(index: Int)
 
   fun skipTo(positionMs: Long)
 
