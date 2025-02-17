@@ -15,6 +15,7 @@ import com.trm.audiofeels.core.base.util.RestartableStateFlow
 import com.trm.audiofeels.core.base.util.restartableStateIn
 import com.trm.audiofeels.core.base.util.roundTo
 import com.trm.audiofeels.core.ui.compose.util.loadImageBitmapOrNull
+import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import com.trm.audiofeels.domain.model.PlaybackState
 import com.trm.audiofeels.domain.model.PlayerInput
 import com.trm.audiofeels.domain.model.PlayerState
@@ -211,7 +212,11 @@ class PlayerViewModel(
       imageVector = Icons.Outlined.Refresh,
       contentDescription = "Retry",
       actionType = PlayerViewState.PrimaryControlState.ActionType.RETRY,
-      action = { startNewPlaylistPlayback(playlist).invokeOnCompletion { viewState.restart() } },
+      action = {
+        startNewPlaylistPlayback(playlist = playlist, carryOn = true).invokeOnCompletion {
+          viewState.restart()
+        }
+      },
     )
 
   private fun currentTrackProgress(playerState: PlayerState, currentTrackPositionMs: Long): Double =
@@ -231,7 +236,19 @@ class PlayerViewModel(
   ): PlayerViewPlaybackActions =
     object : PlayerViewPlaybackActions {
       override fun start(playlist: Playlist) {
-        if (playlist != currentPlaylist) startNewPlaylistPlayback(playlist) else togglePlay()
+        if (playlist != currentPlaylist) {
+          startNewPlaylistPlayback(playlist = playlist, carryOn = false)
+        } else {
+          togglePlay()
+        }
+      }
+
+      override fun startCarryOn(carryOnPlaylist: CarryOnPlaylist) {
+        if (carryOnPlaylist.playlist != currentPlaylist) {
+          startNewPlaylistPlayback(playlist = carryOnPlaylist.playlist, carryOn = true)
+        } else {
+          togglePlay()
+        }
       }
 
       override fun cancel() {
@@ -242,7 +259,11 @@ class PlayerViewModel(
   private fun playerViewPlaybackActions(): PlayerViewPlaybackActions =
     object : PlayerViewPlaybackActions {
       override fun start(playlist: Playlist) {
-        startNewPlaylistPlayback(playlist)
+        startNewPlaylistPlayback(playlist = playlist, carryOn = false)
+      }
+
+      override fun startCarryOn(carryOnPlaylist: CarryOnPlaylist) {
+        startNewPlaylistPlayback(playlist = carryOnPlaylist.playlist, carryOn = true)
       }
 
       override fun cancel() {
@@ -250,8 +271,10 @@ class PlayerViewModel(
       }
     }
 
-  private fun startNewPlaylistPlayback(playlist: Playlist): Job =
-    viewModelScope.launch { playlistsRepository.setNewCurrentPlaylist(playlist) }
+  private fun startNewPlaylistPlayback(playlist: Playlist, carryOn: Boolean): Job =
+    viewModelScope.launch {
+      playlistsRepository.setNewCurrentPlaylist(playlist = playlist, carryOn = carryOn)
+    }
 
   private fun cancelPlayback() {
     viewModelScope.launch { playlistsRepository.clearCurrentPlaylist() }

@@ -26,12 +26,22 @@ interface PlaylistDao {
   suspend fun clearCurrentPlaylist(lastPlayed: Instant)
 
   @Query("UPDATE playlist SET lastPlayed = NULL, autoPlay = TRUE WHERE id = :id")
+  suspend fun setNewCurrentPlaylistCarryOn(id: String)
+
+  @Query(
+    "UPDATE playlist SET lastPlayed = NULL, autoPlay = TRUE, currentTrackIndex = 0, currentTrackPositionMs = 0 WHERE id = :id"
+  )
   suspend fun setNewCurrentPlaylist(id: String)
 
   @Transaction
-  suspend fun setNewCurrentPlaylist(playlist: PlaylistEntity) {
+  suspend fun setNewCurrentPlaylist(playlist: PlaylistEntity, carryOn: Boolean) {
     clearCurrentPlaylist(Clock.System.now())
-    selectPlaylistById(playlist.id)?.let { setNewCurrentPlaylist(it.id) }
-      ?: run { upsert(playlist) }
+    selectPlaylistById(playlist.id)?.let {
+      if (carryOn) {
+        setNewCurrentPlaylistCarryOn(it.id)
+      } else {
+        setNewCurrentPlaylist(it.id)
+      }
+    } ?: run { upsert(playlist) }
   }
 }

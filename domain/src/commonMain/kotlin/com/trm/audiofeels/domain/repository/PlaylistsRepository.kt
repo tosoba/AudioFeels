@@ -7,7 +7,7 @@ import com.trm.audiofeels.domain.model.Track
 import kotlinx.coroutines.flow.Flow
 
 interface PlaylistsRepository {
-  suspend fun setNewCurrentPlaylist(playlist: Playlist)
+  suspend fun setNewCurrentPlaylist(playlist: Playlist, carryOn: Boolean)
 
   suspend fun updateCurrentPlaylist(playlistPlayback: PlaylistPlayback)
 

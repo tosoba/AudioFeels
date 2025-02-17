@@ -260,7 +260,7 @@ private fun AppBottomSheetScaffold(
             navController = navController,
             discoverViewModelFactory = applicationComponent.discoverViewModelFactory,
             modifier = Modifier.fillMaxSize(),
-            onCarryOnPlaylistClick = {}, // TODO: startCarryOn playback action
+            onCarryOnPlaylistClick = playerViewState.playbackActions::startCarryOn,
             onTrendingPlaylistClick = playerViewState.playbackActions::start,
           )
         }

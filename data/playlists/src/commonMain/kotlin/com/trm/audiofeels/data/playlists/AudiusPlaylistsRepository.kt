@@ -26,8 +26,8 @@ class AudiusPlaylistsRepository(
   private val audiusEndpoints: AudiusEndpoints,
   private val playlistDao: PlaylistDao,
 ) : PlaylistsRepository {
-  override suspend fun setNewCurrentPlaylist(playlist: Playlist) {
-    playlistDao.setNewCurrentPlaylist(playlist.toCurrentPlaylistEntity())
+  override suspend fun setNewCurrentPlaylist(playlist: Playlist, carryOn: Boolean) {
+    playlistDao.setNewCurrentPlaylist(playlist.toCurrentPlaylistEntity(), carryOn)
   }
 
   override suspend fun updateCurrentPlaylist(playlistPlayback: PlaylistPlayback) {
