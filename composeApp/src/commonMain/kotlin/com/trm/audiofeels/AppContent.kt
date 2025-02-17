@@ -77,6 +77,7 @@ import com.trm.audiofeels.core.ui.compose.util.NavigationContentPosition
 import com.trm.audiofeels.core.ui.compose.util.NavigationType
 import com.trm.audiofeels.core.ui.compose.util.calculateWindowSize
 import com.trm.audiofeels.di.ApplicationComponent
+import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.ui.discover.DiscoverPage
 import com.trm.audiofeels.ui.discover.DiscoverViewModelFactory
@@ -259,7 +260,8 @@ private fun AppBottomSheetScaffold(
             navController = navController,
             discoverViewModelFactory = applicationComponent.discoverViewModelFactory,
             modifier = Modifier.fillMaxSize(),
-            onPlaylistClick = playerViewState.playbackActions::start,
+            onCarryOnPlaylistClick = {}, // TODO: startCarryOn playback action
+            onTrendingPlaylistClick = playerViewState.playbackActions::start,
           )
         }
       },
@@ -408,7 +410,8 @@ private fun AppNavHost(
   navController: NavHostController,
   discoverViewModelFactory: DiscoverViewModelFactory,
   modifier: Modifier = Modifier,
-  onPlaylistClick: (Playlist) -> Unit,
+  onCarryOnPlaylistClick: (CarryOnPlaylist) -> Unit,
+  onTrendingPlaylistClick: (Playlist) -> Unit,
 ) {
   NavHost(
     modifier = modifier,
@@ -419,7 +422,8 @@ private fun AppNavHost(
       DiscoverPage(
         viewModel = viewModel(factory = discoverViewModelFactory),
         modifier = Modifier.fillMaxSize(),
-        onPlaylistClick = onPlaylistClick,
+        onCarryPlaylistClick = onCarryOnPlaylistClick,
+        onTrendingPlaylistClick = onTrendingPlaylistClick,
       )
     }
     composable<AppRoute.Favourites> { FavouritesPage(modifier = Modifier.fillMaxSize()) }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -31,39 +32,57 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trm.audiofeels.core.base.model.LoadableState
 import com.trm.audiofeels.core.ui.compose.AsyncShimmerImage
 import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
+import com.trm.audiofeels.core.ui.resources.Res
+import com.trm.audiofeels.core.ui.resources.carry_on
+import com.trm.audiofeels.core.ui.resources.days_ago
+import com.trm.audiofeels.core.ui.resources.hours_ago
+import com.trm.audiofeels.core.ui.resources.minutes_ago
+import com.trm.audiofeels.core.ui.resources.moments_ago
+import com.trm.audiofeels.core.ui.resources.one_hour_ago
+import com.trm.audiofeels.core.ui.resources.one_minute_ago
+import com.trm.audiofeels.core.ui.resources.retry
+import com.trm.audiofeels.core.ui.resources.trending
+import com.trm.audiofeels.core.ui.resources.yesterday
+import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import com.trm.audiofeels.domain.model.Playlist
+import kotlin.time.Duration
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun DiscoverPage(
   viewModel: DiscoverViewModel,
   modifier: Modifier = Modifier,
-  onPlaylistClick: (Playlist) -> Unit,
+  onCarryPlaylistClick: (CarryOnPlaylist) -> Unit,
+  onTrendingPlaylistClick: (Playlist) -> Unit,
 ) {
   val carryOnPlaylists by viewModel.carryOnPlaylists.collectAsStateWithLifecycle()
   val trendingPlaylists by viewModel.trendingPlaylists.collectAsStateWithLifecycle()
 
   Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
     Text(
-      text = "Carry on",
+      text = stringResource(Res.string.carry_on),
       style = MaterialTheme.typography.headlineSmall,
       modifier = Modifier.padding(top = 12.dp, start = 12.dp, end = 12.dp),
     )
     Crossfade(targetState = carryOnPlaylists, modifier = modifier) {
       when (it) {
         LoadableState.Loading -> {
+          // TODO: replace loading indicator with shimmer items inside the LazyRow
           LoadingIndicatorBox()
         }
         is LoadableState.Idle -> {
           LazyRow(modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(all = 12.dp)) {
-            itemsIndexed(it.value) { index, playlist ->
-              PlaylistItem(
-                playlist = playlist.playlist,
+            itemsIndexed(it.value) { index, carryOn ->
+              CarryOnPlaylistItem(
+                carryOn = carryOn,
                 modifier =
                   Modifier.width(150.dp)
                     .padding(
                       playlistItemPaddingValues(itemIndex = index, lastIndex = it.value.lastIndex)
                     ),
-                onPlaylistClick = onPlaylistClick,
+                onClick = onCarryPlaylistClick,
               )
             }
           }
@@ -75,7 +94,7 @@ fun DiscoverPage(
     }
 
     Text(
-      text = "Trending",
+      text = stringResource(Res.string.trending),
       style = MaterialTheme.typography.headlineSmall,
       modifier = Modifier.padding(start = 12.dp, end = 12.dp),
     )
@@ -94,7 +113,7 @@ fun DiscoverPage(
                     .padding(
                       playlistItemPaddingValues(itemIndex = index, lastIndex = it.value.lastIndex)
                     ),
-                onPlaylistClick = onPlaylistClick,
+                onClick = onTrendingPlaylistClick,
               )
             }
           }
@@ -104,7 +123,9 @@ fun DiscoverPage(
             contentAlignment = Alignment.Center,
             modifier = Modifier.fillMaxWidth().height(150.dp),
           ) {
-            Button(onClick = viewModel.trendingPlaylists::restart) { Text("Retry") }
+            Button(onClick = viewModel.trendingPlaylists::restart) {
+              Text(stringResource(Res.string.retry))
+            }
           }
         }
       }
@@ -116,26 +137,87 @@ fun DiscoverPage(
 private fun PlaylistItem(
   playlist: Playlist,
   modifier: Modifier = Modifier,
-  onPlaylistClick: (Playlist) -> Unit,
+  onClick: (Playlist) -> Unit,
 ) {
-  Card(onClick = { onPlaylistClick(playlist) }, modifier = modifier) {
-    AsyncShimmerImage(
-      model = playlist.artworkUrl,
-      contentDescription = playlist.name,
-      modifier = { enabled ->
-        Modifier.size(150.dp)
-          .clip(RoundedCornerShape(12.dp))
-          .shimmerBackground(enabled = enabled, shape = RoundedCornerShape(12.dp))
-      },
-    )
-
-    Text(
-      text = playlist.name,
-      style = MaterialTheme.typography.labelMedium,
-      maxLines = 1,
-      modifier = Modifier.padding(8.dp).basicMarquee(),
-    )
+  Card(onClick = { onClick(playlist) }, modifier = modifier) {
+    PlaylistArtworkImage(playlist)
+    Spacer(modifier = Modifier.height(8.dp))
+    PlaylistNameText(playlist)
+    Spacer(modifier = Modifier.height(8.dp))
   }
+}
+
+@Composable
+private fun CarryOnPlaylistItem(
+  carryOn: CarryOnPlaylist,
+  now: Instant = Clock.System.now(),
+  modifier: Modifier = Modifier,
+  onClick: (CarryOnPlaylist) -> Unit,
+) {
+  Card(onClick = { onClick(carryOn) }, modifier = modifier) {
+    PlaylistArtworkImage(carryOn.playlist)
+    Spacer(modifier = Modifier.height(8.dp))
+    PlaylistNameText(carryOn.playlist)
+    Spacer(modifier = Modifier.height(4.dp))
+    PlaylistLastPlayedAgoText(lastPlayedAgoDuration = carryOn.lastPlayed - now)
+    Spacer(modifier = Modifier.height(8.dp))
+  }
+}
+
+@Composable
+private fun PlaylistArtworkImage(playlist: Playlist) {
+  AsyncShimmerImage(
+    model = playlist.artworkUrl,
+    contentDescription = playlist.name,
+    modifier = { enabled ->
+      Modifier.size(150.dp)
+        .clip(RoundedCornerShape(12.dp))
+        .shimmerBackground(enabled = enabled, shape = RoundedCornerShape(12.dp))
+    },
+  )
+}
+
+@Composable
+private fun PlaylistNameText(playlist: Playlist) {
+  Text(
+    text = playlist.name,
+    style = MaterialTheme.typography.labelMedium,
+    maxLines = 1,
+    modifier = Modifier.padding(horizontal = 8.dp).basicMarquee(),
+  )
+}
+
+@Composable
+private fun PlaylistLastPlayedAgoText(lastPlayedAgoDuration: Duration) {
+  Text(
+    text =
+      when {
+        lastPlayedAgoDuration.inWholeDays > 1L -> {
+          stringResource(Res.string.days_ago, lastPlayedAgoDuration.inWholeDays)
+        }
+        lastPlayedAgoDuration.inWholeDays == 1L -> {
+          stringResource(Res.string.yesterday)
+        }
+        lastPlayedAgoDuration.inWholeHours > 1L -> {
+          stringResource(Res.string.hours_ago, lastPlayedAgoDuration.inWholeHours)
+        }
+        lastPlayedAgoDuration.inWholeHours == 1L -> {
+          stringResource(Res.string.one_hour_ago)
+        }
+        lastPlayedAgoDuration.inWholeMinutes > 1L -> {
+          stringResource(Res.string.minutes_ago, lastPlayedAgoDuration.inWholeMinutes)
+        }
+        lastPlayedAgoDuration.inWholeMinutes == 1L -> {
+          stringResource(Res.string.one_minute_ago)
+        }
+        else -> {
+          stringResource(Res.string.moments_ago)
+        }
+      },
+    style = MaterialTheme.typography.labelSmall,
+    maxLines = 1,
+    modifier = Modifier.padding(horizontal = 8.dp).basicMarquee(),
+  )
 }
 
 private fun playlistItemPaddingValues(itemIndex: Int, lastIndex: Int): PaddingValues =
