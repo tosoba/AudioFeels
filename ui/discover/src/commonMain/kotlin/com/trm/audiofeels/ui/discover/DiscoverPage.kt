@@ -27,8 +27,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trm.audiofeels.core.base.model.LoadableState
@@ -62,6 +62,8 @@ fun DiscoverPage(
   val trendingPlaylists by viewModel.trendingPlaylists.collectAsStateWithLifecycle()
 
   Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+    // TODO: large retry view
+
     val carryOnVisible =
       carryOnPlaylists is LoadableState.Loading ||
         (carryOnPlaylists is LoadableState.Idle && !carryOnPlaylists.valueOrNull.isNullOrEmpty())
@@ -75,8 +77,7 @@ fun DiscoverPage(
           ) {
             Text(
               text = stringResource(Res.string.carry_on),
-              style = MaterialTheme.typography.headlineSmall,
-              modifier = Modifier.alpha(0f),
+              style = MaterialTheme.typography.headlineSmall.copy(color = Color.Transparent),
             )
           }
         }
@@ -106,6 +107,7 @@ fun DiscoverPage(
                   Modifier.size(150.dp)
                     .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = count - 1))
                     .shimmerBackground(enabled = true, shape = RoundedCornerShape(12.dp))
+                    .animateItem()
               )
             }
           }
@@ -120,7 +122,8 @@ fun DiscoverPage(
                         itemIndex = index,
                         lastIndex = carryOns.value.lastIndex,
                       )
-                    ),
+                    )
+                    .animateItem(),
                 onClick = onCarryPlaylistClick,
               )
             }
