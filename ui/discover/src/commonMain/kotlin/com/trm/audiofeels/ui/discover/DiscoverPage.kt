@@ -1,5 +1,6 @@
 package com.trm.audiofeels.ui.discover
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Box
@@ -26,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -53,7 +55,6 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun DiscoverPage(
   viewModel: DiscoverViewModel,
-  modifier: Modifier = Modifier,
   onCarryPlaylistClick: (CarryOnPlaylist) -> Unit,
   onTrendingPlaylistClick: (Playlist) -> Unit,
 ) {
@@ -61,44 +62,81 @@ fun DiscoverPage(
   val trendingPlaylists by viewModel.trendingPlaylists.collectAsStateWithLifecycle()
 
   Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-    Text(
-      text = stringResource(Res.string.carry_on),
-      style = MaterialTheme.typography.headlineSmall,
-      modifier = Modifier.padding(top = 12.dp, start = 12.dp, end = 12.dp),
-    )
-    Crossfade(targetState = carryOnPlaylists, modifier = modifier) {
-      when (it) {
-        LoadableState.Loading -> {
-          // TODO: replace loading indicator with shimmer items inside the LazyRow
-          LoadingIndicatorBox()
+    val carryOnVisible =
+      carryOnPlaylists is LoadableState.Loading ||
+        (carryOnPlaylists is LoadableState.Idle && !carryOnPlaylists.valueOrNull.isNullOrEmpty())
+
+    Crossfade(carryOnPlaylists) {
+      when (carryOnPlaylists) {
+        is LoadableState.Loading -> {
+          Box(
+            Modifier.padding(top = 12.dp, start = 12.dp, end = 12.dp)
+              .shimmerBackground(enabled = true, shape = RoundedCornerShape(6.dp))
+          ) {
+            Text(
+              text = stringResource(Res.string.carry_on),
+              style = MaterialTheme.typography.headlineSmall,
+              modifier = Modifier.alpha(0f),
+            )
+          }
         }
         is LoadableState.Idle -> {
-          LazyRow(modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(all = 12.dp)) {
-            itemsIndexed(it.value) { index, carryOn ->
+          if (!carryOnPlaylists.valueOrNull.isNullOrEmpty()) {
+            Text(
+              text = stringResource(Res.string.carry_on),
+              style = MaterialTheme.typography.headlineSmall,
+              modifier = Modifier.padding(top = 12.dp, start = 12.dp, end = 12.dp),
+            )
+          }
+        }
+        is LoadableState.Error -> {}
+      }
+    }
+
+    AnimatedVisibility(visible = carryOnVisible) {
+      LazyRow(modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(12.dp)) {
+        when (val carryOns = carryOnPlaylists) {
+          LoadableState.Loading -> {
+            val count = 50
+            items(count) { index ->
+              Box(
+                modifier =
+                  // TODO: extract placeholder composable for better sizing (consistent with
+                  // PlaylistItem which is not a square)
+                  Modifier.size(150.dp)
+                    .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = count - 1))
+                    .shimmerBackground(enabled = true, shape = RoundedCornerShape(12.dp))
+              )
+            }
+          }
+          is LoadableState.Idle -> {
+            itemsIndexed(carryOns.value) { index, carryOn ->
               CarryOnPlaylistItem(
                 carryOn = carryOn,
                 modifier =
                   Modifier.width(150.dp)
                     .padding(
-                      playlistItemPaddingValues(itemIndex = index, lastIndex = it.value.lastIndex)
+                      playlistItemPaddingValues(
+                        itemIndex = index,
+                        lastIndex = carryOns.value.lastIndex,
+                      )
                     ),
                 onClick = onCarryPlaylistClick,
               )
             }
           }
-        }
-        is LoadableState.Error -> {
-          return@Crossfade
+          is LoadableState.Error -> {}
         }
       }
     }
 
+    // TODO: use placeholder items
     Text(
       text = stringResource(Res.string.trending),
       style = MaterialTheme.typography.headlineSmall,
       modifier = Modifier.padding(start = 12.dp, end = 12.dp),
     )
-    Crossfade(targetState = trendingPlaylists, modifier = modifier) {
+    Crossfade(trendingPlaylists) {
       when (it) {
         LoadableState.Loading -> {
           LoadingIndicatorBox()

@@ -421,7 +421,6 @@ private fun AppNavHost(
     composable<AppRoute.Discover> {
       DiscoverPage(
         viewModel = viewModel(factory = discoverViewModelFactory),
-        modifier = Modifier.fillMaxSize(),
         onCarryPlaylistClick = onCarryOnPlaylistClick,
         onTrendingPlaylistClick = onTrendingPlaylistClick,
       )
