@@ -135,15 +135,7 @@ private fun <T : Any> DiscoverListLazyRow(
         LoadableState.Loading -> {
           val count = 50
           items(count) { index ->
-            Box(
-              modifier =
-                // TODO: extract placeholder composable for better sizing (consistent with
-                // PlaylistItem which is not a square)
-                Modifier.size(150.dp)
-                  .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = count - 1))
-                  .shimmerBackground(enabled = true, shape = RoundedCornerShape(12.dp))
-                  .animateItem()
-            )
+            DiscoverListPlaceholderItem(index = index, lastIndex = count - 1)
           }
         }
         is LoadableState.Idle -> {
@@ -152,6 +144,21 @@ private fun <T : Any> DiscoverListLazyRow(
         is LoadableState.Error -> {}
       }
     }
+  }
+}
+
+@Composable
+private fun LazyItemScope.DiscoverListPlaceholderItem(index: Int, lastIndex: Int) {
+  Box(
+    modifier =
+      Modifier.width(150.dp)
+        .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = lastIndex))
+        .shimmerBackground(enabled = true, shape = RoundedCornerShape(12.dp))
+        .animateItem()
+  ) {
+    Spacer(modifier = Modifier.height(158.dp))
+    Text(text = " ", style = MaterialTheme.typography.labelMedium.copy(color = Color.Transparent))
+    Spacer(modifier = Modifier.height(8.dp))
   }
 }
 
