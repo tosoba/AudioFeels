@@ -13,22 +13,21 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trm.audiofeels.core.base.model.LoadableState
@@ -42,7 +41,6 @@ import com.trm.audiofeels.core.ui.resources.minutes_ago
 import com.trm.audiofeels.core.ui.resources.moments_ago
 import com.trm.audiofeels.core.ui.resources.one_hour_ago
 import com.trm.audiofeels.core.ui.resources.one_minute_ago
-import com.trm.audiofeels.core.ui.resources.retry
 import com.trm.audiofeels.core.ui.resources.trending
 import com.trm.audiofeels.core.ui.resources.yesterday
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
@@ -63,116 +61,102 @@ fun DiscoverPage(
 
   Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
     // TODO: large retry view
+    DiscoverListHeadline(
+      text = stringResource(Res.string.carry_on),
+      list = carryOnPlaylists,
+      modifier = Modifier.padding(top = 12.dp, start = 12.dp, end = 12.dp),
+    )
 
-    val carryOnVisible =
-      carryOnPlaylists is LoadableState.Loading ||
-        (carryOnPlaylists is LoadableState.Idle && !carryOnPlaylists.valueOrNull.isNullOrEmpty())
+    DiscoverListLazyRow(list = carryOnPlaylists) { index, lastIndex, carryOn ->
+      CarryOnPlaylistItem(
+        carryOn = carryOn,
+        modifier =
+          Modifier.width(150.dp)
+            .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = lastIndex))
+            .animateItem(),
+        onClick = onCarryPlaylistClick,
+      )
+    }
 
-    Crossfade(carryOnPlaylists) {
-      when (carryOnPlaylists) {
-        is LoadableState.Loading -> {
-          Box(
-            Modifier.padding(top = 12.dp, start = 12.dp, end = 12.dp)
-              .shimmerBackground(enabled = true, shape = RoundedCornerShape(6.dp))
-          ) {
-            Text(
-              text = stringResource(Res.string.carry_on),
-              style = MaterialTheme.typography.headlineSmall.copy(color = Color.Transparent),
+    DiscoverListHeadline(
+      text = stringResource(Res.string.trending),
+      list = carryOnPlaylists,
+      modifier = Modifier.padding(horizontal = 12.dp),
+    )
+
+    DiscoverListLazyRow(list = trendingPlaylists) { index, lastIndex, playlist ->
+      PlaylistItem(
+        playlist = playlist,
+        modifier =
+          Modifier.width(150.dp)
+            .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = lastIndex))
+            .animateItem(),
+        onClick = onTrendingPlaylistClick,
+      )
+    }
+  }
+}
+
+@Composable
+private fun <T : Any> DiscoverListHeadline(
+  text: String,
+  list: LoadableState<List<T>>,
+  modifier: Modifier = Modifier,
+  shimmerShape: Shape = RoundedCornerShape(6.dp),
+) {
+  Crossfade(list) {
+    when (it) {
+      is LoadableState.Loading -> {
+        Box(modifier.shimmerBackground(enabled = true, shape = shimmerShape)) {
+          Text(
+            text = text,
+            style = MaterialTheme.typography.headlineSmall.copy(color = Color.Transparent),
+          )
+        }
+      }
+      is LoadableState.Idle -> {
+        if (!it.valueOrNull.isNullOrEmpty()) {
+          Text(text = text, style = MaterialTheme.typography.headlineSmall, modifier = modifier)
+        }
+      }
+      is LoadableState.Error -> {}
+    }
+  }
+}
+
+@Composable
+private fun <T : Any> DiscoverListLazyRow(
+  list: LoadableState<List<T>>,
+  item: @Composable LazyItemScope.(Int, Int, T) -> Unit,
+) {
+  AnimatedVisibility(visible = list.discoverListVisible()) {
+    LazyRow(modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(12.dp)) {
+      when (list) {
+        LoadableState.Loading -> {
+          val count = 50
+          items(count) { index ->
+            Box(
+              modifier =
+                // TODO: extract placeholder composable for better sizing (consistent with
+                // PlaylistItem which is not a square)
+                Modifier.size(150.dp)
+                  .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = count - 1))
+                  .shimmerBackground(enabled = true, shape = RoundedCornerShape(12.dp))
+                  .animateItem()
             )
           }
         }
         is LoadableState.Idle -> {
-          if (!carryOnPlaylists.valueOrNull.isNullOrEmpty()) {
-            Text(
-              text = stringResource(Res.string.carry_on),
-              style = MaterialTheme.typography.headlineSmall,
-              modifier = Modifier.padding(top = 12.dp, start = 12.dp, end = 12.dp),
-            )
-          }
+          itemsIndexed(list.value) { index, carryOn -> item(index, list.value.lastIndex, carryOn) }
         }
         is LoadableState.Error -> {}
       }
     }
-
-    AnimatedVisibility(visible = carryOnVisible) {
-      LazyRow(modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(12.dp)) {
-        when (val carryOns = carryOnPlaylists) {
-          LoadableState.Loading -> {
-            val count = 50
-            items(count) { index ->
-              Box(
-                modifier =
-                  // TODO: extract placeholder composable for better sizing (consistent with
-                  // PlaylistItem which is not a square)
-                  Modifier.size(150.dp)
-                    .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = count - 1))
-                    .shimmerBackground(enabled = true, shape = RoundedCornerShape(12.dp))
-                    .animateItem()
-              )
-            }
-          }
-          is LoadableState.Idle -> {
-            itemsIndexed(carryOns.value) { index, carryOn ->
-              CarryOnPlaylistItem(
-                carryOn = carryOn,
-                modifier =
-                  Modifier.width(150.dp)
-                    .padding(
-                      playlistItemPaddingValues(
-                        itemIndex = index,
-                        lastIndex = carryOns.value.lastIndex,
-                      )
-                    )
-                    .animateItem(),
-                onClick = onCarryPlaylistClick,
-              )
-            }
-          }
-          is LoadableState.Error -> {}
-        }
-      }
-    }
-
-    // TODO: use placeholder items
-    Text(
-      text = stringResource(Res.string.trending),
-      style = MaterialTheme.typography.headlineSmall,
-      modifier = Modifier.padding(start = 12.dp, end = 12.dp),
-    )
-    Crossfade(trendingPlaylists) {
-      when (it) {
-        LoadableState.Loading -> {
-          LoadingIndicatorBox()
-        }
-        is LoadableState.Idle -> {
-          LazyRow(modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(all = 12.dp)) {
-            itemsIndexed(it.value) { index, playlist ->
-              PlaylistItem(
-                playlist = playlist,
-                modifier =
-                  Modifier.width(150.dp)
-                    .padding(
-                      playlistItemPaddingValues(itemIndex = index, lastIndex = it.value.lastIndex)
-                    ),
-                onClick = onTrendingPlaylistClick,
-              )
-            }
-          }
-        }
-        is LoadableState.Error -> {
-          Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxWidth().height(150.dp),
-          ) {
-            Button(onClick = viewModel.trendingPlaylists::restart) {
-              Text(stringResource(Res.string.retry))
-            }
-          }
-        }
-      }
-    }
   }
 }
+
+private fun <T : Any> LoadableState<List<T>>.discoverListVisible(): Boolean =
+  this is LoadableState.Loading || (this is LoadableState.Idle && !valueOrNull.isNullOrEmpty())
 
 @Composable
 private fun PlaylistItem(
@@ -266,10 +250,3 @@ private fun playlistItemPaddingValues(itemIndex: Int, lastIndex: Int): PaddingVa
     start = if (itemIndex > 0) 6.dp else 0.dp,
     end = if (itemIndex < lastIndex) 6.dp else 0.dp,
   )
-
-@Composable
-private fun LoadingIndicatorBox() {
-  Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth().height(150.dp)) {
-    CircularProgressIndicator()
-  }
-}
