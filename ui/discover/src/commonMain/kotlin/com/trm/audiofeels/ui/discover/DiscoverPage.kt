@@ -5,6 +5,7 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -67,7 +68,19 @@ fun DiscoverPage(
       modifier = Modifier.padding(top = 12.dp, start = 12.dp, end = 12.dp),
     )
 
-    DiscoverListLazyRow(list = carryOnPlaylists) { index, lastIndex, carryOn ->
+    DiscoverListLazyRow(
+      list = carryOnPlaylists,
+      placeholderItemContent = {
+        Spacer(modifier = Modifier.height(158.dp))
+        Text(
+          text = "",
+          style = MaterialTheme.typography.labelMedium.copy(color = Color.Transparent),
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(text = "", style = MaterialTheme.typography.labelSmall.copy(color = Color.Transparent))
+        Spacer(modifier = Modifier.height(8.dp))
+      },
+    ) { index, lastIndex, carryOn ->
       CarryOnPlaylistItem(
         carryOn = carryOn,
         modifier =
@@ -84,7 +97,17 @@ fun DiscoverPage(
       modifier = Modifier.padding(horizontal = 12.dp),
     )
 
-    DiscoverListLazyRow(list = trendingPlaylists) { index, lastIndex, playlist ->
+    DiscoverListLazyRow(
+      list = trendingPlaylists,
+      placeholderItemContent = {
+        Spacer(modifier = Modifier.height(158.dp))
+        Text(
+          text = "",
+          style = MaterialTheme.typography.labelMedium.copy(color = Color.Transparent),
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+      },
+    ) { index, lastIndex, playlist ->
       PlaylistItem(
         playlist = playlist,
         modifier =
@@ -127,6 +150,7 @@ private fun <T : Any> DiscoverListHeadline(
 @Composable
 private fun <T : Any> DiscoverListLazyRow(
   list: LoadableState<List<T>>,
+  placeholderItemContent: @Composable ColumnScope.() -> Unit,
   item: @Composable LazyItemScope.(Int, Int, T) -> Unit,
 ) {
   AnimatedVisibility(visible = list.discoverListVisible()) {
@@ -135,7 +159,11 @@ private fun <T : Any> DiscoverListLazyRow(
         LoadableState.Loading -> {
           val count = 50
           items(count) { index ->
-            DiscoverListPlaceholderItem(index = index, lastIndex = count - 1)
+            DiscoverListPlaceholderItem(
+              index = index,
+              lastIndex = count - 1,
+              content = placeholderItemContent,
+            )
           }
         }
         is LoadableState.Idle -> {
@@ -148,18 +176,19 @@ private fun <T : Any> DiscoverListLazyRow(
 }
 
 @Composable
-private fun LazyItemScope.DiscoverListPlaceholderItem(index: Int, lastIndex: Int) {
-  Box(
+private fun LazyItemScope.DiscoverListPlaceholderItem(
+  index: Int,
+  lastIndex: Int,
+  content: @Composable ColumnScope.() -> Unit,
+) {
+  Column(
     modifier =
       Modifier.width(150.dp)
         .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = lastIndex))
         .shimmerBackground(enabled = true, shape = RoundedCornerShape(12.dp))
-        .animateItem()
-  ) {
-    Spacer(modifier = Modifier.height(158.dp))
-    Text(text = " ", style = MaterialTheme.typography.labelMedium.copy(color = Color.Transparent))
-    Spacer(modifier = Modifier.height(8.dp))
-  }
+        .animateItem(),
+    content = content,
+  )
 }
 
 private fun <T : Any> LoadableState<List<T>>.discoverListVisible(): Boolean =
