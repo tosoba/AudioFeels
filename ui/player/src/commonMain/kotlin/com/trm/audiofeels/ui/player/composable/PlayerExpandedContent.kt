@@ -2,16 +2,23 @@ package com.trm.audiofeels.ui.player.composable
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.Shuffle
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,9 +40,8 @@ fun PlayerExpandedContent(viewState: PlayerViewState, modifier: Modifier = Modif
     Crossfade(viewState::class) {
       when (viewState) {
         is PlayerViewState.Invisible,
-        is PlayerViewState.Error, // TODO: retry
         is PlayerViewState.Loading -> {
-          CircularProgressIndicator()
+          CircularProgressIndicator() // TODO: use HorizontalPager with shimmer items for loading
         }
         is PlayerViewState.Playback -> {
           val pagerState =
@@ -47,7 +53,7 @@ fun PlayerExpandedContent(viewState: PlayerViewState, modifier: Modifier = Modif
             viewState.trackActions.playAtIndex(pagerState.settledPage)
           }
 
-          BoxWithConstraints(modifier = Modifier.weight(1f)) {
+          BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             HorizontalPager(
               state = pagerState,
               contentPadding = PaddingValues(horizontal = 64.dp, vertical = 16.dp),
@@ -85,6 +91,25 @@ fun PlayerExpandedContent(viewState: PlayerViewState, modifier: Modifier = Modif
             }
           }
         }
+        is PlayerViewState.Error -> {
+          // TODO: retry
+        }
+      }
+    }
+
+    Row(
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.SpaceEvenly,
+      modifier = Modifier.fillMaxWidth().weight(1f),
+    ) {
+      IconButton(onClick = {}) {
+        Icon(Icons.Outlined.Shuffle, contentDescription = "Shuffle remaining tracks")
+      }
+
+      PlayerPrimaryControl(viewState.primaryControlState)
+
+      IconButton(onClick = {}) {
+        Icon(Icons.Outlined.Favorite, contentDescription = "Toggle favourite")
       }
     }
   }

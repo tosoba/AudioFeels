@@ -1,7 +1,6 @@
 package com.trm.audiofeels.ui.player.composable
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
@@ -20,10 +19,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.SkipNext
 import androidx.compose.material.icons.outlined.SkipPrevious
 import androidx.compose.material3.BottomSheetDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SwipeToDismissBox
@@ -131,7 +128,7 @@ internal fun PlayerCollapsedContent(viewState: PlayerViewState, modifier: Modifi
           }
         }
 
-        PrimaryControl(controlState = viewState.primaryControlState)
+        PlayerPrimaryControl(controlState = viewState.primaryControlState)
       }
     }
 
@@ -175,22 +172,6 @@ private fun rememberPlayerTrackActionsSwipeState(
       confirmValueChange = confirmValueChange,
       positionalThreshold = positionalThreshold,
     )
-  }
-}
-
-@Composable
-private fun PrimaryControl(controlState: PlayerViewState.PrimaryControlState) {
-  Crossfade(controlState) {
-    when (it) {
-      PlayerViewState.PrimaryControlState.Loading -> {
-        CircularProgressIndicator()
-      }
-      is PlayerViewState.PrimaryControlState.Action -> {
-        IconButton(onClick = it.action) {
-          Icon(imageVector = it.imageVector, contentDescription = it.contentDescription)
-        }
-      }
-    }
   }
 }
 
