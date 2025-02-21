@@ -40,10 +40,13 @@ import com.trm.audiofeels.core.ui.compose.AsyncShimmerImage
 import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.artwork_placeholder
+import com.trm.audiofeels.core.ui.resources.play_next_track
+import com.trm.audiofeels.core.ui.resources.play_previous_track
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.model.Track
 import com.trm.audiofeels.ui.player.PlayerViewState
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,10 +69,13 @@ internal fun PlayerCollapsedContent(viewState: PlayerViewState, modifier: Modifi
         ) {
           Icon(
             imageVector = Icons.Outlined.SkipPrevious,
-            contentDescription = "Play previous track",
+            contentDescription = stringResource(Res.string.play_previous_track),
           )
           Spacer(modifier = Modifier.weight(1f))
-          Icon(imageVector = Icons.Outlined.SkipNext, contentDescription = "Play next track")
+          Icon(
+            imageVector = Icons.Outlined.SkipNext,
+            contentDescription = stringResource(Res.string.play_next_track),
+          )
         }
       },
     ) {

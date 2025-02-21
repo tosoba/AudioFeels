@@ -1,5 +1,6 @@
 package com.trm.audiofeels.ui.player.composable
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,8 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Favorite
-import androidx.compose.material.icons.outlined.Shuffle
+import androidx.compose.material.icons.outlined.SkipNext
+import androidx.compose.material.icons.outlined.SkipPrevious
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,8 +33,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import com.trm.audiofeels.core.ui.compose.AsyncShimmerImage
 import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
+import com.trm.audiofeels.core.ui.resources.Res
+import com.trm.audiofeels.core.ui.resources.play_next_track
+import com.trm.audiofeels.core.ui.resources.play_previous_track
 import com.trm.audiofeels.ui.player.PlayerViewState
 import kotlin.math.absoluteValue
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun PlayerExpandedContent(viewState: PlayerViewState, modifier: Modifier = Modifier) {
@@ -45,21 +50,36 @@ fun PlayerExpandedContent(viewState: PlayerViewState, modifier: Modifier = Modif
       is PlayerViewState.Error -> {}
     }
 
-    // TODO: retry control on playback error
+    // TODO: some large retry control on playback error
 
     Row(
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.SpaceEvenly,
       modifier = Modifier.fillMaxWidth().weight(1f),
     ) {
-      IconButton(onClick = {}) {
-        Icon(Icons.Outlined.Shuffle, contentDescription = "Shuffle remaining tracks")
+      AnimatedVisibility(viewState is PlayerViewState.Playback) {
+        IconButton(
+          onClick = { (viewState as? PlayerViewState.Playback)?.trackActions?.playPrevious() }
+        ) {
+          Icon(
+            imageVector = Icons.Outlined.SkipPrevious,
+            contentDescription = stringResource(Res.string.play_previous_track),
+          )
+        }
       }
 
+      // TODO: custom button for PlayerViewState.PrimaryControlState.Action state that stands out
       PlayerPrimaryControl(viewState.primaryControlState)
 
-      IconButton(onClick = {}) {
-        Icon(Icons.Outlined.Favorite, contentDescription = "Toggle favourite")
+      AnimatedVisibility(viewState is PlayerViewState.Playback) {
+        IconButton(
+          onClick = { (viewState as? PlayerViewState.Playback)?.trackActions?.playNext() }
+        ) {
+          Icon(
+            imageVector = Icons.Outlined.SkipNext,
+            contentDescription = stringResource(Res.string.play_next_track),
+          )
+        }
       }
     }
   }
@@ -100,6 +120,9 @@ private fun PlayerTracksPager(viewState: PlayerViewState.Playback) {
     )
   LaunchedEffect(pagerState.settledPage) {
     viewState.trackActions.playAtIndex(pagerState.settledPage)
+  }
+  LaunchedEffect(viewState.currentTrackIndex) {
+    pagerState.animateScrollToPage(viewState.currentTrackIndex)
   }
 
   HorizontalPager(

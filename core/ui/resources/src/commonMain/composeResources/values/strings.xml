@@ -5,6 +5,8 @@
     <string name="carry_on">Carry on</string>
     <string name="trending">Trending</string>
     <string name="retry">Retry</string>
+    <string name="play_previous_track">Play previous track</string>
+    <string name="play_next_track">Play next track</string>
 
     <string name="days_ago">%d days ago</string>
     <string name="yesterday">yesterday</string>
