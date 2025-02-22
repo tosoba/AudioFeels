@@ -56,14 +56,24 @@ class PlayerViewModel(
       .distinctUntilChangedBy { playback -> playback?.playlist?.id }
       .flatMapLatest { playback ->
         playback?.let(::playerViewStateFlow)
-          ?: flowOf(PlayerViewState.Invisible(playerViewPlaybackActions())).onEach {
-            playerConnection.reset()
-          }
+          ?: flowOf(
+              PlayerViewState.Invisible(
+                startPlaylistPlayback = StartPlaylistPlayback(),
+                startCarryOnPlaylistPlayback = StartCarryOnPlaylistPlayback(),
+                cancelPlayback = ::cancelPlayback,
+              )
+            )
+            .onEach { playerConnection.reset() }
       }
       .restartableStateIn(
         scope = viewModelScope,
         started = SharingStarted.Lazily,
-        initialValue = PlayerViewState.Invisible(playerViewPlaybackActions()),
+        initialValue =
+          PlayerViewState.Invisible(
+            startPlaylistPlayback = StartPlaylistPlayback(),
+            startCarryOnPlaylistPlayback = StartCarryOnPlaylistPlayback(),
+            cancelPlayback = ::cancelPlayback,
+          ),
       )
 
   private fun playerViewStateFlow(playback: PlaylistPlayback): Flow<PlayerViewState> =
@@ -89,7 +99,9 @@ class PlayerViewModel(
         flowOf(
           PlayerViewState.Loading(
             playlist = playback.playlist,
-            playbackActions = playerViewPlaybackActions(),
+            startPlaylistPlayback = StartPlaylistPlayback(),
+            startCarryOnPlaylistPlayback = StartCarryOnPlaylistPlayback(),
+            cancelPlayback = ::cancelPlayback,
           )
         )
       }
@@ -100,7 +112,9 @@ class PlayerViewModel(
         flowOf(
           PlayerViewState.Error(
             playlist = playback.playlist,
-            playbackActions = playerViewPlaybackActions(),
+            startPlaylistPlayback = StartPlaylistPlayback(),
+            startCarryOnPlaylistPlayback = StartCarryOnPlaylistPlayback(),
+            cancelPlayback = ::cancelPlayback,
             primaryControlState = retryAction(playback.playlist),
           )
         )
@@ -156,10 +170,14 @@ class PlayerViewModel(
       currentTrackProgress = currentTrackProgress(playerState, currentTrackPositionMs),
       currentTrackImageBitmap = currentTrackImageBitmap,
       primaryControlState = primaryControlState(playback.playlist, playerState, togglePlayback),
-      playbackActions = playerViewPlaybackActions(playback.playlist, togglePlayback),
+      startPlaylistPlayback = StartPlaylistPlayback(playback.playlist, togglePlayback),
+      startCarryOnPlaylistPlayback =
+        StartCarryOnPlaylistPlayback(playback.playlist, togglePlayback),
+      cancelPlayback = ::cancelPlayback,
       playPreviousTrack =
         PlayPreviousTrackAction(PlaybackActionArguments(playerState, playerInput, playback)),
-      playNextTrack = PlayNextTrackAction(PlaybackActionArguments(playerState, playerInput, playback)),
+      playNextTrack =
+        PlayNextTrackAction(PlaybackActionArguments(playerState, playerInput, playback)),
       playTrackAtIndex =
         PlayAtIndexTrackAction(PlaybackActionArguments(playerState, playerInput, playback)),
     )
@@ -228,56 +246,6 @@ class PlayerViewModel(
       }
     }.roundTo(3)
 
-  private fun playerViewPlaybackActions(
-    currentPlaylist: Playlist,
-    togglePlayback: TogglePlayback,
-  ): PlayerViewPlaybackActions =
-    object : PlayerViewPlaybackActions {
-      override fun start(playlist: Playlist) {
-        if (playlist != currentPlaylist) {
-          startNewPlaylistPlayback(playlist = playlist, carryOn = false)
-        } else {
-          togglePlayback()
-        }
-      }
-
-      override fun startCarryOn(carryOnPlaylist: CarryOnPlaylist) {
-        if (carryOnPlaylist.playlist != currentPlaylist) {
-          startNewPlaylistPlayback(playlist = carryOnPlaylist.playlist, carryOn = true)
-        } else {
-          togglePlayback()
-        }
-      }
-
-      override fun cancel() {
-        cancelPlayback()
-      }
-    }
-
-  private fun playerViewPlaybackActions(): PlayerViewPlaybackActions =
-    object : PlayerViewPlaybackActions {
-      override fun start(playlist: Playlist) {
-        startNewPlaylistPlayback(playlist = playlist, carryOn = false)
-      }
-
-      override fun startCarryOn(carryOnPlaylist: CarryOnPlaylist) {
-        startNewPlaylistPlayback(playlist = carryOnPlaylist.playlist, carryOn = true)
-      }
-
-      override fun cancel() {
-        cancelPlayback()
-      }
-    }
-
-  private fun startNewPlaylistPlayback(playlist: Playlist, carryOn: Boolean): Job =
-    viewModelScope.launch {
-      playlistsRepository.setNewCurrentPlaylist(playlist = playlist, carryOn = carryOn)
-    }
-
-  private fun cancelPlayback() {
-    viewModelScope.launch { playlistsRepository.clearCurrentPlaylist() }
-  }
-
   private fun onPlayerViewStatePlayback(playbackState: PlayerViewState.Playback) {
     Napier.d(tag = "PLAYER_STATE", message = playbackState.playerState.toString())
     when (val playerState = playbackState.playerState) {
@@ -335,6 +303,69 @@ class PlayerViewModel(
         playerState.previousEnqueuedState?.currentTrackIndex ?: playback.currentTrackIndex
       }
     }
+
+  private inner class StartPlaylistPlayback(
+    private val currentPlaylist: Playlist? = null,
+    private val togglePlayback: TogglePlayback? = null,
+  ) : (Playlist) -> Unit {
+    override fun invoke(playlist: Playlist) {
+      if (playlist != currentPlaylist) {
+        startNewPlaylistPlayback(playlist = playlist, carryOn = false)
+      } else {
+        togglePlayback?.invoke()
+      }
+    }
+
+    override fun equals(other: Any?): Boolean {
+      if (this === other) return true
+      if (other !is StartPlaylistPlayback) return false
+      if (currentPlaylist != other.currentPlaylist) return false
+      if (togglePlayback != other.togglePlayback) return false
+      return true
+    }
+
+    override fun hashCode(): Int {
+      var result = currentPlaylist?.hashCode() ?: 0
+      result = 31 * result + togglePlayback.hashCode()
+      return result
+    }
+  }
+
+  private inner class StartCarryOnPlaylistPlayback(
+    private val currentPlaylist: Playlist? = null,
+    private val togglePlayback: TogglePlayback? = null,
+  ) : (CarryOnPlaylist) -> Unit {
+    override fun invoke(carryOnPlaylist: CarryOnPlaylist) {
+      if (carryOnPlaylist.playlist != currentPlaylist) {
+        startNewPlaylistPlayback(playlist = carryOnPlaylist.playlist, carryOn = false)
+      } else {
+        togglePlayback?.invoke()
+      }
+    }
+
+    override fun equals(other: Any?): Boolean {
+      if (this === other) return true
+      if (other !is StartCarryOnPlaylistPlayback) return false
+      if (currentPlaylist != other.currentPlaylist) return false
+      if (togglePlayback != other.togglePlayback) return false
+      return true
+    }
+
+    override fun hashCode(): Int {
+      var result = currentPlaylist?.hashCode() ?: 0
+      result = 31 * result + togglePlayback.hashCode()
+      return result
+    }
+  }
+
+  private fun startNewPlaylistPlayback(playlist: Playlist, carryOn: Boolean): Job =
+    viewModelScope.launch {
+      playlistsRepository.setNewCurrentPlaylist(playlist = playlist, carryOn = carryOn)
+    }
+
+  private fun cancelPlayback() {
+    viewModelScope.launch { playlistsRepository.clearCurrentPlaylist() }
+  }
 
   private inner class TogglePlayback(private val arguments: PlaybackActionArguments) : () -> Unit {
     override fun invoke() {

@@ -3,6 +3,7 @@ package com.trm.audiofeels.ui.player
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.trm.audiofeels.core.base.model.LoadableState
+import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.model.Track
@@ -13,7 +14,10 @@ sealed interface PlayerViewState {
 
   val currentTrackImageBitmap: LoadableState<ImageBitmap?>
 
-  val playbackActions: PlayerViewPlaybackActions
+  val startPlaylistPlayback: (Playlist) -> Unit
+  val startCarryOnPlaylistPlayback: (CarryOnPlaylist) -> Unit
+  val cancelPlayback: () -> Unit
+
   val primaryControlState: PrimaryControlState
 
   sealed interface PrimaryControlState {
@@ -26,7 +30,11 @@ sealed interface PlayerViewState {
     ) : PrimaryControlState
   }
 
-  data class Invisible(override val playbackActions: PlayerViewPlaybackActions) : PlayerViewState {
+  data class Invisible(
+    override val startPlaylistPlayback: (Playlist) -> Unit,
+    override val startCarryOnPlaylistPlayback: (CarryOnPlaylist) -> Unit,
+    override val cancelPlayback: () -> Unit
+  ) : PlayerViewState {
     override val currentTrackImageBitmap: LoadableState.Idle<ImageBitmap?> =
       LoadableState.Idle(null)
 
@@ -35,7 +43,9 @@ sealed interface PlayerViewState {
 
   data class Loading(
     val playlist: Playlist,
-    override val playbackActions: PlayerViewPlaybackActions,
+    override val startPlaylistPlayback: (Playlist) -> Unit,
+    override val startCarryOnPlaylistPlayback: (CarryOnPlaylist) -> Unit,
+    override val cancelPlayback: () -> Unit
   ) : PlayerViewState {
     override val currentTrackImageBitmap: LoadableState.Idle<ImageBitmap?> =
       LoadableState.Idle(null)
@@ -51,7 +61,9 @@ sealed interface PlayerViewState {
     val currentTrackProgress: Double,
     override val currentTrackImageBitmap: LoadableState<ImageBitmap?>,
     override val primaryControlState: PrimaryControlState,
-    override val playbackActions: PlayerViewPlaybackActions,
+    override val startPlaylistPlayback: (Playlist) -> Unit,
+    override val startCarryOnPlaylistPlayback: (CarryOnPlaylist) -> Unit,
+    override val cancelPlayback: () -> Unit,
     val playPreviousTrack: () -> Unit,
     val playNextTrack: () -> Unit,
     val playTrackAtIndex: (Int) -> Unit,
@@ -71,7 +83,9 @@ sealed interface PlayerViewState {
   data class Error(
     val playlist: Playlist,
     override val primaryControlState: PrimaryControlState.Action,
-    override val playbackActions: PlayerViewPlaybackActions,
+    override val startPlaylistPlayback: (Playlist) -> Unit,
+    override val startCarryOnPlaylistPlayback: (CarryOnPlaylist) -> Unit,
+    override val cancelPlayback: () -> Unit
   ) : PlayerViewState {
     override val currentTrackImageBitmap: LoadableState.Idle<ImageBitmap?> =
       LoadableState.Idle(null)

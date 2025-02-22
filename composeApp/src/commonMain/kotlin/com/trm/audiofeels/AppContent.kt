@@ -260,8 +260,8 @@ private fun AppBottomSheetScaffold(
             navController = navController,
             discoverViewModelFactory = applicationComponent.discoverViewModelFactory,
             modifier = Modifier.fillMaxSize(),
-            onCarryOnPlaylistClick = playerViewState.playbackActions::startCarryOn,
-            onTrendingPlaylistClick = playerViewState.playbackActions::start,
+            onCarryOnPlaylistClick = playerViewState.startCarryOnPlaylistPlayback,
+            onTrendingPlaylistClick = playerViewState.startPlaylistPlayback,
           )
         }
       },
@@ -281,7 +281,7 @@ private fun AppTopAppBar(viewState: PlayerViewState) {
     title = { Text("AudioFeels") },
     actions = {
       AnimatedVisibility(viewState.playerVisible) {
-        IconButton(onClick = viewState.playbackActions::cancel) {
+        IconButton(onClick = viewState.cancelPlayback) {
           Icon(Icons.Outlined.Close, contentDescription = "Cancel playback")
         }
       }
