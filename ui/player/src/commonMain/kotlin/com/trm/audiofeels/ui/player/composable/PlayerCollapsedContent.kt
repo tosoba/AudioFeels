@@ -53,8 +53,13 @@ import org.jetbrains.compose.resources.vectorResource
 @Composable
 internal fun PlayerCollapsedContent(viewState: PlayerViewState, modifier: Modifier = Modifier) {
   Box(modifier = modifier) {
+    val playback = viewState as? PlayerViewState.Playback
     SwipeToDismissBox(
-      state = rememberPlayerTrackActionsSwipeState(viewState),
+      state =
+        rememberPlayerSwipeState(
+          onStartToEndSwipe = playback?.playPrevious,
+          onEndToStartSwipe = playback?.playNext,
+        ),
       gesturesEnabled = viewState is PlayerViewState.Playback,
       enableDismissFromStartToEnd =
         viewState is PlayerViewState.Playback && viewState.canPlayPrevious,
@@ -148,23 +153,25 @@ internal fun PlayerCollapsedContent(viewState: PlayerViewState, modifier: Modifi
 }
 
 @Composable
-private fun rememberPlayerTrackActionsSwipeState(
-  viewState: PlayerViewState
+private fun rememberPlayerSwipeState(
+  onStartToEndSwipe: (() -> Unit)?,
+  onEndToStartSwipe: (() -> Unit)?,
 ): SwipeToDismissBoxState {
   val density = LocalDensity.current
   val positionalThreshold = SwipeToDismissBoxDefaults.positionalThreshold
   val confirmValueChange = { value: SwipeToDismissBoxValue ->
-    if (viewState is PlayerViewState.Playback) {
+    if (onStartToEndSwipe != null && onEndToStartSwipe != null) {
       when (value) {
-        SwipeToDismissBoxValue.StartToEnd -> viewState.trackActions.playPrevious()
-        SwipeToDismissBoxValue.EndToStart -> viewState.trackActions.playNext()
+        SwipeToDismissBoxValue.StartToEnd -> onStartToEndSwipe()
+        SwipeToDismissBoxValue.EndToStart -> onEndToStartSwipe()
         SwipeToDismissBoxValue.Settled -> {}
       }
     }
     false
   }
   return rememberSaveable(
-    viewState,
+    onStartToEndSwipe,
+    onEndToStartSwipe,
     saver =
       SwipeToDismissBoxState.Saver(
         confirmValueChange = confirmValueChange,

@@ -52,7 +52,9 @@ sealed interface PlayerViewState {
     override val currentTrackImageBitmap: LoadableState<ImageBitmap?>,
     override val primaryControlState: PrimaryControlState,
     override val playbackActions: PlayerViewPlaybackActions,
-    val trackActions: PlayerViewTrackActions,
+    val playPrevious: () -> Unit,
+    val playNext: () -> Unit,
+    val playAtIndex: (Int) -> Unit
   ) : PlayerViewState {
     val currentTrack: Track?
       get() =

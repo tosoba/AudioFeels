@@ -147,7 +147,7 @@ class PlayerViewModel(
     currentTrackPositionMs: Long,
     currentTrackImageBitmap: LoadableState<ImageBitmap?>,
   ): PlayerViewState.Playback {
-    val togglePlay = TogglePlay(playerState, playerInput, playback)
+    val togglePlay = TogglePlay(PlaybackActionArguments(playerState, playerInput, playback))
     return PlayerViewState.Playback(
       playlist = playback.playlist,
       playerState = playerState,
@@ -157,7 +157,10 @@ class PlayerViewModel(
       currentTrackImageBitmap = currentTrackImageBitmap,
       primaryControlState = primaryControlState(playback.playlist, playerState, togglePlay),
       playbackActions = playerViewPlaybackActions(playback.playlist, togglePlay),
-      trackActions = playerViewTrackActions(playerState, playerInput, playback),
+      playPrevious =
+        PlayPreviousAction(PlaybackActionArguments(playerState, playerInput, playback)),
+      playNext = PlayNextAction(PlaybackActionArguments(playerState, playerInput, playback)),
+      playAtIndex = PlayAtIndexAction(PlaybackActionArguments(playerState, playerInput, playback)),
     )
   }
 
@@ -274,112 +277,6 @@ class PlayerViewModel(
     viewModelScope.launch { playlistsRepository.clearCurrentPlaylist() }
   }
 
-  private inner class TogglePlay(
-    private val playerState: PlayerState,
-    private val playerInput: PlayerInput,
-    private val playback: PlaylistPlayback,
-  ) : () -> Unit {
-    override fun invoke() {
-      when (playerState) {
-        PlayerState.Idle -> {
-          playerConnection.enqueue(
-            input = playerInput,
-            startTrackIndex = playback.currentTrackIndex,
-            startPositionMs = playback.currentTrackPositionMs,
-          )
-        }
-        is PlayerState.Enqueued -> {
-          if (playerState.isPlaying) playerConnection.pause() else playerConnection.play()
-        }
-        is PlayerState.Error -> {
-          return
-        }
-      }
-    }
-
-    override fun equals(other: Any?): Boolean {
-      if (this === other) return true
-      if (other !is TogglePlay) return false
-      if (playerState != other.playerState) return false
-      if (playerInput != other.playerInput) return false
-      if (playback != other.playback) return false
-      return true
-    }
-
-    override fun hashCode(): Int {
-      var result = playerState.hashCode()
-      result = 31 * result + playerInput.hashCode()
-      result = 31 * result + playback.hashCode()
-      return result
-    }
-  }
-
-  private fun playerViewTrackActions(
-    playerState: PlayerState,
-    playerInput: PlayerInput,
-    playback: PlaylistPlayback,
-  ): PlayerViewTrackActions =
-    object : PlayerViewTrackActions {
-      override fun playPrevious() {
-        when (playerState) {
-          PlayerState.Idle -> {
-            playerConnection.enqueue(
-              input = playerInput,
-              startTrackIndex = (playback.currentTrackIndex - 1).coerceAtLeast(0),
-              startPositionMs = 0L,
-            )
-          }
-          is PlayerState.Enqueued -> {
-            playerConnection.playPrevious()
-          }
-          is PlayerState.Error -> {
-            return
-          }
-        }
-      }
-
-      override fun playNext() {
-        when (playerState) {
-          PlayerState.Idle -> {
-            playerConnection.enqueue(
-              input = playerInput,
-              startTrackIndex =
-                (playback.currentTrackIndex + 1).coerceAtMost(playerInput.tracks.lastIndex),
-              startPositionMs = 0L,
-            )
-          }
-          is PlayerState.Enqueued -> {
-            playerConnection.playNext()
-          }
-          is PlayerState.Error -> {
-            return
-          }
-        }
-      }
-
-      override fun playAtIndex(index: Int) {
-        when (playerState) {
-          PlayerState.Idle -> {
-            if (playback.currentTrackIndex != index) {
-              playerConnection.enqueue(
-                input = playerInput,
-                startTrackIndex = index.coerceIn(0..playerInput.tracks.lastIndex),
-                startPositionMs = 0L,
-              )
-            }
-          }
-          is PlayerState.Enqueued -> {
-            if (playerState.currentTrackIndex != index) {
-              playerConnection.playAtIndex(index)
-            }
-          }
-          is PlayerState.Error -> {
-            return
-          }
-        }
-      }
-    }
-
   private fun onPlayerViewStatePlayback(playbackState: PlayerViewState.Playback) {
     Napier.d(tag = "PLAYER_STATE", message = playbackState.playerState.toString())
     when (val playerState = playbackState.playerState) {
@@ -437,4 +334,137 @@ class PlayerViewModel(
         playerState.previousEnqueuedState?.currentTrackIndex ?: playback.currentTrackIndex
       }
     }
+
+  private inner class TogglePlay(private val arguments: PlaybackActionArguments) : () -> Unit {
+    override fun invoke() {
+      val (playerState, playerInput, playback) = arguments
+      when (playerState) {
+        PlayerState.Idle -> {
+          playerConnection.enqueue(
+            input = playerInput,
+            startTrackIndex = playback.currentTrackIndex,
+            startPositionMs = playback.currentTrackPositionMs,
+          )
+        }
+        is PlayerState.Enqueued -> {
+          if (playerState.isPlaying) playerConnection.pause() else playerConnection.play()
+        }
+        is PlayerState.Error -> {
+          return
+        }
+      }
+    }
+
+    override fun equals(other: Any?): Boolean =
+      when {
+        this === other -> true
+        other !is TogglePlay -> false
+        else -> arguments == other.arguments
+      }
+
+    override fun hashCode(): Int = arguments.hashCode()
+  }
+
+  private inner class PlayPreviousAction(private val arguments: PlaybackActionArguments) :
+    () -> Unit {
+    override fun invoke() {
+      val (playerState, playerInput, playback) = arguments
+      when (playerState) {
+        PlayerState.Idle -> {
+          playerConnection.enqueue(
+            input = playerInput,
+            startTrackIndex = (playback.currentTrackIndex - 1).coerceAtLeast(0),
+            startPositionMs = 0L,
+          )
+        }
+        is PlayerState.Enqueued -> {
+          playerConnection.playPrevious()
+        }
+        is PlayerState.Error -> {
+          return
+        }
+      }
+    }
+
+    override fun equals(other: Any?): Boolean =
+      when {
+        this === other -> true
+        other !is PlayPreviousAction -> false
+        else -> arguments == other.arguments
+      }
+
+    override fun hashCode(): Int = arguments.hashCode()
+  }
+
+  private inner class PlayNextAction(private val arguments: PlaybackActionArguments) : () -> Unit {
+    override fun invoke() {
+      val (playerState, playerInput, playback) = arguments
+      when (playerState) {
+        PlayerState.Idle -> {
+          playerConnection.enqueue(
+            input = playerInput,
+            startTrackIndex =
+              (playback.currentTrackIndex + 1).coerceAtMost(playerInput.tracks.lastIndex),
+            startPositionMs = 0L,
+          )
+        }
+        is PlayerState.Enqueued -> {
+          playerConnection.playPrevious()
+        }
+        is PlayerState.Error -> {
+          return
+        }
+      }
+    }
+
+    override fun equals(other: Any?): Boolean =
+      when {
+        this === other -> true
+        other !is PlayNextAction -> false
+        else -> arguments == other.arguments
+      }
+
+    override fun hashCode(): Int = arguments.hashCode()
+  }
+
+  private inner class PlayAtIndexAction(private val arguments: PlaybackActionArguments) :
+    (Int) -> Unit {
+    override fun invoke(index: Int) {
+      val (playerState, playerInput, playback) = arguments
+      when (playerState) {
+        PlayerState.Idle -> {
+          if (playback.currentTrackIndex != index) {
+            playerConnection.enqueue(
+              input = playerInput,
+              startTrackIndex = index.coerceIn(0..playerInput.tracks.lastIndex),
+              startPositionMs = 0L,
+            )
+          }
+        }
+        is PlayerState.Enqueued -> {
+          if (playerState.currentTrackIndex != index) {
+            playerConnection.playAtIndex(index)
+          }
+        }
+        is PlayerState.Error -> {
+          return
+        }
+      }
+    }
+
+    override fun equals(other: Any?): Boolean =
+      when {
+        this === other -> true
+        other !is PlayAtIndexAction -> false
+        else -> arguments == other.arguments
+      }
+
+    override fun hashCode(): Int = arguments.hashCode()
+  }
+
+  private data class PlaybackActionArguments(
+    val playerState: PlayerState,
+    val playerInput: PlayerInput,
+    val playback: PlaylistPlayback,
+  )
 }
