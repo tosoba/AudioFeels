@@ -58,7 +58,7 @@ fun PlayerExpandedContent(viewState: PlayerViewState, modifier: Modifier = Modif
       modifier = Modifier.fillMaxWidth().weight(1f),
     ) {
       AnimatedVisibility(viewState is PlayerViewState.Playback) {
-        IconButton(onClick = { (viewState as? PlayerViewState.Playback)?.playPrevious?.invoke() }) {
+        IconButton(onClick = { (viewState as? PlayerViewState.Playback)?.playPreviousTrack?.invoke() }) {
           Icon(
             imageVector = Icons.Outlined.SkipPrevious,
             contentDescription = stringResource(Res.string.play_previous_track),
@@ -70,7 +70,7 @@ fun PlayerExpandedContent(viewState: PlayerViewState, modifier: Modifier = Modif
       PlayerPrimaryControl(viewState.primaryControlState)
 
       AnimatedVisibility(viewState is PlayerViewState.Playback) {
-        IconButton(onClick = { (viewState as? PlayerViewState.Playback)?.playNext?.invoke() }) {
+        IconButton(onClick = { (viewState as? PlayerViewState.Playback)?.playNextTrack?.invoke() }) {
           Icon(
             imageVector = Icons.Outlined.SkipNext,
             contentDescription = stringResource(Res.string.play_next_track),
@@ -114,7 +114,7 @@ private fun PlayerTracksPager(viewState: PlayerViewState.Playback) {
       initialPage = viewState.currentTrackIndex,
       pageCount = viewState.tracks::size,
     )
-  LaunchedEffect(pagerState.settledPage) { viewState.playAtIndex(pagerState.settledPage) }
+  LaunchedEffect(pagerState.settledPage) { viewState.playTrackAtIndex(pagerState.settledPage) }
   LaunchedEffect(viewState.currentTrackIndex) {
     pagerState.animateScrollToPage(viewState.currentTrackIndex)
   }

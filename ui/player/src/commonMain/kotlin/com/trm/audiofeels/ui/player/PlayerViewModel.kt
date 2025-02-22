@@ -147,7 +147,7 @@ class PlayerViewModel(
     currentTrackPositionMs: Long,
     currentTrackImageBitmap: LoadableState<ImageBitmap?>,
   ): PlayerViewState.Playback {
-    val togglePlay = TogglePlay(PlaybackActionArguments(playerState, playerInput, playback))
+    val togglePlayback = TogglePlayback(PlaybackActionArguments(playerState, playerInput, playback))
     return PlayerViewState.Playback(
       playlist = playback.playlist,
       playerState = playerState,
@@ -155,23 +155,24 @@ class PlayerViewModel(
       currentTrackIndex = getCurrentTrackIndex(playerState, playback),
       currentTrackProgress = currentTrackProgress(playerState, currentTrackPositionMs),
       currentTrackImageBitmap = currentTrackImageBitmap,
-      primaryControlState = primaryControlState(playback.playlist, playerState, togglePlay),
-      playbackActions = playerViewPlaybackActions(playback.playlist, togglePlay),
-      playPrevious =
-        PlayPreviousAction(PlaybackActionArguments(playerState, playerInput, playback)),
-      playNext = PlayNextAction(PlaybackActionArguments(playerState, playerInput, playback)),
-      playAtIndex = PlayAtIndexAction(PlaybackActionArguments(playerState, playerInput, playback)),
+      primaryControlState = primaryControlState(playback.playlist, playerState, togglePlayback),
+      playbackActions = playerViewPlaybackActions(playback.playlist, togglePlayback),
+      playPreviousTrack =
+        PlayPreviousTrackAction(PlaybackActionArguments(playerState, playerInput, playback)),
+      playNextTrack = PlayNextTrackAction(PlaybackActionArguments(playerState, playerInput, playback)),
+      playTrackAtIndex =
+        PlayAtIndexTrackAction(PlaybackActionArguments(playerState, playerInput, playback)),
     )
   }
 
   private fun primaryControlState(
     playlist: Playlist,
     playerState: PlayerState,
-    togglePlay: TogglePlay,
+    togglePlayback: TogglePlayback,
   ): PlayerViewState.PrimaryControlState =
     when (playerState) {
       PlayerState.Idle -> {
-        playAction(togglePlay)
+        playAction(togglePlayback)
       }
       is PlayerState.Enqueued -> {
         when {
@@ -179,10 +180,10 @@ class PlayerViewModel(
             PlayerViewState.PrimaryControlState.Loading
           }
           playerState.isPlaying -> {
-            pauseAction(togglePlay)
+            pauseAction(togglePlayback)
           }
           else -> {
-            playAction(togglePlay)
+            playAction(togglePlayback)
           }
         }
       }
@@ -191,18 +192,18 @@ class PlayerViewModel(
       }
     }
 
-  private fun pauseAction(togglePlay: TogglePlay) =
+  private fun pauseAction(togglePlayback: TogglePlayback) =
     PlayerViewState.PrimaryControlState.Action(
       imageVector = Icons.Outlined.Pause,
       contentDescription = "Pause",
-      action = togglePlay,
+      action = togglePlayback,
     )
 
-  private fun playAction(togglePlay: TogglePlay) =
+  private fun playAction(togglePlayback: TogglePlayback) =
     PlayerViewState.PrimaryControlState.Action(
       imageVector = Icons.Outlined.PlayArrow,
       contentDescription = "Play",
-      action = togglePlay,
+      action = togglePlayback,
     )
 
   private fun retryAction(playlist: Playlist) =
@@ -229,14 +230,14 @@ class PlayerViewModel(
 
   private fun playerViewPlaybackActions(
     currentPlaylist: Playlist,
-    togglePlay: TogglePlay,
+    togglePlayback: TogglePlayback,
   ): PlayerViewPlaybackActions =
     object : PlayerViewPlaybackActions {
       override fun start(playlist: Playlist) {
         if (playlist != currentPlaylist) {
           startNewPlaylistPlayback(playlist = playlist, carryOn = false)
         } else {
-          togglePlay()
+          togglePlayback()
         }
       }
 
@@ -244,7 +245,7 @@ class PlayerViewModel(
         if (carryOnPlaylist.playlist != currentPlaylist) {
           startNewPlaylistPlayback(playlist = carryOnPlaylist.playlist, carryOn = true)
         } else {
-          togglePlay()
+          togglePlayback()
         }
       }
 
@@ -335,7 +336,7 @@ class PlayerViewModel(
       }
     }
 
-  private inner class TogglePlay(private val arguments: PlaybackActionArguments) : () -> Unit {
+  private inner class TogglePlayback(private val arguments: PlaybackActionArguments) : () -> Unit {
     override fun invoke() {
       val (playerState, playerInput, playback) = arguments
       when (playerState) {
@@ -358,14 +359,14 @@ class PlayerViewModel(
     override fun equals(other: Any?): Boolean =
       when {
         this === other -> true
-        other !is TogglePlay -> false
+        other !is TogglePlayback -> false
         else -> arguments == other.arguments
       }
 
     override fun hashCode(): Int = arguments.hashCode()
   }
 
-  private inner class PlayPreviousAction(private val arguments: PlaybackActionArguments) :
+  private inner class PlayPreviousTrackAction(private val arguments: PlaybackActionArguments) :
     () -> Unit {
     override fun invoke() {
       val (playerState, playerInput, playback) = arguments
@@ -389,14 +390,15 @@ class PlayerViewModel(
     override fun equals(other: Any?): Boolean =
       when {
         this === other -> true
-        other !is PlayPreviousAction -> false
+        other !is PlayPreviousTrackAction -> false
         else -> arguments == other.arguments
       }
 
     override fun hashCode(): Int = arguments.hashCode()
   }
 
-  private inner class PlayNextAction(private val arguments: PlaybackActionArguments) : () -> Unit {
+  private inner class PlayNextTrackAction(private val arguments: PlaybackActionArguments) :
+    () -> Unit {
     override fun invoke() {
       val (playerState, playerInput, playback) = arguments
       when (playerState) {
@@ -420,14 +422,14 @@ class PlayerViewModel(
     override fun equals(other: Any?): Boolean =
       when {
         this === other -> true
-        other !is PlayNextAction -> false
+        other !is PlayNextTrackAction -> false
         else -> arguments == other.arguments
       }
 
     override fun hashCode(): Int = arguments.hashCode()
   }
 
-  private inner class PlayAtIndexAction(private val arguments: PlaybackActionArguments) :
+  private inner class PlayAtIndexTrackAction(private val arguments: PlaybackActionArguments) :
     (Int) -> Unit {
     override fun invoke(index: Int) {
       val (playerState, playerInput, playback) = arguments
@@ -455,7 +457,7 @@ class PlayerViewModel(
     override fun equals(other: Any?): Boolean =
       when {
         this === other -> true
-        other !is PlayAtIndexAction -> false
+        other !is PlayAtIndexTrackAction -> false
         else -> arguments == other.arguments
       }
 

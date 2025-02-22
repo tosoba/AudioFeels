@@ -57,8 +57,8 @@ internal fun PlayerCollapsedContent(viewState: PlayerViewState, modifier: Modifi
     SwipeToDismissBox(
       state =
         rememberPlayerSwipeState(
-          onStartToEndSwipe = playback?.playPrevious,
-          onEndToStartSwipe = playback?.playNext,
+          onStartToEndSwipe = playback?.playPreviousTrack,
+          onEndToStartSwipe = playback?.playNextTrack,
         ),
       gesturesEnabled = viewState is PlayerViewState.Playback,
       enableDismissFromStartToEnd =
