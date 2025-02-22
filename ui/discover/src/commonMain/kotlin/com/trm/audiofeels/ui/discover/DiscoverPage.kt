@@ -72,11 +72,7 @@ fun DiscoverPage(
       list = carryOnPlaylists,
       placeholderItemContent = {
         Spacer(modifier = Modifier.height(158.dp))
-        Text(
-          text = "",
-          style = MaterialTheme.typography.labelMedium.copy(color = Color.Transparent),
-        )
-        Spacer(modifier = Modifier.height(4.dp))
+        Text(text = "", style = MaterialTheme.typography.labelLarge.copy(color = Color.Transparent))
         Text(text = "", style = MaterialTheme.typography.labelSmall.copy(color = Color.Transparent))
         Spacer(modifier = Modifier.height(8.dp))
       },
@@ -101,10 +97,7 @@ fun DiscoverPage(
       list = trendingPlaylists,
       placeholderItemContent = {
         Spacer(modifier = Modifier.height(158.dp))
-        Text(
-          text = "",
-          style = MaterialTheme.typography.labelMedium.copy(color = Color.Transparent),
-        )
+        Text(text = "", style = MaterialTheme.typography.labelLarge.copy(color = Color.Transparent))
         Spacer(modifier = Modifier.height(8.dp))
       },
     ) { index, lastIndex, playlist ->
@@ -219,7 +212,6 @@ private fun CarryOnPlaylistItem(
     PlaylistArtworkImage(carryOn.playlist)
     Spacer(modifier = Modifier.height(8.dp))
     PlaylistNameText(carryOn.playlist)
-    Spacer(modifier = Modifier.height(4.dp))
     PlaylistLastPlayedAgoText(lastPlayedAgoDuration = carryOn.lastPlayed - now)
     Spacer(modifier = Modifier.height(8.dp))
   }
@@ -242,7 +234,7 @@ private fun PlaylistArtworkImage(playlist: Playlist) {
 private fun PlaylistNameText(playlist: Playlist) {
   Text(
     text = playlist.name,
-    style = MaterialTheme.typography.labelMedium,
+    style = MaterialTheme.typography.labelLarge,
     maxLines = 1,
     modifier = Modifier.padding(horizontal = 8.dp).basicMarquee(),
   )
