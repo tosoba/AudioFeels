@@ -17,25 +17,13 @@ sealed interface PlayerViewState {
   val primaryControlState: PrimaryControlState
 
   sealed interface PrimaryControlState {
-    enum class ActionType {
-      PLAY,
-      PAUSE,
-      ENQUEUE,
-      RETRY,
-    }
-
     data object Loading : PrimaryControlState
 
     data class Action(
       val imageVector: ImageVector,
       val contentDescription: String?,
-      private val actionType: ActionType,
       val action: () -> Unit,
-    ) : PrimaryControlState {
-      override fun equals(other: Any?): Boolean = other is Action && actionType == other.actionType
-
-      override fun hashCode(): Int = actionType.hashCode()
-    }
+    ) : PrimaryControlState
   }
 
   data class Invisible(override val playbackActions: PlayerViewPlaybackActions) : PlayerViewState {

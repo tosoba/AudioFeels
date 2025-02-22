@@ -147,7 +147,7 @@ class PlayerViewModel(
     currentTrackPositionMs: Long,
     currentTrackImageBitmap: LoadableState<ImageBitmap?>,
   ): PlayerViewState.Playback {
-    val togglePlay = { togglePlay(playerState, playerInput, playback) }
+    val togglePlay = TogglePlay(playerState, playerInput, playback)
     return PlayerViewState.Playback(
       playlist = playback.playlist,
       playerState = playerState,
@@ -164,11 +164,11 @@ class PlayerViewModel(
   private fun primaryControlState(
     playlist: Playlist,
     playerState: PlayerState,
-    togglePlay: () -> Unit,
+    togglePlay: TogglePlay,
   ): PlayerViewState.PrimaryControlState =
     when (playerState) {
       PlayerState.Idle -> {
-        playAction(PlayerViewState.PrimaryControlState.ActionType.ENQUEUE, togglePlay)
+        playAction(togglePlay)
       }
       is PlayerState.Enqueued -> {
         when {
@@ -179,7 +179,7 @@ class PlayerViewModel(
             pauseAction(togglePlay)
           }
           else -> {
-            playAction(PlayerViewState.PrimaryControlState.ActionType.PLAY, togglePlay)
+            playAction(togglePlay)
           }
         }
       }
@@ -188,22 +188,17 @@ class PlayerViewModel(
       }
     }
 
-  private fun pauseAction(togglePlay: () -> Unit) =
+  private fun pauseAction(togglePlay: TogglePlay) =
     PlayerViewState.PrimaryControlState.Action(
       imageVector = Icons.Outlined.Pause,
       contentDescription = "Pause",
-      actionType = PlayerViewState.PrimaryControlState.ActionType.PAUSE,
       action = togglePlay,
     )
 
-  private fun playAction(
-    actionType: PlayerViewState.PrimaryControlState.ActionType,
-    togglePlay: () -> Unit,
-  ) =
+  private fun playAction(togglePlay: TogglePlay) =
     PlayerViewState.PrimaryControlState.Action(
       imageVector = Icons.Outlined.PlayArrow,
       contentDescription = "Play",
-      actionType = actionType,
       action = togglePlay,
     )
 
@@ -211,7 +206,6 @@ class PlayerViewModel(
     PlayerViewState.PrimaryControlState.Action(
       imageVector = Icons.Outlined.Refresh,
       contentDescription = "Retry",
-      actionType = PlayerViewState.PrimaryControlState.ActionType.RETRY,
       action = {
         startNewPlaylistPlayback(playlist = playlist, carryOn = true).invokeOnCompletion {
           viewState.restart()
@@ -232,7 +226,7 @@ class PlayerViewModel(
 
   private fun playerViewPlaybackActions(
     currentPlaylist: Playlist,
-    togglePlay: () -> Unit,
+    togglePlay: TogglePlay,
   ): PlayerViewPlaybackActions =
     object : PlayerViewPlaybackActions {
       override fun start(playlist: Playlist) {
@@ -280,25 +274,43 @@ class PlayerViewModel(
     viewModelScope.launch { playlistsRepository.clearCurrentPlaylist() }
   }
 
-  private fun togglePlay(
-    playerState: PlayerState,
-    playerInput: PlayerInput,
-    playback: PlaylistPlayback,
-  ) {
-    when (playerState) {
-      PlayerState.Idle -> {
-        playerConnection.enqueue(
-          input = playerInput,
-          startTrackIndex = playback.currentTrackIndex,
-          startPositionMs = playback.currentTrackPositionMs,
-        )
+  private inner class TogglePlay(
+    private val playerState: PlayerState,
+    private val playerInput: PlayerInput,
+    private val playback: PlaylistPlayback,
+  ) : () -> Unit {
+    override fun invoke() {
+      when (playerState) {
+        PlayerState.Idle -> {
+          playerConnection.enqueue(
+            input = playerInput,
+            startTrackIndex = playback.currentTrackIndex,
+            startPositionMs = playback.currentTrackPositionMs,
+          )
+        }
+        is PlayerState.Enqueued -> {
+          if (playerState.isPlaying) playerConnection.pause() else playerConnection.play()
+        }
+        is PlayerState.Error -> {
+          return
+        }
       }
-      is PlayerState.Enqueued -> {
-        if (playerState.isPlaying) playerConnection.pause() else playerConnection.play()
-      }
-      is PlayerState.Error -> {
-        return
-      }
+    }
+
+    override fun equals(other: Any?): Boolean {
+      if (this === other) return true
+      if (other !is TogglePlay) return false
+      if (playerState != other.playerState) return false
+      if (playerInput != other.playerInput) return false
+      if (playback != other.playback) return false
+      return true
+    }
+
+    override fun hashCode(): Int {
+      var result = playerState.hashCode()
+      result = 31 * result + playerInput.hashCode()
+      result = 31 * result + playback.hashCode()
+      return result
     }
   }
 
