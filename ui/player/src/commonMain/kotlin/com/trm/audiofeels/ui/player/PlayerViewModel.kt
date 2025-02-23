@@ -1,9 +1,9 @@
 package com.trm.audiofeels.ui.player
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Pause
-import androidx.compose.material.icons.outlined.PlayArrow
-import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -207,21 +207,21 @@ class PlayerViewModel(
 
   private fun pauseAction(togglePlayback: TogglePlayback) =
     PlayerViewState.PrimaryControlState.Action(
-      imageVector = Icons.Outlined.Pause,
+      imageVector = Icons.Filled.Pause,
       contentDescription = "Pause",
       action = togglePlayback,
     )
 
   private fun playAction(togglePlayback: TogglePlayback) =
     PlayerViewState.PrimaryControlState.Action(
-      imageVector = Icons.Outlined.PlayArrow,
+      imageVector = Icons.Filled.PlayArrow,
       contentDescription = "Play",
       action = togglePlayback,
     )
 
   private fun retryAction(playlist: Playlist) =
     PlayerViewState.PrimaryControlState.Action(
-      imageVector = Icons.Outlined.Refresh,
+      imageVector = Icons.Filled.Refresh,
       contentDescription = "Retry",
       action = {
         startNewPlaylistPlayback(playlist = playlist, carryOn = true).invokeOnCompletion {

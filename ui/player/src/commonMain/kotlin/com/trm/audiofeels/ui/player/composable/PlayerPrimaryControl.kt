@@ -2,8 +2,8 @@ package com.trm.audiofeels.ui.player.composable
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import com.trm.audiofeels.ui.player.PlayerViewState
 
@@ -15,7 +15,7 @@ internal fun PlayerPrimaryControl(controlState: PlayerViewState.PrimaryControlSt
         CircularProgressIndicator()
       }
       is PlayerViewState.PrimaryControlState.Action -> {
-        IconButton(onClick = it.action) {
+        FilledIconButton(onClick = it.action) {
           Icon(imageVector = it.imageVector, contentDescription = it.contentDescription)
         }
       }
