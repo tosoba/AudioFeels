@@ -212,7 +212,7 @@ private fun CarryOnPlaylistItem(
     PlaylistArtworkImage(carryOn.playlist)
     Spacer(modifier = Modifier.height(8.dp))
     PlaylistNameText(carryOn.playlist)
-    PlaylistLastPlayedAgoText(lastPlayedAgoDuration = carryOn.lastPlayed - now)
+    PlaylistLastPlayedAgoText(duration = now - carryOn.lastPlayed)
     Spacer(modifier = Modifier.height(8.dp))
   }
 }
@@ -241,26 +241,26 @@ private fun PlaylistNameText(playlist: Playlist) {
 }
 
 @Composable
-private fun PlaylistLastPlayedAgoText(lastPlayedAgoDuration: Duration) {
+private fun PlaylistLastPlayedAgoText(duration: Duration) {
   Text(
     text =
       when {
-        lastPlayedAgoDuration.inWholeDays > 1L -> {
-          stringResource(Res.string.days_ago, lastPlayedAgoDuration.inWholeDays)
+        duration.inWholeDays > 1L -> {
+          stringResource(Res.string.days_ago, duration.inWholeDays)
         }
-        lastPlayedAgoDuration.inWholeDays == 1L -> {
+        duration.inWholeDays == 1L -> {
           stringResource(Res.string.yesterday)
         }
-        lastPlayedAgoDuration.inWholeHours > 1L -> {
-          stringResource(Res.string.hours_ago, lastPlayedAgoDuration.inWholeHours)
+        duration.inWholeHours > 1L -> {
+          stringResource(Res.string.hours_ago, duration.inWholeHours)
         }
-        lastPlayedAgoDuration.inWholeHours == 1L -> {
+        duration.inWholeHours == 1L -> {
           stringResource(Res.string.one_hour_ago)
         }
-        lastPlayedAgoDuration.inWholeMinutes > 1L -> {
-          stringResource(Res.string.minutes_ago, lastPlayedAgoDuration.inWholeMinutes)
+        duration.inWholeMinutes > 1L -> {
+          stringResource(Res.string.minutes_ago, duration.inWholeMinutes)
         }
-        lastPlayedAgoDuration.inWholeMinutes == 1L -> {
+        duration.inWholeMinutes == 1L -> {
           stringResource(Res.string.one_minute_ago)
         }
         else -> {
