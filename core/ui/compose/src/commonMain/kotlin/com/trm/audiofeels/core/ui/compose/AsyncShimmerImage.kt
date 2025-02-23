@@ -25,7 +25,7 @@ fun AsyncShimmerImage(
   AsyncImage(
     model = model,
     contentDescription = contentDescription,
-    contentScale = ContentScale.FillBounds,
+    contentScale = ContentScale.Crop,
     error = placeholder,
     onLoading = { showShimmer = true },
     onSuccess = { showShimmer = false },
