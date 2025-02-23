@@ -4,11 +4,13 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -31,6 +33,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
+import androidx.compose.ui.unit.min
 import com.trm.audiofeels.core.ui.compose.AsyncShimmerImage
 import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
 import com.trm.audiofeels.core.ui.resources.Res
@@ -42,39 +45,64 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun PlayerExpandedContent(viewState: PlayerViewState, modifier: Modifier = Modifier) {
-  Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-    when (viewState) {
-      is PlayerViewState.Invisible -> {}
-      is PlayerViewState.Loading -> PlayerTrackPlaceholdersPager()
-      is PlayerViewState.Playback -> PlayerTracksPager(viewState)
-      is PlayerViewState.Error -> {}
-    }
-
-    // TODO: some large retry control on playback error
-
-    Row(
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.SpaceEvenly,
-      modifier = Modifier.fillMaxWidth().weight(1f),
-    ) {
-      AnimatedVisibility(viewState is PlayerViewState.Playback) {
-        IconButton(onClick = { (viewState as? PlayerViewState.Playback)?.playPreviousTrack?.invoke() }) {
-          Icon(
-            imageVector = Icons.Outlined.SkipPrevious,
-            contentDescription = stringResource(Res.string.play_previous_track),
+  BoxWithConstraints(modifier = modifier) {
+    Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+      when (viewState) {
+        is PlayerViewState.Invisible -> {}
+        is PlayerViewState.Loading -> {
+          PlayerTrackPlaceholdersPager(
+            modifier =
+              Modifier.fillMaxWidth()
+                .heightIn(
+                  max =
+                    min(this@BoxWithConstraints.maxWidth, this@BoxWithConstraints.maxHeight * .75f)
+                )
           )
         }
+        is PlayerViewState.Playback -> {
+          PlayerTracksPager(
+            viewState = viewState,
+            modifier =
+              Modifier.fillMaxWidth()
+                .heightIn(
+                  max =
+                    min(this@BoxWithConstraints.maxWidth, this@BoxWithConstraints.maxHeight * .75f)
+                ),
+          )
+        }
+        is PlayerViewState.Error -> {}
       }
 
-      // TODO: custom button for PlayerViewState.PrimaryControlState.Action state that stands out
-      PlayerPrimaryControl(viewState.primaryControlState)
+      // TODO: some large retry control on playback error
 
-      AnimatedVisibility(viewState is PlayerViewState.Playback) {
-        IconButton(onClick = { (viewState as? PlayerViewState.Playback)?.playNextTrack?.invoke() }) {
-          Icon(
-            imageVector = Icons.Outlined.SkipNext,
-            contentDescription = stringResource(Res.string.play_next_track),
-          )
+      Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        modifier = Modifier.fillMaxWidth().weight(1f),
+      ) {
+        AnimatedVisibility(viewState is PlayerViewState.Playback) {
+          IconButton(
+            onClick = { (viewState as? PlayerViewState.Playback)?.playPreviousTrack?.invoke() }
+          ) {
+            Icon(
+              imageVector = Icons.Outlined.SkipPrevious,
+              contentDescription = stringResource(Res.string.play_previous_track),
+            )
+          }
+        }
+
+        // TODO: custom button for PlayerViewState.PrimaryControlState.Action state that stands out
+        PlayerPrimaryControl(viewState.primaryControlState)
+
+        AnimatedVisibility(viewState is PlayerViewState.Playback) {
+          IconButton(
+            onClick = { (viewState as? PlayerViewState.Playback)?.playNextTrack?.invoke() }
+          ) {
+            Icon(
+              imageVector = Icons.Outlined.SkipNext,
+              contentDescription = stringResource(Res.string.play_next_track),
+            )
+          }
         }
       }
     }
@@ -82,13 +110,13 @@ fun PlayerExpandedContent(viewState: PlayerViewState, modifier: Modifier = Modif
 }
 
 @Composable
-private fun PlayerTrackPlaceholdersPager() {
+private fun PlayerTrackPlaceholdersPager(modifier: Modifier = Modifier) {
   val pagerState = rememberPagerState(initialPage = 1, pageCount = { 3 })
   HorizontalPager(
     state = pagerState,
     contentPadding = PaddingValues(horizontal = 64.dp, vertical = 16.dp),
     userScrollEnabled = false,
-    modifier = Modifier.fillMaxWidth(),
+    modifier = modifier,
   ) {
     Column(
       modifier =
@@ -97,7 +125,7 @@ private fun PlayerTrackPlaceholdersPager() {
           .shimmerBackground(enabled = true, shape = MaterialTheme.shapes.extraLarge)
           .alpha(if (it == pagerState.currentPage) 1f else .5f)
     ) {
-      Box(modifier = Modifier.aspectRatio(1f))
+      Box(modifier = Modifier.fillMaxWidth().weight(1f))
       Text(
         text = "",
         style = MaterialTheme.typography.labelLarge,
@@ -108,7 +136,7 @@ private fun PlayerTrackPlaceholdersPager() {
 }
 
 @Composable
-private fun PlayerTracksPager(viewState: PlayerViewState.Playback) {
+private fun PlayerTracksPager(viewState: PlayerViewState.Playback, modifier: Modifier = Modifier) {
   val pagerState =
     rememberPagerState(
       initialPage = viewState.currentTrackIndex,
@@ -122,7 +150,7 @@ private fun PlayerTracksPager(viewState: PlayerViewState.Playback) {
   HorizontalPager(
     state = pagerState,
     contentPadding = PaddingValues(horizontal = 64.dp, vertical = 16.dp),
-    modifier = Modifier.fillMaxWidth(),
+    modifier = modifier,
   ) {
     val track = viewState.tracks.getOrNull(it) ?: return@HorizontalPager
     val pageOffset = (pagerState.currentPage - it) + pagerState.currentPageOffsetFraction
@@ -141,14 +169,16 @@ private fun PlayerTracksPager(viewState: PlayerViewState.Playback) {
       AsyncShimmerImage(
         model = track.artworkUrl,
         contentDescription = null,
-        modifier = { enabled -> Modifier.aspectRatio(1f).shimmerBackground(enabled = enabled) },
+        modifier = { enabled ->
+          Modifier.fillMaxWidth().weight(1f).shimmerBackground(enabled = enabled)
+        },
       )
       Text(
         text = track.title,
         style = MaterialTheme.typography.labelLarge,
         textAlign = TextAlign.Center,
         maxLines = 1,
-        modifier = Modifier.fillMaxWidth().padding(12.dp).basicMarquee(),
+        modifier = Modifier.fillMaxWidth().padding(8.dp).basicMarquee(),
       )
     }
   }
