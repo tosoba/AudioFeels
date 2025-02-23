@@ -30,4 +30,4 @@ fun TrackResponseItem.toTrack() =
   )
 
 private val Artwork.url: String?
-  get() = x480 ?: x1000 ?: x150
+  get() = x1000 ?: x480 ?: x150
