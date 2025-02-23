@@ -56,25 +56,20 @@ class PlayerViewModel(
       .distinctUntilChangedBy { playback -> playback?.playlist?.id }
       .flatMapLatest { playback ->
         playback?.let(::playerViewStateFlow)
-          ?: flowOf(
-              PlayerViewState.Invisible(
-                startPlaylistPlayback = StartPlaylistPlayback(),
-                startCarryOnPlaylistPlayback = StartCarryOnPlaylistPlayback(),
-                cancelPlayback = ::cancelPlayback,
-              )
-            )
-            .onEach { playerConnection.reset() }
+          ?: flowOf(invisibleViewState()).onEach { playerConnection.reset() }
       }
       .restartableStateIn(
         scope = viewModelScope,
         started = SharingStarted.Lazily,
-        initialValue =
-          PlayerViewState.Invisible(
-            startPlaylistPlayback = StartPlaylistPlayback(),
-            startCarryOnPlaylistPlayback = StartCarryOnPlaylistPlayback(),
-            cancelPlayback = ::cancelPlayback,
-          ),
+        initialValue = invisibleViewState(),
       )
+
+  private fun invisibleViewState(): PlayerViewState.Invisible =
+    PlayerViewState.Invisible(
+      startPlaylistPlayback = StartPlaylistPlayback(),
+      startCarryOnPlaylistPlayback = StartCarryOnPlaylistPlayback(),
+      cancelPlayback = ::cancelPlayback,
+    )
 
   private fun playerViewStateFlow(playback: PlaylistPlayback): Flow<PlayerViewState> =
     loadableStateFlowOf { getPlayerInputUseCase(playback.playlist.id) }
