@@ -31,8 +31,8 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.min
+import androidx.compose.ui.util.lerp
 import com.trm.audiofeels.core.ui.compose.AsyncShimmerImage
 import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
 import com.trm.audiofeels.core.ui.resources.Res
@@ -69,10 +69,10 @@ fun PlayerExpandedContent(viewState: PlayerViewState, modifier: Modifier = Modif
                 ),
           )
         }
-        is PlayerViewState.Error -> {}
+        is PlayerViewState.Error -> {
+          // TODO: show a pager with userScrollEnabled = false and 1 error item
+        }
       }
-
-      // TODO: some large retry control on playback error
 
       Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -95,7 +95,6 @@ fun PlayerExpandedContent(viewState: PlayerViewState, modifier: Modifier = Modif
           )
         }
 
-        // TODO: custom button for PlayerViewState.PrimaryControlState.Action state that stands out
         PlayerPrimaryControl(viewState.primaryControlState)
 
         IconButton(
@@ -123,16 +122,16 @@ private fun PlayerTrackPlaceholdersPager(modifier: Modifier = Modifier) {
   val pagerState = rememberPagerState(initialPage = 1, pageCount = { 3 })
   HorizontalPager(
     state = pagerState,
-    contentPadding = PaddingValues(horizontal = 64.dp, vertical = 16.dp),
+    contentPadding = playerTracksPagerContentPadding,
     userScrollEnabled = false,
     modifier = modifier,
   ) {
     Column(
       modifier =
         Modifier.clip(MaterialTheme.shapes.extraLarge)
-          .scale(if (it == pagerState.currentPage) 1f else .85f)
+          .scale(if (it == pagerState.currentPage) 1f else playerTracksPagerItemMinScale)
           .shimmerBackground(enabled = true, shape = MaterialTheme.shapes.extraLarge)
-          .alpha(if (it == pagerState.currentPage) 1f else .5f)
+          .alpha(if (it == pagerState.currentPage) 1f else playerTracksPagerItemMinAlpha)
     ) {
       Box(modifier = Modifier.fillMaxWidth().weight(1f))
       Text(
@@ -158,20 +157,20 @@ private fun PlayerTracksPager(viewState: PlayerViewState.Playback, modifier: Mod
 
   HorizontalPager(
     state = pagerState,
-    contentPadding = PaddingValues(horizontal = 64.dp, vertical = 16.dp),
+    contentPadding = playerTracksPagerContentPadding,
     modifier = modifier,
   ) {
     val track = viewState.tracks.getOrNull(it) ?: return@HorizontalPager
-    val pageOffset = (pagerState.currentPage - it) + pagerState.currentPageOffsetFraction
+    val pageOffset = pagerState.currentPage - it + pagerState.currentPageOffsetFraction
 
     Card(
       modifier =
         Modifier.graphicsLayer {
           val fraction = 1f - pageOffset.absoluteValue.coerceIn(0f, 1f)
-          val scale = lerp(start = 0.85.dp, stop = 1.dp, fraction = fraction)
-          scaleX = scale.value
-          scaleY = scale.value
-          alpha = lerp(start = 0.5.dp, stop = 1.dp, fraction = fraction).value
+          val scale = lerp(start = playerTracksPagerItemMinScale, stop = 1f, fraction = fraction)
+          scaleX = scale
+          scaleY = scale
+          alpha = lerp(start = playerTracksPagerItemMinAlpha, stop = 1f, fraction = fraction)
         },
       shape = MaterialTheme.shapes.extraLarge,
     ) {
@@ -192,3 +191,7 @@ private fun PlayerTracksPager(viewState: PlayerViewState.Playback, modifier: Mod
     }
   }
 }
+
+private val playerTracksPagerContentPadding = PaddingValues(horizontal = 64.dp, vertical = 16.dp)
+private const val playerTracksPagerItemMinScale = .85f
+private const val playerTracksPagerItemMinAlpha = .5f
