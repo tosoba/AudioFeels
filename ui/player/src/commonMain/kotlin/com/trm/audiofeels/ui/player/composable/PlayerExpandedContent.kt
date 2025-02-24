@@ -1,6 +1,5 @@
 package com.trm.audiofeels.ui.player.composable
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -80,30 +79,40 @@ fun PlayerExpandedContent(viewState: PlayerViewState, modifier: Modifier = Modif
         horizontalArrangement = Arrangement.SpaceEvenly,
         modifier = Modifier.fillMaxWidth().weight(1f),
       ) {
-        AnimatedVisibility(viewState is PlayerViewState.Playback) {
-          IconButton(
-            onClick = { (viewState as? PlayerViewState.Playback)?.playPreviousTrack?.invoke() }
-          ) {
-            Icon(
-              imageVector = Icons.Outlined.SkipPrevious,
-              contentDescription = stringResource(Res.string.play_previous_track),
-            )
-          }
+        PlaylistFavouriteShuffleButton(
+          checked = false,
+          enabled = viewState is PlayerViewState.Playback,
+          onCheckedChange = {},
+        )
+
+        IconButton(
+          enabled = viewState is PlayerViewState.Playback,
+          onClick = { (viewState as? PlayerViewState.Playback)?.playPreviousTrack?.invoke() },
+        ) {
+          Icon(
+            imageVector = Icons.Outlined.SkipPrevious,
+            contentDescription = stringResource(Res.string.play_previous_track),
+          )
         }
 
         // TODO: custom button for PlayerViewState.PrimaryControlState.Action state that stands out
         PlayerPrimaryControl(viewState.primaryControlState)
 
-        AnimatedVisibility(viewState is PlayerViewState.Playback) {
-          IconButton(
-            onClick = { (viewState as? PlayerViewState.Playback)?.playNextTrack?.invoke() }
-          ) {
-            Icon(
-              imageVector = Icons.Outlined.SkipNext,
-              contentDescription = stringResource(Res.string.play_next_track),
-            )
-          }
+        IconButton(
+          enabled = viewState is PlayerViewState.Playback,
+          onClick = { (viewState as? PlayerViewState.Playback)?.playNextTrack?.invoke() },
+        ) {
+          Icon(
+            imageVector = Icons.Outlined.SkipNext,
+            contentDescription = stringResource(Res.string.play_next_track),
+          )
         }
+
+        PlaylistFavouriteToggleButton(
+          checked = false,
+          enabled = viewState is PlayerViewState.Playback,
+          onCheckedChange = {},
+        )
       }
     }
   }

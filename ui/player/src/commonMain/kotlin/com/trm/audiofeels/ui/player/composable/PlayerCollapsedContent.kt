@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.SkipNext
@@ -138,6 +139,14 @@ internal fun PlayerCollapsedContent(viewState: PlayerViewState, modifier: Modifi
             }
           }
         }
+
+        PlaylistFavouriteToggleButton(
+          checked = false,
+          enabled = viewState is PlayerViewState.Playback,
+          onCheckedChange = {},
+        )
+
+        Spacer(modifier = Modifier.width(8.dp))
 
         PlayerPrimaryControl(controlState = viewState.primaryControlState)
       }
