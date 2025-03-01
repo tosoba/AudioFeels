@@ -41,11 +41,10 @@ import com.trm.audiofeels.core.ui.compose.AsyncShimmerImage
 import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.artwork_placeholder
+import com.trm.audiofeels.core.ui.resources.error_occurred
 import com.trm.audiofeels.core.ui.resources.play_next_track
 import com.trm.audiofeels.core.ui.resources.play_previous_track
 import com.trm.audiofeels.domain.model.PlayerState
-import com.trm.audiofeels.domain.model.Playlist
-import com.trm.audiofeels.domain.model.Track
 import com.trm.audiofeels.ui.player.PlayerViewState
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
@@ -106,6 +105,10 @@ internal fun PlayerCollapsedContent(viewState: PlayerViewState, modifier: Modifi
             Image(
               painter = rememberVectorPainter(vectorResource(Res.drawable.artwork_placeholder)),
               contentDescription = null,
+              modifier =
+                Modifier.size(60.dp)
+                  .clip(RoundedCornerShape(12.dp))
+                  .background(MaterialTheme.colorScheme.errorContainer),
             )
           }
           is PlayerViewState.Playback -> {
@@ -126,16 +129,18 @@ internal fun PlayerCollapsedContent(viewState: PlayerViewState, modifier: Modifi
           modifier = Modifier.weight(1f).padding(horizontal = 16.dp),
         ) {
           when (viewState) {
-            is PlayerViewState.Invisible,
-            is PlayerViewState.Error -> {
+            is PlayerViewState.Invisible -> {
               Spacer(modifier = Modifier.weight(1f))
             }
             is PlayerViewState.Loading -> {
-              PlaylistNameText(viewState.playlist)
+              SecondaryText(text = viewState.playlist.name)
             }
             is PlayerViewState.Playback -> {
-              viewState.currentTrack?.let { TrackTitleText(it) }
-              PlaylistNameText(viewState.playlist)
+              viewState.currentTrack?.let { PrimaryText(text = it.title) }
+              SecondaryText(text = viewState.playlist.name)
+            }
+            is PlayerViewState.Error -> {
+              PrimaryText(text = stringResource(Res.string.error_occurred))
             }
           }
         }
@@ -208,18 +213,14 @@ private fun BoxScope.TrackProgressIndicator(visible: Boolean, progress: () -> Fl
 }
 
 @Composable
-private fun TrackTitleText(track: Track) {
-  Text(
-    text = track.title,
-    style = MaterialTheme.typography.labelLarge,
-    modifier = Modifier.basicMarquee(),
-  )
+private fun PrimaryText(text: String) {
+  Text(text = text, style = MaterialTheme.typography.labelLarge, modifier = Modifier.basicMarquee())
 }
 
 @Composable
-private fun PlaylistNameText(playlist: Playlist) {
+private fun SecondaryText(text: String) {
   Text(
-    text = playlist.name,
+    text = text,
     style = MaterialTheme.typography.labelMedium,
     modifier = Modifier.basicMarquee(),
   )

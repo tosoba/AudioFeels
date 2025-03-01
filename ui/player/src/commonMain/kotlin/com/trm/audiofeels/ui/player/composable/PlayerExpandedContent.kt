@@ -1,5 +1,7 @@
 package com.trm.audiofeels.ui.player.composable
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,6 +31,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
@@ -36,41 +39,34 @@ import androidx.compose.ui.util.lerp
 import com.trm.audiofeels.core.ui.compose.AsyncShimmerImage
 import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
 import com.trm.audiofeels.core.ui.resources.Res
+import com.trm.audiofeels.core.ui.resources.artwork_placeholder
+import com.trm.audiofeels.core.ui.resources.error_occurred
 import com.trm.audiofeels.core.ui.resources.play_next_track
 import com.trm.audiofeels.core.ui.resources.play_previous_track
 import com.trm.audiofeels.ui.player.PlayerViewState
 import kotlin.math.absoluteValue
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.vectorResource
 
 @Composable
 fun PlayerExpandedContent(viewState: PlayerViewState, modifier: Modifier = Modifier) {
   BoxWithConstraints(modifier = modifier) {
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+      val pagerModifier =
+        Modifier.fillMaxWidth()
+          .heightIn(
+            max = min(this@BoxWithConstraints.maxWidth, this@BoxWithConstraints.maxHeight * .75f)
+          )
       when (viewState) {
         is PlayerViewState.Invisible -> {}
         is PlayerViewState.Loading -> {
-          PlayerTrackPlaceholdersPager(
-            modifier =
-              Modifier.fillMaxWidth()
-                .heightIn(
-                  max =
-                    min(this@BoxWithConstraints.maxWidth, this@BoxWithConstraints.maxHeight * .75f)
-                )
-          )
+          PlayerTrackPlaceholdersPager(modifier = pagerModifier)
         }
         is PlayerViewState.Playback -> {
-          PlayerTracksPager(
-            viewState = viewState,
-            modifier =
-              Modifier.fillMaxWidth()
-                .heightIn(
-                  max =
-                    min(this@BoxWithConstraints.maxWidth, this@BoxWithConstraints.maxHeight * .75f)
-                ),
-          )
+          PlayerTracksPager(viewState = viewState, modifier = pagerModifier)
         }
         is PlayerViewState.Error -> {
-          // TODO: show a pager with userScrollEnabled = false and 1 error item
+          PlayerErrorPager(modifier = pagerModifier)
         }
       }
 
@@ -137,6 +133,31 @@ private fun PlayerTrackPlaceholdersPager(modifier: Modifier = Modifier) {
       Text(
         text = "",
         style = MaterialTheme.typography.labelLarge,
+        modifier = Modifier.fillMaxWidth().padding(12.dp),
+      )
+    }
+  }
+}
+
+@Composable
+private fun PlayerErrorPager(modifier: Modifier = Modifier) {
+  HorizontalPager(
+    state = rememberPagerState(initialPage = 1, pageCount = { 1 }),
+    contentPadding = playerTracksPagerContentPadding,
+    userScrollEnabled = false,
+    modifier = modifier,
+  ) {
+    Card(shape = MaterialTheme.shapes.extraLarge) {
+      Image(
+        painter = rememberVectorPainter(vectorResource(Res.drawable.artwork_placeholder)),
+        contentDescription = null,
+        modifier =
+          Modifier.fillMaxWidth().weight(1f).background(MaterialTheme.colorScheme.errorContainer),
+      )
+      Text(
+        text = stringResource(Res.string.error_occurred),
+        style = MaterialTheme.typography.labelLarge,
+        textAlign = TextAlign.Center,
         modifier = Modifier.fillMaxWidth().padding(12.dp),
       )
     }
