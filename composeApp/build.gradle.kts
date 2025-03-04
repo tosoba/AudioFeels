@@ -1,5 +1,4 @@
 import com.trm.audiofeels.gradle.addKspDependencyForAllTargets
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
@@ -12,10 +11,7 @@ plugins {
 }
 
 kotlin {
-  androidTarget {
-    @OptIn(ExperimentalKotlinGradlePluginApi::class)
-    compilerOptions { jvmTarget.set(JvmTarget.JVM_17) }
-  }
+  androidTarget { compilerOptions { jvmTarget.set(JvmTarget.JVM_17) } }
 
   targets.withType<KotlinNativeTarget>().forEach { nativeTarget ->
     nativeTarget.binaries.framework {

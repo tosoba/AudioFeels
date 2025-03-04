@@ -64,6 +64,8 @@ class PlayerViewModel(
         initialValue = invisibleViewState(),
       )
 
+  fun onRecordAudioPermissionGranted() {}
+
   private fun invisibleViewState(): PlayerViewState.Invisible =
     PlayerViewState.Invisible(
       startPlaylistPlayback = StartPlaylistPlayback(),

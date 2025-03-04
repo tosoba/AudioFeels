@@ -86,6 +86,7 @@ import com.trm.audiofeels.ui.player.PlayerViewModel
 import com.trm.audiofeels.ui.player.PlayerViewState
 import com.trm.audiofeels.ui.player.composable.PlayerExpandedContent
 import com.trm.audiofeels.ui.player.composable.PlayerSheetContent
+import com.trm.audiofeels.ui.player.composable.playerRecordAudioPermissionHandler
 import com.trm.audiofeels.ui.search.SearchPage
 import dev.zwander.compose.rememberThemeInfo
 import kotlinx.coroutines.launch
@@ -103,6 +104,10 @@ fun AppContent(applicationComponent: ApplicationComponent) {
   val playerViewModel =
     viewModel<PlayerViewModel>(factory = applicationComponent.playerViewModelFactory)
   val playerViewState by playerViewModel.viewState.collectAsStateWithLifecycle()
+
+  val recordAudioPermissionHandler =
+    playerRecordAudioPermissionHandler(playerViewModel::onRecordAudioPermissionGranted)
+  LaunchedEffect(Unit) { recordAudioPermissionHandler() }
 
   val fallbackSeedColor = rememberThemeInfo().seedColor
   val seedColor =

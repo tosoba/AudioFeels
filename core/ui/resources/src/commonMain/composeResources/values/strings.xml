@@ -1,4 +1,9 @@
 <resources>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="settings">Settings</string>
+    <string name="permission_required">Permission required</string>
+
     <string name="discover">Discover</string>
     <string name="favourites">Favourites</string>
     <string name="search">Search</string>
@@ -16,5 +21,8 @@
     <string name="minutes_ago">%1$d minutes ago</string>
     <string name="one_minute_ago">1 minute ago</string>
     <string name="moments_ago">Moments ago</string>
+
+    <string name="record_audio_permission_rationale">A permission to record audio is required to display audio visualization. You may grant it after clicking OK.</string>
+    <string name="record_audio_permission_settings">A permission to record audio is required to display audio visualization. You may to settings to grant that permission.</string>
 </resources>
 
