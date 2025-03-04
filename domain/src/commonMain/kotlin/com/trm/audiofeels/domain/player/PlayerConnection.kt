@@ -2,13 +2,14 @@ package com.trm.audiofeels.domain.player
 
 import com.trm.audiofeels.domain.model.PlayerInput
 import com.trm.audiofeels.domain.model.PlayerState
-import com.trm.audiofeels.domain.model.Track
 import kotlinx.coroutines.flow.Flow
 
 interface PlayerConnection {
-  val playerState: Flow<PlayerState>
+  val playerStateFlow: Flow<PlayerState>
 
-  val currentTrackPositionMs: Flow<Long>
+  val currentTrackPositionMsFlow: Flow<Long>
+
+  val audioDataFlow: Flow<List<Float>>
 
   fun play()
 

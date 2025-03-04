@@ -20,6 +20,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
@@ -128,14 +129,16 @@ actual class AudioPlayerConnection : PlayerConnection {
     }
 
   private val _playerState = MutableStateFlow<PlayerState>(PlayerState.Idle)
-  override val playerState: Flow<PlayerState> = _playerState.asStateFlow()
+  override val playerStateFlow: Flow<PlayerState> = _playerState.asStateFlow()
 
-  override val currentTrackPositionMs: Flow<Long> = flow {
+  override val currentTrackPositionMsFlow: Flow<Long> = flow {
     while (currentCoroutineContext().isActive) {
       player.currentItem?.let { emit((CMTimeGetSeconds(player.currentTime()) * 1000).toLong()) }
       delay(1_000L)
     }
   }
+
+  override val audioDataFlow: Flow<List<Float>> = emptyFlow()
 
   override fun play() {
     activateAudioSession()

@@ -124,7 +124,7 @@ class PlayerViewModel(
   ): Flow<PlayerViewState> {
     val artworkUrlChannel = Channel<String?>(onBufferOverflow = BufferOverflow.DROP_OLDEST)
     return combine(
-      playerConnection.playerState.onEach {
+      playerConnection.playerStateFlow.onEach {
         artworkUrlChannel.send(getCurrentTrackArtworkUrl(it, input, playback))
       },
       artworkUrlChannel.receiveAsFlow().distinctUntilChanged().transformLatest { artworkUrl ->
@@ -137,7 +137,7 @@ class PlayerViewModel(
           )
         } ?: run { emit(LoadableState.Error(Exception("Missing artworkUrl"))) }
       },
-      playerConnection.currentTrackPositionMs.distinctUntilChanged().onStart { emit(0L) },
+      playerConnection.currentTrackPositionMsFlow.distinctUntilChanged().onStart { emit(0L) },
     ) { playerState, currentTrackImageBitmap, currentTrackPositionMs ->
       playbackViewState(
         playerInput = input,

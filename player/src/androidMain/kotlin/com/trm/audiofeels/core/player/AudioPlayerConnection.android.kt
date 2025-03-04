@@ -37,14 +37,14 @@ actual class AudioPlayerConnection(
   private val context: PlatformContext,
   private val scope: AppCoroutineScope,
 ) : PlayerConnection {
-  override val currentTrackPositionMs: Flow<Long> = flow {
+  override val currentTrackPositionMsFlow: Flow<Long> = flow {
     while (currentCoroutineContext().isActive) {
       emit(mediaBrowser.await().currentPosition)
       delay(1_000L)
     }
   }
 
-  override val playerState: Flow<PlayerState> =
+  override val playerStateFlow: Flow<PlayerState> =
     callbackFlow {
         var previousState: PlayerState = PlayerState.Idle
 
@@ -79,6 +79,21 @@ actual class AudioPlayerConnection(
                 throwable = error,
                 tag = this@AudioPlayerConnection.javaClass.simpleName,
               )
+            }
+          }
+        browser.addListener(listener)
+        awaitClose { browser.removeListener(listener) }
+      }
+      .conflate()
+
+  override val audioDataFlow: Flow<List<Float>> =
+    callbackFlow<List<Float>> {
+        val browser = mediaBrowser.await()
+        val listener =
+          object : Player.Listener {
+            @OptIn(UnstableApi::class)
+            override fun onAudioSessionIdChanged(audioSessionId: Int) {
+              // TODO: connect Visualizer/WaveParser from CircleMusicWaveform
             }
           }
         browser.addListener(listener)
