@@ -14,6 +14,7 @@ import com.trm.audiofeels.core.base.util.PlatformContext
 import com.trm.audiofeels.core.base.util.lazyAsync
 import com.trm.audiofeels.core.player.mapper.toMediaItem
 import com.trm.audiofeels.core.player.mapper.toState
+import com.trm.audiofeels.core.player.visualizer.WaveEngine
 import com.trm.audiofeels.domain.model.PlayerInput
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.player.PlayerConnection
@@ -87,17 +88,32 @@ actual class AudioPlayerConnection(
       .conflate()
 
   override val audioDataFlow: Flow<List<Float>> =
-    callbackFlow<List<Float>> {
+    callbackFlow {
         val browser = mediaBrowser.await()
+        var waveEngine: WaveEngine? = null
+
         val listener =
           object : Player.Listener {
             @OptIn(UnstableApi::class)
             override fun onAudioSessionIdChanged(audioSessionId: Int) {
-              // TODO: connect Visualizer/WaveParser from CircleMusicWaveform
+              waveEngine?.release()
+              waveEngine =
+                WaveEngine(
+                  audioSession = audioSessionId,
+                  minValue = 0f,
+                  maxValue = 1f,
+                  valuesCount = 144,
+                ) {
+                  trySend(it)
+                }
             }
           }
         browser.addListener(listener)
-        awaitClose { browser.removeListener(listener) }
+
+        awaitClose {
+          waveEngine?.release()
+          browser.removeListener(listener)
+        }
       }
       .conflate()
 
