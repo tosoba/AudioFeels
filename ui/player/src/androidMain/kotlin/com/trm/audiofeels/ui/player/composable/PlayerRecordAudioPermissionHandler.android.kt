@@ -72,7 +72,6 @@ actual fun playerRecordAudioPermissionHandler(onGranted: () -> Unit): () -> Unit
         else Res.string.record_audio_permission_settings
       ),
     confirmText = stringResource(if (shouldShowRationale) Res.string.ok else Res.string.settings),
-    onDismiss = { permissionDialogVisible = false },
     onConfirmClick = {
       permissionDialogVisible = false
       if (shouldShowRationale) {
@@ -97,6 +96,7 @@ actual fun playerRecordAudioPermissionHandler(onGranted: () -> Unit): () -> Unit
         )
       }
     },
+    onDismiss = { permissionDialogVisible = false },
   )
 
   return {
@@ -113,10 +113,10 @@ actual fun playerRecordAudioPermissionHandler(onGranted: () -> Unit): () -> Unit
 
 @Composable
 private fun RecordAudioPermissionInfoDialog(
-  modifier: Modifier = Modifier,
   visible: Boolean,
   text: String,
   confirmText: String,
+  modifier: Modifier = Modifier,
   onConfirmClick: () -> Unit,
   onDismiss: () -> Unit,
 ) {
