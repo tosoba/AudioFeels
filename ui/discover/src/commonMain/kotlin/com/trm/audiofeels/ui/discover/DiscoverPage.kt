@@ -61,7 +61,6 @@ fun DiscoverPage(
   val trendingPlaylists by viewModel.trendingPlaylists.collectAsStateWithLifecycle()
 
   Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-    // TODO: large retry view
     DiscoverListHeadline(
       text = stringResource(Res.string.carry_on),
       list = carryOnPlaylists,
@@ -89,7 +88,7 @@ fun DiscoverPage(
 
     DiscoverListHeadline(
       text = stringResource(Res.string.trending),
-      list = carryOnPlaylists,
+      list = trendingPlaylists,
       modifier = Modifier.padding(horizontal = 12.dp),
     )
 
@@ -162,7 +161,9 @@ private fun <T : Any> DiscoverListLazyRow(
         is LoadableState.Idle -> {
           itemsIndexed(list.value) { index, carryOn -> item(index, list.value.lastIndex, carryOn) }
         }
-        is LoadableState.Error -> {}
+        is LoadableState.Error -> {
+          // TODO: retry view consistent with the ones used in Player pagers
+        }
       }
     }
   }
