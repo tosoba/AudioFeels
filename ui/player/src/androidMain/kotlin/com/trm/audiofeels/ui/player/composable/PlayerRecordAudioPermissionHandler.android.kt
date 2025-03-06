@@ -14,6 +14,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -23,6 +24,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import com.trm.audiofeels.core.base.util.getActivity
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.cancel
@@ -33,10 +37,16 @@ import com.trm.audiofeels.core.ui.resources.record_audio_permission_settings
 import com.trm.audiofeels.core.ui.resources.settings
 import org.jetbrains.compose.resources.stringResource
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
-actual fun playerRecordAudioPermissionHandler(onGranted: () -> Unit): () -> Unit {
+actual fun PlayerRecordAudioPermissionHandler(
+  onDenied: () -> Unit,
+  onDeniedPermanently: () -> Unit,
+  onGranted: () -> Unit,
+) {
   val context = LocalContext.current
 
+  val permissionState = rememberPermissionState(Manifest.permission.RECORD_AUDIO)
   var permissionDialogVisible by rememberSaveable { mutableStateOf(false) }
   var shouldShowRationale by rememberSaveable { mutableStateOf(false) }
 
@@ -53,16 +63,8 @@ actual fun playerRecordAudioPermissionHandler(onGranted: () -> Unit): () -> Unit
         permissionDialogVisible = true
       }
     }
-
   val settingsLauncher =
-    rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { _ ->
-      if (
-        ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) ==
-          PackageManager.PERMISSION_GRANTED
-      ) {
-        onGranted()
-      }
-    }
+    rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { _ -> }
 
   RecordAudioPermissionInfoDialog(
     visible = permissionDialogVisible,
@@ -96,16 +98,21 @@ actual fun playerRecordAudioPermissionHandler(onGranted: () -> Unit): () -> Unit
         )
       }
     },
-    onDismiss = { permissionDialogVisible = false },
+    onDismiss = {
+      permissionDialogVisible = false
+      if (!shouldShowRationale) onDeniedPermanently()
+    },
   )
 
-  return {
+  LaunchedEffect(permissionState.status.isGranted) {
+    if (permissionState.status.isGranted) onGranted() else onDenied()
+  }
+
+  LaunchedEffect(Unit) {
     if (
-      ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) ==
+      ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) !=
         PackageManager.PERMISSION_GRANTED
     ) {
-      onGranted()
-    } else {
       requestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
     }
   }

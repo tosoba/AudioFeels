@@ -11,6 +11,7 @@ import com.trm.audiofeels.core.player.di.PlayerComponent
 import com.trm.audiofeels.core.preferences.di.PreferencesCoreComponent
 import com.trm.audiofeels.data.hosts.di.HostsDataComponent
 import com.trm.audiofeels.data.playlists.di.PlaylistsDataComponent
+import com.trm.audiofeels.data.visualization.di.VisualizationDataComponent
 import com.trm.audiofeels.ui.discover.di.DiscoverUiComponent
 import com.trm.audiofeels.ui.player.di.PlayerUiComponent
 import kotlinx.coroutines.CoroutineScope
@@ -27,6 +28,7 @@ interface ApplicationComponent :
   PreferencesCoreComponent,
   HostsDataComponent,
   PlaylistsDataComponent,
+  VisualizationDataComponent,
   PlayerComponent,
   DiscoverUiComponent,
   PlayerUiComponent {

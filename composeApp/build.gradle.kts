@@ -42,6 +42,7 @@ kotlin {
       implementation(projects.core.ui.resources)
       implementation(projects.data.hosts)
       implementation(projects.data.playlists)
+      implementation(projects.data.visualization)
       implementation(projects.domain)
       implementation(projects.player)
       implementation(projects.ui.discover)

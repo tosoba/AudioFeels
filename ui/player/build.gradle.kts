@@ -6,7 +6,12 @@ plugins {
 
 kotlin {
   sourceSets {
-    androidMain { dependencies { implementation(libs.androidx.activity.compose) } }
+    androidMain {
+      dependencies {
+        implementation(libs.accompanist.permissions)
+        implementation(libs.androidx.activity.compose)
+      }
+    }
 
     commonMain {
       dependencies {

@@ -1,4 +1,5 @@
 [versions]
+accompanist = "0.37.2"
 adaptive = "1.0.1"
 agp = "8.7.2"
 android-compileSdk = "35"
@@ -41,6 +42,7 @@ sqlite = "2.5.0-alpha12"
 turbine = "1.2.0"
 
 [libraries]
+accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidx-appcompat" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "androidx-constraintlayout" }

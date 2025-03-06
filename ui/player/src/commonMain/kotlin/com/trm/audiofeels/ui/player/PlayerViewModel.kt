@@ -23,6 +23,7 @@ import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.model.PlaylistPlayback
 import com.trm.audiofeels.domain.player.PlayerConnection
 import com.trm.audiofeels.domain.repository.PlaylistsRepository
+import com.trm.audiofeels.domain.repository.VisualizationRepository
 import com.trm.audiofeels.domain.usecase.GetPlayerInputUseCase
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -31,14 +32,17 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
 
@@ -47,9 +51,14 @@ class PlayerViewModel(
   private val playerConnection: PlayerConnection,
   private val getPlayerInputUseCase: GetPlayerInputUseCase,
   private val playlistsRepository: PlaylistsRepository,
+  private val visualizationRepository: VisualizationRepository,
   private val imageLoader: ImageLoader,
   private val platformContext: PlatformContext,
 ) : ViewModel() {
+  val handleRecordAudioPermission: StateFlow<Boolean> =
+    flow { emit(!visualizationRepository.isPermissionPermanentlyDenied()) }
+      .stateIn(scope = viewModelScope, started = SharingStarted.Lazily, initialValue = false)
+
   val viewState: RestartableStateFlow<PlayerViewState> =
     playlistsRepository
       .getCurrentPlaylistPlaybackFlow()
@@ -64,7 +73,18 @@ class PlayerViewModel(
         initialValue = invisibleViewState(),
       )
 
-  fun onRecordAudioPermissionGranted() {}
+  fun onRecordAudioPermissionGranted() {
+    viewModelScope.launch { visualizationRepository.savePermissionPermanentlyDenied(false) }
+  }
+
+  fun onRecordAudioPermissionDenied() {
+    // TODO: set audio data flow to Disabled state
+  }
+
+  fun onRecordAudioPermissionDeniedPermanently() {
+    viewModelScope.launch { visualizationRepository.savePermissionPermanentlyDenied(true) }
+    // TODO: set audio data flow to Disabled state
+  }
 
   private fun invisibleViewState(): PlayerViewState.Invisible =
     PlayerViewState.Invisible(
