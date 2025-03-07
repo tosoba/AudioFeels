@@ -71,8 +71,8 @@ fun DiscoverPage(
       list = carryOnPlaylists,
       placeholderItemContent = {
         Spacer(modifier = Modifier.height(158.dp))
-        Text(text = "", style = MaterialTheme.typography.labelLarge.copy(color = Color.Transparent))
-        Text(text = "", style = MaterialTheme.typography.labelSmall.copy(color = Color.Transparent))
+        Text(text = "", style = MaterialTheme.typography.labelLarge)
+        Text(text = "", style = MaterialTheme.typography.labelSmall)
         Spacer(modifier = Modifier.height(8.dp))
       },
     ) { index, lastIndex, carryOn ->
@@ -96,7 +96,7 @@ fun DiscoverPage(
       list = trendingPlaylists,
       placeholderItemContent = {
         Spacer(modifier = Modifier.height(158.dp))
-        Text(text = "", style = MaterialTheme.typography.labelLarge.copy(color = Color.Transparent))
+        Text(text = "", style = MaterialTheme.typography.labelLarge)
         Spacer(modifier = Modifier.height(8.dp))
       },
     ) { index, lastIndex, playlist ->
