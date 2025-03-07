@@ -2,6 +2,8 @@ package com.trm.audiofeels.ui.discover
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,10 +27,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trm.audiofeels.core.base.model.LoadableState
@@ -37,11 +42,13 @@ import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.carry_on
 import com.trm.audiofeels.core.ui.resources.days_ago
+import com.trm.audiofeels.core.ui.resources.error_occurred
 import com.trm.audiofeels.core.ui.resources.hours_ago
 import com.trm.audiofeels.core.ui.resources.minutes_ago
 import com.trm.audiofeels.core.ui.resources.moments_ago
 import com.trm.audiofeels.core.ui.resources.one_hour_ago
 import com.trm.audiofeels.core.ui.resources.one_minute_ago
+import com.trm.audiofeels.core.ui.resources.refresh
 import com.trm.audiofeels.core.ui.resources.trending
 import com.trm.audiofeels.core.ui.resources.yesterday
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
@@ -50,6 +57,7 @@ import kotlin.time.Duration
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.vectorResource
 
 @Composable
 fun DiscoverPage(
@@ -69,6 +77,7 @@ fun DiscoverPage(
 
     DiscoverListLazyRow(
       list = carryOnPlaylists,
+      onRetryClick = {},
       placeholderItemContent = {
         Spacer(modifier = Modifier.height(158.dp))
         Text(text = "", style = MaterialTheme.typography.labelLarge)
@@ -94,6 +103,7 @@ fun DiscoverPage(
 
     DiscoverListLazyRow(
       list = trendingPlaylists,
+      onRetryClick = viewModel.trendingPlaylists::restart,
       placeholderItemContent = {
         Spacer(modifier = Modifier.height(158.dp))
         Text(text = "", style = MaterialTheme.typography.labelLarge)
@@ -142,11 +152,16 @@ private fun <T : Any> DiscoverListHeadline(
 @Composable
 private fun <T : Any> DiscoverListLazyRow(
   list: LoadableState<List<T>>,
+  onRetryClick: () -> Unit,
   placeholderItemContent: @Composable ColumnScope.() -> Unit,
   item: @Composable LazyItemScope.(Int, Int, T) -> Unit,
 ) {
   AnimatedVisibility(visible = list.discoverListVisible()) {
-    LazyRow(modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(12.dp)) {
+    LazyRow(
+      modifier = Modifier.fillMaxWidth(),
+      contentPadding = PaddingValues(12.dp),
+      userScrollEnabled = list !is LoadableState.Error,
+    ) {
       when (list) {
         LoadableState.Loading -> {
           val count = 50
@@ -162,7 +177,7 @@ private fun <T : Any> DiscoverListLazyRow(
           itemsIndexed(list.value) { index, carryOn -> item(index, list.value.lastIndex, carryOn) }
         }
         is LoadableState.Error -> {
-          // TODO: retry view consistent with the ones used in Player pagers
+          item { DiscoverListErrorItem(onClick = onRetryClick) }
         }
       }
     }
@@ -183,6 +198,34 @@ private fun LazyItemScope.DiscoverListPlaceholderItem(
         .animateItem(),
     content = content,
   )
+}
+
+@Composable
+private fun LazyItemScope.DiscoverListErrorItem(onClick: () -> Unit) {
+  Box(modifier = Modifier.fillParentMaxWidth().animateItem(), contentAlignment = Alignment.Center) {
+    Card(modifier = Modifier.width(150.dp), onClick = onClick) {
+      Image(
+        painter = rememberVectorPainter(vectorResource(Res.drawable.refresh)),
+        contentDescription = null,
+        modifier =
+          Modifier.size(150.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.errorContainer),
+      )
+
+      Spacer(modifier = Modifier.height(8.dp))
+
+      Text(
+        text = stringResource(Res.string.error_occurred),
+        style = MaterialTheme.typography.labelLarge,
+        maxLines = 1,
+        textAlign = TextAlign.Center,
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp).basicMarquee(),
+      )
+
+      Spacer(modifier = Modifier.height(8.dp))
+    }
+  }
 }
 
 private fun <T : Any> LoadableState<List<T>>.discoverListVisible(): Boolean =
