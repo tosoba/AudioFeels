@@ -1,6 +1,5 @@
 package com.trm.audiofeels.core.player.di
 
-import androidx.annotation.OptIn
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.LifecycleOwner
@@ -18,7 +17,7 @@ import com.trm.audiofeels.core.player.PlayerSessionCallback
 import me.tatarka.inject.annotations.Provides
 
 interface BasePlayerServiceComponent : BaseServiceComponent {
-  @get:OptIn(UnstableApi::class) override val service: PlayerService
+  override val service: PlayerService
 
   @get:UnstableApi val playerNotificationProvider: PlayerNotificationProvider
 
