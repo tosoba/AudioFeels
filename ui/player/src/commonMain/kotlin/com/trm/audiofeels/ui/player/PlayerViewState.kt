@@ -20,6 +20,9 @@ sealed interface PlayerViewState {
 
   val primaryControlState: PrimaryControlState
 
+  val isPlaying: Boolean
+    get() = this is Playback && playerState is PlayerState.Enqueued && playerState.isPlaying
+
   sealed interface PrimaryControlState {
     data object Loading : PrimaryControlState
 
@@ -33,7 +36,7 @@ sealed interface PlayerViewState {
   data class Invisible(
     override val startPlaylistPlayback: (Playlist) -> Unit,
     override val startCarryOnPlaylistPlayback: (CarryOnPlaylist) -> Unit,
-    override val cancelPlayback: () -> Unit
+    override val cancelPlayback: () -> Unit,
   ) : PlayerViewState {
     override val currentTrackImageBitmap: LoadableState.Idle<ImageBitmap?> =
       LoadableState.Idle(null)
@@ -45,7 +48,7 @@ sealed interface PlayerViewState {
     val playlist: Playlist,
     override val startPlaylistPlayback: (Playlist) -> Unit,
     override val startCarryOnPlaylistPlayback: (CarryOnPlaylist) -> Unit,
-    override val cancelPlayback: () -> Unit
+    override val cancelPlayback: () -> Unit,
   ) : PlayerViewState {
     override val currentTrackImageBitmap: LoadableState.Idle<ImageBitmap?> =
       LoadableState.Idle(null)
@@ -85,7 +88,7 @@ sealed interface PlayerViewState {
     override val primaryControlState: PrimaryControlState.Action,
     override val startPlaylistPlayback: (Playlist) -> Unit,
     override val startCarryOnPlaylistPlayback: (CarryOnPlaylist) -> Unit,
-    override val cancelPlayback: () -> Unit
+    override val cancelPlayback: () -> Unit,
   ) : PlayerViewState {
     override val currentTrackImageBitmap: LoadableState.Idle<ImageBitmap?> =
       LoadableState.Idle(null)

@@ -1,12 +1,15 @@
 package com.trm.audiofeels.core.player
 
 import android.content.ComponentName
+import android.media.AudioManager
+import android.os.Bundle
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaBrowser
+import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionToken
 import com.trm.audiofeels.core.base.di.ApplicationScope
 import com.trm.audiofeels.core.base.util.AppCoroutineScope
@@ -90,28 +93,44 @@ actual class AudioPlayerConnection(
   override val audioDataFlow: Flow<List<Float>> =
     callbackFlow {
         val browser = mediaBrowser.await()
-        var waveEngine: WaveEngine? = null
+
+        fun waveEngine(audioSessionId: Int): WaveEngine =
+          WaveEngine(
+            audioSession = audioSessionId,
+            minValue = 0f,
+            maxValue = 1f,
+            valuesCount = 144,
+          ) {
+            trySend(it)
+          }
+
+        var waveEngine =
+          waveEngine(
+            browser
+              .sendCustomCommand(
+                SessionCommand(PlayerSessionCallback.ACTION_AUDIO_SESSION_ID, Bundle.EMPTY),
+                Bundle.EMPTY,
+              )
+              .await()
+              .extras
+              .getInt(
+                PlayerSessionCallback.EXTRA_AUDIO_SESSION_ID,
+                AudioManager.AUDIO_SESSION_ID_GENERATE,
+              )
+          )
 
         val listener =
           object : Player.Listener {
             @OptIn(UnstableApi::class)
             override fun onAudioSessionIdChanged(audioSessionId: Int) {
-              waveEngine?.release()
-              waveEngine =
-                WaveEngine(
-                  audioSession = audioSessionId,
-                  minValue = 0f,
-                  maxValue = 1f,
-                  valuesCount = 144,
-                ) {
-                  trySend(it)
-                }
+              waveEngine.release()
+              waveEngine = waveEngine(audioSessionId)
             }
           }
         browser.addListener(listener)
 
         awaitClose {
-          waveEngine?.release()
+          waveEngine.release()
           browser.removeListener(listener)
         }
       }

@@ -22,8 +22,6 @@ interface BasePlayerServiceComponent : BaseServiceComponent {
 
   @get:UnstableApi val playerNotificationProvider: PlayerNotificationProvider
 
-  val playerSessionCallback: PlayerSessionCallback
-
   val mediaLibrarySession: MediaLibrarySession
 
   @Provides
@@ -31,21 +29,19 @@ interface BasePlayerServiceComponent : BaseServiceComponent {
     service.lifecycleScope
 
   @Provides
-  fun mediaLibrarySession(): MediaLibrarySession =
-    MediaLibrarySession.Builder(
-        service,
-        ExoPlayer.Builder(service)
-          .setAudioAttributes(
-            AudioAttributes.Builder()
-              .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
-              .setUsage(C.USAGE_MEDIA)
-              .build(),
-            true,
-          )
-          .setHandleAudioBecomingNoisy(true)
-          .build(),
-        playerSessionCallback,
-      )
+  fun mediaLibrarySession(): MediaLibrarySession {
+    val player =
+      ExoPlayer.Builder(service)
+        .setAudioAttributes(
+          AudioAttributes.Builder()
+            .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+            .setUsage(C.USAGE_MEDIA)
+            .build(),
+          true,
+        )
+        .setHandleAudioBecomingNoisy(true)
+        .build()
+    return MediaLibrarySession.Builder(service, player, PlayerSessionCallback(player))
       .build()
       .also {
         service.lifecycle.addObserver(
@@ -56,4 +52,5 @@ interface BasePlayerServiceComponent : BaseServiceComponent {
           }
         )
       }
+  }
 }

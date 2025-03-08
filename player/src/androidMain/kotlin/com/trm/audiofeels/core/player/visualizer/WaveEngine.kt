@@ -12,6 +12,7 @@ class WaveEngine(
   private var visualizer: Visualizer =
     Visualizer(audioSession).apply {
       setDataCaptureListener(this@WaveEngine, Visualizer.getMaxCaptureRate(), true, false)
+      enabled = true
     }
 
   private val waveParser: WaveParser = WaveParser()
@@ -27,14 +28,14 @@ class WaveEngine(
     if (currentTime - lastTime > 360L) {
       lastTime = currentTime
       if (waveform != null && waveform.isNotEmpty()) {
-        val data =
+        onDataCapture(
           waveParser.parse(
             toParse = waveform,
             viewMin = minValue,
             viewMax = maxValue,
             chunkNum = valuesCount,
           )
-        onDataCapture(data)
+        )
       }
     }
   }

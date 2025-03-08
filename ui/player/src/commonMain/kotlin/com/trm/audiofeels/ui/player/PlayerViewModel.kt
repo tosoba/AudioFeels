@@ -31,14 +31,17 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -59,6 +62,35 @@ class PlayerViewModel(
     flow { emit(!visualizationRepository.isPermissionPermanentlyDenied()) }
       .stateIn(scope = viewModelScope, started = SharingStarted.Lazily, initialValue = false)
 
+  private val _audioData = MutableStateFlow<PlayerAudioData>(PlayerAudioData.Disabled)
+  val audioData: StateFlow<PlayerAudioData> = _audioData.asStateFlow()
+  private var audioDataJob: Job? = null
+
+  fun onRecordAudioPermissionGranted() {
+    viewModelScope.launch { visualizationRepository.savePermissionPermanentlyDenied(false) }
+    audioDataJob =
+      playerConnection.audioDataFlow
+        .onEach {
+          _audioData.value =
+            if (it.isNotEmpty()) PlayerAudioData.Enabled(it) else PlayerAudioData.Disabled
+        }
+        .launchIn(viewModelScope)
+  }
+
+  fun onRecordAudioPermissionDenied() {
+    disableAudioData()
+  }
+
+  fun onRecordAudioPermissionDeniedPermanently() {
+    viewModelScope.launch { visualizationRepository.savePermissionPermanentlyDenied(true) }
+    disableAudioData()
+  }
+
+  private fun disableAudioData() {
+    audioDataJob?.cancel()
+    _audioData.value = PlayerAudioData.Disabled
+  }
+
   val viewState: RestartableStateFlow<PlayerViewState> =
     playlistsRepository
       .getCurrentPlaylistPlaybackFlow()
@@ -72,19 +104,6 @@ class PlayerViewModel(
         started = SharingStarted.Lazily,
         initialValue = invisibleViewState(),
       )
-
-  fun onRecordAudioPermissionGranted() {
-    viewModelScope.launch { visualizationRepository.savePermissionPermanentlyDenied(false) }
-  }
-
-  fun onRecordAudioPermissionDenied() {
-    // TODO: set audio data flow to Disabled state
-  }
-
-  fun onRecordAudioPermissionDeniedPermanently() {
-    viewModelScope.launch { visualizationRepository.savePermissionPermanentlyDenied(true) }
-    // TODO: set audio data flow to Disabled state
-  }
 
   private fun invisibleViewState(): PlayerViewState.Invisible =
     PlayerViewState.Invisible(
