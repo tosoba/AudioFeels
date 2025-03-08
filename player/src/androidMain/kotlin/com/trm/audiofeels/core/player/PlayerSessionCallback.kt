@@ -12,8 +12,12 @@ import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionResult
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
+import com.trm.audiofeels.core.base.di.ServiceScope
+import me.tatarka.inject.annotations.Inject
 
-internal class PlayerSessionCallback(private val player: ExoPlayer) : MediaLibrarySession.Callback {
+@ServiceScope
+@Inject
+class PlayerSessionCallback : MediaLibrarySession.Callback {
   override fun onAddMediaItems(
     mediaSession: MediaSession,
     controller: MediaSession.ControllerInfo,
@@ -50,7 +54,7 @@ internal class PlayerSessionCallback(private val player: ExoPlayer) : MediaLibra
         Futures.immediateFuture(
           SessionResult(
             SessionResult.RESULT_SUCCESS,
-            bundleOf(EXTRA_AUDIO_SESSION_ID to player.audioSessionId),
+            bundleOf(EXTRA_AUDIO_SESSION_ID to (session.player as ExoPlayer).audioSessionId),
           )
         )
       }
