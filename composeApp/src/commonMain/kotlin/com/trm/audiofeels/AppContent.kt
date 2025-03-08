@@ -1,6 +1,8 @@
 package com.trm.audiofeels
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,6 +27,7 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationDrawerItem
@@ -72,6 +75,7 @@ import androidx.navigation.compose.rememberNavController
 import coil3.compose.setSingletonImageLoaderFactory
 import com.materialkolor.DynamicMaterialTheme
 import com.materialkolor.ktx.rememberThemeColor
+import com.trm.audiofeels.core.ui.compose.AnimatedNullableVisibility
 import com.trm.audiofeels.core.ui.compose.theme.UpdateEdgeToEdge
 import com.trm.audiofeels.core.ui.compose.util.NavigationContentPosition
 import com.trm.audiofeels.core.ui.compose.util.NavigationType
@@ -82,6 +86,7 @@ import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.ui.discover.DiscoverPage
 import com.trm.audiofeels.ui.discover.DiscoverViewModelFactory
 import com.trm.audiofeels.ui.favourites.FavouritesPage
+import com.trm.audiofeels.ui.player.PlayerAudioVisualization
 import com.trm.audiofeels.ui.player.PlayerViewModel
 import com.trm.audiofeels.ui.player.PlayerViewState
 import com.trm.audiofeels.ui.player.composable.PlayerExpandedContent
@@ -189,6 +194,19 @@ fun AppContent(applicationComponent: ApplicationComponent) {
         playerViewState = playerViewState,
         navController = navController,
         applicationComponent = applicationComponent,
+      )
+    }
+
+    val audioData by playerViewModel.audioData.collectAsStateWithLifecycle()
+    AnimatedNullableVisibility(value = audioData, enter = fadeIn(), exit = fadeOut()) {
+      PlayerAudioVisualization(
+        minValueColor = MaterialTheme.colorScheme.inversePrimary,
+        maxValueColor = MaterialTheme.colorScheme.primary,
+        values = it,
+        animationDurationMs = 360,
+        strokeWidth = 4.dp,
+        modifier = Modifier.fillMaxSize(),
+        isPlaying = playerViewState.isPlaying,
       )
     }
   }

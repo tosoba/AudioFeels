@@ -62,33 +62,30 @@ class PlayerViewModel(
     flow { emit(!visualizationRepository.isPermissionPermanentlyDenied()) }
       .stateIn(scope = viewModelScope, started = SharingStarted.Lazily, initialValue = false)
 
-  private val _audioData = MutableStateFlow<PlayerAudioData>(PlayerAudioData.Disabled)
-  val audioData: StateFlow<PlayerAudioData> = _audioData.asStateFlow()
+  private val _audioData = MutableStateFlow<List<Float>?>(null)
+  val audioData: StateFlow<List<Float>?> = _audioData.asStateFlow()
   private var audioDataJob: Job? = null
 
   fun onRecordAudioPermissionGranted() {
     viewModelScope.launch { visualizationRepository.savePermissionPermanentlyDenied(false) }
     audioDataJob =
       playerConnection.audioDataFlow
-        .onEach {
-          _audioData.value =
-            if (it.isNotEmpty()) PlayerAudioData.Enabled(it) else PlayerAudioData.Disabled
-        }
+        .onEach { _audioData.value = it.takeIf(List<Float>::isNotEmpty) }
         .launchIn(viewModelScope)
   }
 
   fun onRecordAudioPermissionDenied() {
-    disableAudioData()
+    cancelAudioData()
   }
 
   fun onRecordAudioPermissionDeniedPermanently() {
     viewModelScope.launch { visualizationRepository.savePermissionPermanentlyDenied(true) }
-    disableAudioData()
+    cancelAudioData()
   }
 
-  private fun disableAudioData() {
+  private fun cancelAudioData() {
     audioDataJob?.cancel()
-    _audioData.value = PlayerAudioData.Disabled
+    _audioData.value = null
   }
 
   val viewState: RestartableStateFlow<PlayerViewState> =
