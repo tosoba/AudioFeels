@@ -38,11 +38,11 @@ fun Modifier.shimmerBackground(enabled: Boolean, shape: Shape = RectangleShape):
           Brush.linearGradient(
             colors =
               listOf(
-                MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f),
-                MaterialTheme.colorScheme.secondary.copy(alpha = 0.4f),
+                MaterialTheme.colorScheme.secondary.copy(alpha = .3f),
+                MaterialTheme.colorScheme.secondary.copy(alpha = .15f),
               ),
-            start = Offset(translateAnimation, translateAnimation),
-            end = Offset(translateAnimation + 100f, translateAnimation + 100f),
+            start = Offset(x = translateAnimation, y = translateAnimation),
+            end = Offset(x = translateAnimation + 100f, y = translateAnimation + 100f),
             tileMode = TileMode.Mirror,
           ),
         shape = shape,
