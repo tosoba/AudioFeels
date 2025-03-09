@@ -17,6 +17,7 @@ import com.trm.audiofeels.core.base.util.roundTo
 import com.trm.audiofeels.core.ui.compose.util.loadImageBitmapOrNull
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import com.trm.audiofeels.domain.model.PlaybackState
+import com.trm.audiofeels.domain.model.PlayerError
 import com.trm.audiofeels.domain.model.PlayerInput
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Playlist
@@ -148,7 +149,7 @@ class PlayerViewModel(
             startPlaylistPlayback = StartPlaylistPlayback(),
             startCarryOnPlaylistPlayback = StartCarryOnPlaylistPlayback(),
             cancelPlayback = ::cancelPlayback,
-            primaryControlState = retryAction(playback.playlist),
+            primaryControlState = retryAction(playlist = playback.playlist, clearHost = false),
           )
         )
       }
@@ -239,7 +240,10 @@ class PlayerViewModel(
         }
       }
       is PlayerState.Error -> {
-        retryAction(playlist)
+        retryAction(
+          playlist = playlist,
+          clearHost = playerState.error == PlayerError.INVALID_HOST_ERROR,
+        )
       }
     }
 
@@ -257,11 +261,12 @@ class PlayerViewModel(
       action = togglePlayback,
     )
 
-  private fun retryAction(playlist: Playlist) =
+  private fun retryAction(playlist: Playlist, clearHost: Boolean) =
     PlayerViewState.PrimaryControlState.Action(
       imageVector = Icons.Filled.Refresh,
       contentDescription = "Retry",
       action = {
+        // TODO: clear host if true before retrying
         startNewPlaylistPlayback(playlist = playlist, carryOn = true).invokeOnCompletion {
           viewState.restart()
         }
