@@ -2,6 +2,8 @@ package com.trm.audiofeels.ui.discover
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
@@ -156,7 +158,7 @@ private fun <T : Any> DiscoverListLazyRow(
   placeholderItemContent: @Composable ColumnScope.() -> Unit,
   item: @Composable LazyItemScope.(Int, Int, T) -> Unit,
 ) {
-  AnimatedVisibility(visible = list.discoverListVisible()) {
+  AnimatedVisibility(visible = list.discoverListVisible(), enter = fadeIn(), exit = fadeOut()) {
     LazyRow(
       modifier = Modifier.fillMaxWidth(),
       contentPadding = PaddingValues(12.dp),
@@ -229,7 +231,7 @@ private fun LazyItemScope.DiscoverListErrorItem(onClick: () -> Unit) {
 }
 
 private fun <T : Any> LoadableState<List<T>>.discoverListVisible(): Boolean =
-  this is LoadableState.Loading || (this is LoadableState.Idle && !valueOrNull.isNullOrEmpty())
+  this !is LoadableState.Idle || !valueOrNull.isNullOrEmpty()
 
 @Composable
 private fun PlaylistItem(
