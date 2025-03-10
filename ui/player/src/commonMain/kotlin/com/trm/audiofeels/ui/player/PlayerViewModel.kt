@@ -23,6 +23,7 @@ import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.model.PlaylistPlayback
 import com.trm.audiofeels.domain.player.PlayerConnection
+import com.trm.audiofeels.domain.repository.HostsRepository
 import com.trm.audiofeels.domain.repository.PlaylistsRepository
 import com.trm.audiofeels.domain.repository.VisualizationRepository
 import com.trm.audiofeels.domain.usecase.GetPlayerInputUseCase
@@ -56,6 +57,7 @@ class PlayerViewModel(
   private val getPlayerInputUseCase: GetPlayerInputUseCase,
   private val playlistsRepository: PlaylistsRepository,
   private val visualizationRepository: VisualizationRepository,
+  private val hostsRepository: HostsRepository,
   private val imageLoader: ImageLoader,
   private val platformContext: PlatformContext,
 ) : ViewModel() {
@@ -266,10 +268,12 @@ class PlayerViewModel(
       imageVector = Icons.Filled.Refresh,
       contentDescription = "Retry",
       action = {
-        // TODO: clear host if true before retrying
-        startNewPlaylistPlayback(playlist = playlist, carryOn = true).invokeOnCompletion {
-          viewState.restart()
-        }
+        viewModelScope
+          .launch {
+            if (clearHost) hostsRepository.clearHost()
+            suspendStartNewPlaylistPlayback(playlist = playlist, carryOn = true)
+          }
+          .invokeOnCompletion { viewState.restart() }
       },
     )
 
@@ -397,9 +401,11 @@ class PlayerViewModel(
   }
 
   private fun startNewPlaylistPlayback(playlist: Playlist, carryOn: Boolean): Job =
-    viewModelScope.launch {
-      playlistsRepository.setNewCurrentPlaylist(playlist = playlist, carryOn = carryOn)
-    }
+    viewModelScope.launch { suspendStartNewPlaylistPlayback(playlist, carryOn) }
+
+  private suspend fun suspendStartNewPlaylistPlayback(playlist: Playlist, carryOn: Boolean) {
+    playlistsRepository.setNewCurrentPlaylist(playlist, carryOn)
+  }
 
   private fun cancelPlayback() {
     viewModelScope.launch { playlistsRepository.clearCurrentPlaylist() }

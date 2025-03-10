@@ -2,6 +2,7 @@ package com.trm.audiofeels.data.hosts
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.trm.audiofeels.api.hosts.HostsEndpoints
 import com.trm.audiofeels.core.base.di.ApplicationScope
@@ -47,8 +48,12 @@ class AudiusHostsRepository(
         ?: fetchHosts()?.filter { it != oldHost }.findAndStoreFirstValidOrThrow()
     }
 
-  override suspend fun fetchHost(): String =
-    mutex.withLock { fetchHosts().findAndStoreFirstValidOrThrow() }
+  override suspend fun clearHost() {
+    mutex.withLock {
+      inMemoryDataSource.host = null
+      dataStore.edit { it.remove(hostPreferenceKey) }
+    }
+  }
 
   private suspend fun fetchHosts(): List<String>? = endpoints.getHosts().hosts
 

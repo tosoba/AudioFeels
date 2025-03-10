@@ -6,6 +6,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import coil3.ImageLoader
 import coil3.PlatformContext
 import com.trm.audiofeels.domain.player.PlayerConnection
+import com.trm.audiofeels.domain.repository.HostsRepository
 import com.trm.audiofeels.domain.repository.PlaylistsRepository
 import com.trm.audiofeels.domain.repository.VisualizationRepository
 import com.trm.audiofeels.domain.usecase.GetPlayerInputUseCase
@@ -19,6 +20,7 @@ class PlayerViewModelFactory(
   private val getPlayerInputUseCase: GetPlayerInputUseCase,
   private val playlistsRepository: PlaylistsRepository,
   private val visualizationRepository: VisualizationRepository,
+  private val hostsRepository: HostsRepository,
   private val imageLoader: ImageLoader,
   private val platformContext: PlatformContext,
 ) : ViewModelProvider.Factory {
@@ -29,6 +31,7 @@ class PlayerViewModelFactory(
         getPlayerInputUseCase = getPlayerInputUseCase,
         playlistsRepository = playlistsRepository,
         visualizationRepository = visualizationRepository,
+        hostsRepository = hostsRepository,
         imageLoader = imageLoader,
         platformContext = platformContext,
       )

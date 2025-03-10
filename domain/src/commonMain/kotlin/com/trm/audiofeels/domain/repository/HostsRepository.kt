@@ -1,7 +1,7 @@
 package com.trm.audiofeels.domain.repository
 
 interface HostsRepository {
-  suspend fun fetchHost(): String
+  suspend fun clearHost()
 
   suspend fun retrieveHost(): String
 }
