@@ -11,10 +11,9 @@ class WaveParser {
     if (toParse.isEmpty()) {
       return emptyList()
     }
-    // 1. Chunk the raw data given by the visualizer
+
     val chunked = chunk(toParse, chunkNum)
 
-    // 2. Smooth the data
     val xs = FloatArray(chunked.size)
     val out = FloatArray(chunked.size)
     for (i in chunked.indices) {
@@ -22,9 +21,7 @@ class WaveParser {
     }
     SgFilter(9).process(chunked, xs, out)
 
-    // 3. Makes each raw data falls into the range of [viewMin, viewMax]
-    val parsed: List<Float> = normalizeData(out, viewMin, viewMax)
-    return parsed
+    return normalizeData(out, viewMin, viewMax)
   }
 
   private fun chunk(toParse: ByteArray, chunkNum: Int): FloatArray {
@@ -53,9 +50,5 @@ class WaveParser {
     return data.map { value ->
       ((value - rawMin) / (rawMax - rawMin) * (viewMax - viewMin) + viewMin)
     }
-  }
-
-  companion object {
-    val TAG = WaveParser::class.simpleName
   }
 }
