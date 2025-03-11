@@ -6,6 +6,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -16,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun PlayerAudioVisualization(
@@ -23,7 +26,6 @@ fun PlayerAudioVisualization(
   maxValueColor: Color,
   values: List<Float>,
   animationDurationMs: Int,
-  strokeWidth: Dp,
   modifier: Modifier = Modifier,
   isPlaying: Boolean,
 ) {
@@ -44,9 +46,17 @@ fun PlayerAudioVisualization(
           }
         }
       }
+  val animatedStrokeWidthDp by
+    remember(values) {
+      derivedStateOf {
+        animatedValues.sumOf { it.value.toDouble() }.toFloat() / animatedValues.size *
+          4.dp.value *
+          3
+      }
+    }
 
   Canvas(modifier = modifier) {
-    val strokeWidthPx = strokeWidth.toPx()
+    val strokeWidthPx = animatedStrokeWidthDp.dp.toPx()
     val halfStrokeWidthPx = strokeWidthPx / 2f
     val topLeft = Offset(x = halfStrokeWidthPx, y = halfStrokeWidthPx)
     drawRect(

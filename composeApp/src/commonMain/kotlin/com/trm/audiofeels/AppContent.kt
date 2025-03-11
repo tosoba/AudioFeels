@@ -204,7 +204,6 @@ fun AppContent(applicationComponent: ApplicationComponent) {
         maxValueColor = MaterialTheme.colorScheme.primary,
         values = it,
         animationDurationMs = 360,
-        strokeWidth = 4.dp,
         modifier = Modifier.fillMaxSize(),
         isPlaying = playerViewState.isPlaying,
       )
