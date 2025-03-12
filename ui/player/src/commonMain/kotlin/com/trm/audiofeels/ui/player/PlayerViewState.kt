@@ -7,6 +7,7 @@ import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.model.Track
+import org.jetbrains.compose.resources.StringResource
 
 sealed interface PlayerViewState {
   val playerVisible: Boolean
@@ -28,7 +29,7 @@ sealed interface PlayerViewState {
 
     data class Action(
       val imageVector: ImageVector,
-      val contentDescription: String?,
+      val contentDescription: StringResource?,
       val action: () -> Unit,
     ) : PrimaryControlState
   }

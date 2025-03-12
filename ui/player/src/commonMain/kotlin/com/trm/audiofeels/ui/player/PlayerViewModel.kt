@@ -15,6 +15,10 @@ import com.trm.audiofeels.core.base.util.RestartableStateFlow
 import com.trm.audiofeels.core.base.util.restartableStateIn
 import com.trm.audiofeels.core.base.util.roundTo
 import com.trm.audiofeels.core.ui.compose.util.loadImageBitmapOrNull
+import com.trm.audiofeels.core.ui.resources.Res
+import com.trm.audiofeels.core.ui.resources.pause
+import com.trm.audiofeels.core.ui.resources.play
+import com.trm.audiofeels.core.ui.resources.retry
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import com.trm.audiofeels.domain.model.PlaybackState
 import com.trm.audiofeels.domain.model.PlayerError
@@ -252,21 +256,21 @@ class PlayerViewModel(
   private fun pauseAction(togglePlayback: TogglePlayback) =
     PlayerViewState.PrimaryControlState.Action(
       imageVector = Icons.Filled.Pause,
-      contentDescription = "Pause",
+      contentDescription = Res.string.pause,
       action = togglePlayback,
     )
 
   private fun playAction(togglePlayback: TogglePlayback) =
     PlayerViewState.PrimaryControlState.Action(
       imageVector = Icons.Filled.PlayArrow,
-      contentDescription = "Play",
+      contentDescription = Res.string.play,
       action = togglePlayback,
     )
 
   private fun retryAction(playlist: Playlist, clearHost: Boolean) =
     PlayerViewState.PrimaryControlState.Action(
       imageVector = Icons.Filled.Refresh,
-      contentDescription = "Retry",
+      contentDescription = Res.string.retry,
       action = {
         viewModelScope
           .launch {

@@ -1,4 +1,6 @@
 <resources>
+    <string name="app_name">AudioFeels</string>
+
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="settings">Settings</string>
@@ -10,9 +12,16 @@
     <string name="carry_on">Carry on</string>
     <string name="trending">Trending</string>
     <string name="retry">Retry</string>
+    <string name="play">Play</string>
+    <string name="pause">Pause</string>
     <string name="play_previous_track">Play previous track</string>
     <string name="play_next_track">Play next track</string>
     <string name="error_occurred">Error occurred</string>
+    <string name="cancel_playback">Cancel playback</string>
+    <string name="add_to_favourites">Add to playlist favourites</string>
+    <string name="remove_from_favourites">Remove playlist from favourites</string>
+    <string name="turn_on_shuffle">Turn on shuffle playlist</string>
+    <string name="turn_off_shuffle">Turn off shuffle playlist</string>
 
     <string name="days_ago">%1$d days ago</string>
     <string name="yesterday">yesterday</string>

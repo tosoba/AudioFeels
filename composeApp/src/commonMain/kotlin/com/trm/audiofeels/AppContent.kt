@@ -80,6 +80,9 @@ import com.trm.audiofeels.core.ui.compose.theme.UpdateEdgeToEdge
 import com.trm.audiofeels.core.ui.compose.util.NavigationContentPosition
 import com.trm.audiofeels.core.ui.compose.util.NavigationType
 import com.trm.audiofeels.core.ui.compose.util.calculateWindowSize
+import com.trm.audiofeels.core.ui.resources.Res
+import com.trm.audiofeels.core.ui.resources.app_name
+import com.trm.audiofeels.core.ui.resources.cancel_playback
 import com.trm.audiofeels.di.ApplicationComponent
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import com.trm.audiofeels.domain.model.Playlist
@@ -306,11 +309,14 @@ private fun AppBottomSheetScaffold(
 @Composable
 private fun AppTopAppBar(viewState: PlayerViewState) {
   CenterAlignedTopAppBar(
-    title = { Text("AudioFeels") },
+    title = { Text(stringResource(Res.string.app_name)) },
     actions = {
       AnimatedVisibility(viewState.playerVisible) {
         IconButton(onClick = viewState.cancelPlayback) {
-          Icon(Icons.Outlined.Close, contentDescription = "Cancel playback")
+          Icon(
+            imageVector = Icons.Outlined.Close,
+            contentDescription = stringResource(Res.string.cancel_playback),
+          )
         }
       }
     },
