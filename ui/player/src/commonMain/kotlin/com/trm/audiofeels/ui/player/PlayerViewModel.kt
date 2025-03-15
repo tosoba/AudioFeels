@@ -131,6 +131,7 @@ class PlayerViewModel(
 
   private fun playerViewStateFlow(playback: PlaylistPlayback): Flow<PlayerViewState> =
     loadableStateFlowOf { getPlayerInputUseCase(playback.playlist.id) }
+      .onStart { if (playback.autoPlay) playerConnection.reset() }
       .onEach { input ->
         if (input is LoadableState.Idle && playback.autoPlay) {
           playerConnection.enqueue(
