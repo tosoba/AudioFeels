@@ -352,7 +352,7 @@ class PlayerViewModel(
     private val togglePlayback: TogglePlayback? = null,
   ) : (Playlist) -> Unit {
     override fun invoke(playlist: Playlist) {
-      if (playlist != currentPlaylist) {
+      if (playlist.id != currentPlaylist?.id) {
         startNewPlaylistPlayback(playlist = playlist, carryOn = false)
       } else {
         togglePlayback?.invoke()
@@ -379,7 +379,7 @@ class PlayerViewModel(
     private val togglePlayback: TogglePlayback? = null,
   ) : (CarryOnPlaylist) -> Unit {
     override fun invoke(carryOnPlaylist: CarryOnPlaylist) {
-      if (carryOnPlaylist.playlist != currentPlaylist) {
+      if (carryOnPlaylist.playlist.id != currentPlaylist?.id) {
         startNewPlaylistPlayback(playlist = carryOnPlaylist.playlist, carryOn = false)
       } else {
         togglePlayback?.invoke()
