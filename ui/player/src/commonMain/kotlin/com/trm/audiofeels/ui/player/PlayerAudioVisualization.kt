@@ -17,7 +17,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.lerp
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -46,17 +45,15 @@ fun PlayerAudioVisualization(
           }
         }
       }
-  val animatedStrokeWidthDp by
+  val strokeWidthDp by
     remember(values) {
       derivedStateOf {
-        animatedValues.sumOf { it.value.toDouble() }.toFloat() / animatedValues.size *
-          4.dp.value *
-          3
+        (animatedValues.sumOf { it.value.toDouble() }.toFloat() / animatedValues.size * 12).dp
       }
     }
 
   Canvas(modifier = modifier) {
-    val strokeWidthPx = animatedStrokeWidthDp.dp.toPx()
+    val strokeWidthPx = strokeWidthDp.toPx()
     val halfStrokeWidthPx = strokeWidthPx / 2f
     val topLeft = Offset(x = halfStrokeWidthPx, y = halfStrokeWidthPx)
     drawRect(
