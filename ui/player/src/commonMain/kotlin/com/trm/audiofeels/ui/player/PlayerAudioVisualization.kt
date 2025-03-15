@@ -48,7 +48,7 @@ fun PlayerAudioVisualization(
   val strokeWidthDp by
     remember(values) {
       derivedStateOf {
-        (animatedValues.sumOf { it.value.toDouble() }.toFloat() / animatedValues.size * 12).dp
+        (animatedValues.sumOf { it.value.toDouble() }.toFloat() / animatedValues.size * 5f).dp
       }
     }
 
@@ -56,6 +56,7 @@ fun PlayerAudioVisualization(
     val strokeWidthPx = strokeWidthDp.toPx()
     val halfStrokeWidthPx = strokeWidthPx / 2f
     val topLeft = Offset(x = halfStrokeWidthPx, y = halfStrokeWidthPx)
+
     drawRect(
       brush =
         Brush.linearGradient(
@@ -66,6 +67,36 @@ fun PlayerAudioVisualization(
         Size(
           width = size.width - topLeft.x - halfStrokeWidthPx,
           height = size.height - topLeft.y - halfStrokeWidthPx,
+        ),
+      style = Stroke(strokeWidthPx),
+    )
+
+    drawRect(
+      brush =
+        Brush.linearGradient(
+          colors =
+            animatedValues.map { lerp(minValueColor, maxValueColor, it.value).copy(alpha = .75f) }
+        ),
+      topLeft = topLeft * 1.5f,
+      size =
+        Size(
+          width = size.width - topLeft.x - strokeWidthPx * 1.5f,
+          height = size.height - topLeft.y - strokeWidthPx * 1.5f,
+        ),
+      style = Stroke(strokeWidthPx),
+    )
+
+    drawRect(
+      brush =
+        Brush.linearGradient(
+          colors =
+            animatedValues.map { lerp(minValueColor, maxValueColor, it.value).copy(alpha = .5f) }
+        ),
+      topLeft = topLeft * 3f,
+      size =
+        Size(
+          width = size.width - topLeft.x - strokeWidthPx * 3f,
+          height = size.height - topLeft.y - strokeWidthPx * 3f,
         ),
       style = Stroke(strokeWidthPx),
     )
