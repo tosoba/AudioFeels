@@ -10,4 +10,5 @@ data class Playlist(
   val artworkUrl: String?,
   val score: Double,
   val trackCount: Int,
+  val favourite: Boolean,
 )

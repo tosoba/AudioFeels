@@ -20,4 +20,5 @@ data class PlaylistEntity(
   val currentTrackIndex: Int = 0,
   val currentTrackPositionMs: Long = 0L,
   val autoPlay: Boolean = true,
+  val favourite: Boolean = false,
 )

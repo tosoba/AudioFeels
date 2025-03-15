@@ -13,6 +13,7 @@ internal fun Playlist.toCurrentPlaylistEntity(): PlaylistEntity =
     artworkUrl = artworkUrl,
     score = score,
     trackCount = trackCount,
+    favourite = favourite,
   )
 
 internal fun PlaylistPlayback.toCurrentPlaylistEntity(): PlaylistEntity =
@@ -26,10 +27,19 @@ internal fun PlaylistPlayback.toCurrentPlaylistEntity(): PlaylistEntity =
     currentTrackIndex = currentTrackIndex,
     currentTrackPositionMs = currentTrackPositionMs,
     autoPlay = autoPlay,
+    favourite = playlist.favourite,
   )
 
 internal fun PlaylistEntity.toCarryOn(): CarryOnPlaylist =
   CarryOnPlaylist(playlist = toPlaylist(), lastPlayed = requireNotNull(lastPlayed))
+
+internal fun PlaylistEntity.toPlaylistPlayback(): PlaylistPlayback =
+  PlaylistPlayback(
+    playlist = toPlaylist(),
+    currentTrackIndex = currentTrackIndex,
+    currentTrackPositionMs = currentTrackPositionMs,
+    autoPlay = autoPlay,
+  )
 
 internal fun PlaylistEntity.toPlaylist(): Playlist =
   Playlist(
@@ -39,20 +49,5 @@ internal fun PlaylistEntity.toPlaylist(): Playlist =
     artworkUrl = artworkUrl,
     score = score,
     trackCount = trackCount,
-  )
-
-internal fun PlaylistEntity.toPlaylistPlayback(): PlaylistPlayback =
-  PlaylistPlayback(
-    playlist =
-      Playlist(
-        id = id,
-        name = name,
-        description = description,
-        artworkUrl = artworkUrl,
-        score = score,
-        trackCount = trackCount,
-      ),
-    currentTrackIndex = currentTrackIndex,
-    currentTrackPositionMs = currentTrackPositionMs,
-    autoPlay = autoPlay,
+    favourite = favourite,
   )

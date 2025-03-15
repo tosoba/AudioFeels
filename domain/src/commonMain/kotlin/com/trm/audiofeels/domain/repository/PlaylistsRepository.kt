@@ -13,11 +13,15 @@ interface PlaylistsRepository {
 
   suspend fun clearCurrentPlaylist()
 
+  suspend fun toggleCurrentPlaylistFavourite()
+
   suspend fun getPlaylists(mood: String?): List<Playlist>
 
   suspend fun getPlaylistTracks(playlistId: String): List<Track>
 
   fun getCarryOnPlaylistsFlow(): Flow<List<CarryOnPlaylist>>
+
+  fun getCurrentPlaylistFlow(): Flow<Playlist?>
 
   fun getCurrentPlaylistPlaybackFlow(): Flow<PlaylistPlayback?>
 }

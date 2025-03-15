@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "d8cb0df689c29956bacef88b27c7a637",
+    "identityHash": "3295d9d8bf7f6a4017247d004065818b",
     "entities": [
       {
         "tableName": "playlist",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `description` TEXT, `artworkUrl` TEXT, `score` REAL NOT NULL, `trackCount` INTEGER NOT NULL, `lastPlayed` TEXT, `currentTrackIndex` INTEGER NOT NULL, `currentTrackPositionMs` INTEGER NOT NULL, `autoPlay` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `description` TEXT, `artworkUrl` TEXT, `score` REAL NOT NULL, `trackCount` INTEGER NOT NULL, `lastPlayed` TEXT, `currentTrackIndex` INTEGER NOT NULL, `currentTrackPositionMs` INTEGER NOT NULL, `autoPlay` INTEGER NOT NULL, `favourite` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -64,6 +64,12 @@
             "columnName": "autoPlay",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "favourite",
+            "columnName": "favourite",
+            "affinity": "INTEGER",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -76,7 +82,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd8cb0df689c29956bacef88b27c7a637')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3295d9d8bf7f6a4017247d004065818b')"
     ]
   }
 }

@@ -96,13 +96,26 @@ class PlayerViewModel(
   }
 
   val viewState: RestartableStateFlow<PlayerViewState> =
-    playlistsRepository
-      .getCurrentPlaylistPlaybackFlow()
-      .distinctUntilChangedBy { playback -> playback?.playlist?.id }
-      .flatMapLatest { playback ->
-        playback?.let(::playerViewStateFlow)
-          ?: flowOf(invisibleViewState()).onEach { playerConnection.reset() }
+    combine(
+        playlistsRepository
+          .getCurrentPlaylistPlaybackFlow()
+          .distinctUntilChangedBy { playback -> playback?.playlist?.id }
+          .flatMapLatest { playback ->
+            playback?.let(::playerViewStateFlow)
+              ?: flowOf(invisibleViewState()).onEach { playerConnection.reset() }
+          },
+        playlistsRepository.getCurrentPlaylistFlow(),
+      ) { viewState, playlist ->
+        playlist?.let {
+          when (viewState) {
+            is PlayerViewState.Invisible -> viewState
+            is PlayerViewState.Loading -> viewState.copy(playlist = it)
+            is PlayerViewState.Playback -> viewState.copy(playlist = it)
+            is PlayerViewState.Error -> viewState.copy(playlist = it)
+          }
+        } ?: viewState
       }
+      .onEach { if (it is PlayerViewState.Playback) onPlayerViewStatePlayback(it) }
       .restartableStateIn(
         scope = viewModelScope,
         started = SharingStarted.Lazily,
@@ -128,7 +141,6 @@ class PlayerViewModel(
         }
       }
       .flatMapLatest { playerInput -> playerViewStateFlow(playerInput, playback) }
-      .onEach { if (it is PlayerViewState.Playback) onPlayerViewStatePlayback(it) }
 
   private fun playerViewStateFlow(
     input: LoadableState<PlayerInput>,
@@ -211,6 +223,7 @@ class PlayerViewModel(
       startCarryOnPlaylistPlayback =
         StartCarryOnPlaylistPlayback(playback.playlist, togglePlayback),
       cancelPlayback = ::cancelPlayback,
+      togglePlaylistFavourite = ::toggleCurrentPlaylistFavourite,
       playPreviousTrack =
         PlayPreviousTrackAction(PlaybackActionArguments(playerState, playerInput, playback)),
       playNextTrack =
@@ -277,6 +290,10 @@ class PlayerViewModel(
           .invokeOnCompletion { viewState.restart() }
       },
     )
+
+  private fun toggleCurrentPlaylistFavourite() {
+    viewModelScope.launch { playlistsRepository.toggleCurrentPlaylistFavourite() }
+  }
 
   private fun currentTrackProgress(playerState: PlayerState, currentTrackPositionMs: Long): Double =
     when (playerState) {

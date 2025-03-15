@@ -146,9 +146,11 @@ internal fun PlayerCollapsedContent(viewState: PlayerViewState, modifier: Modifi
         }
 
         PlaylistFavouriteToggleButton(
-          checked = false,
+          checked = viewState.isFavourite,
           enabled = viewState is PlayerViewState.Playback,
-          onCheckedChange = {},
+          onCheckedChange = {
+            (viewState as? PlayerViewState.Playback)?.togglePlaylistFavourite?.invoke()
+          },
         )
 
         Spacer(modifier = Modifier.width(8.dp))

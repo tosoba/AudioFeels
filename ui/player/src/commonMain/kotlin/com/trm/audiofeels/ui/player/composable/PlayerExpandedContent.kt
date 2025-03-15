@@ -104,9 +104,11 @@ fun PlayerExpandedContent(viewState: PlayerViewState, modifier: Modifier = Modif
         }
 
         PlaylistFavouriteToggleButton(
-          checked = false,
+          checked = viewState.isFavourite,
           enabled = viewState is PlayerViewState.Playback,
-          onCheckedChange = {},
+          onCheckedChange = {
+            (viewState as? PlayerViewState.Playback)?.togglePlaylistFavourite?.invoke()
+          },
         )
       }
     }

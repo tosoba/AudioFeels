@@ -14,6 +14,7 @@ fun PlaylistsResponseItem.toPlaylist() =
     artworkUrl = artwork?.url,
     score = score ?: 0.0,
     trackCount = requireNotNull(trackCount),
+    favourite = false,
   )
 
 fun TrackResponseItem.toTrack() =

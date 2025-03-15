@@ -7,6 +7,7 @@ import com.trm.audiofeels.core.database.dao.PlaylistDao
 import com.trm.audiofeels.core.database.model.PlaylistEntity
 import com.trm.audiofeels.data.playlists.mapper.toCarryOn
 import com.trm.audiofeels.data.playlists.mapper.toCurrentPlaylistEntity
+import com.trm.audiofeels.data.playlists.mapper.toPlaylist
 import com.trm.audiofeels.data.playlists.mapper.toPlaylistPlayback
 import com.trm.audiofeels.data.playlists.util.isValid
 import com.trm.audiofeels.data.playlists.util.toPlaylist
@@ -31,12 +32,23 @@ class AudiusPlaylistsRepository(
   }
 
   override suspend fun updateCurrentPlaylist(playlistPlayback: PlaylistPlayback) {
-    playlistDao.upsert(playlistPlayback.toCurrentPlaylistEntity())
+    playlistDao.updateCurrentPlaylist(
+      id = playlistPlayback.playlist.id,
+      currentTrackIndex = playlistPlayback.currentTrackIndex,
+      currentTrackPositionMs = playlistPlayback.currentTrackPositionMs,
+    )
   }
 
   override suspend fun clearCurrentPlaylist() {
     playlistDao.clearCurrentPlaylist(Clock.System.now())
   }
+
+  override suspend fun toggleCurrentPlaylistFavourite() {
+    playlistDao.toggleCurrentPlaylistFavourite()
+  }
+
+  override fun getCurrentPlaylistFlow(): Flow<Playlist?> =
+    playlistDao.selectCurrentPlaylist().map { it?.toPlaylist() }
 
   override fun getCurrentPlaylistPlaybackFlow(): Flow<PlaylistPlayback?> =
     playlistDao.selectCurrentPlaylist().map { it?.toPlaylistPlayback() }

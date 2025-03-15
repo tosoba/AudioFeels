@@ -24,6 +24,8 @@ sealed interface PlayerViewState {
   val isPlaying: Boolean
     get() = this is Playback && playerState is PlayerState.Enqueued && playerState.isPlaying
 
+  val isFavourite: Boolean
+
   sealed interface PrimaryControlState {
     data object Loading : PrimaryControlState
 
@@ -43,6 +45,8 @@ sealed interface PlayerViewState {
       LoadableState.Idle(null)
 
     override val primaryControlState: PrimaryControlState.Loading = PrimaryControlState.Loading
+
+    override val isFavourite: Boolean = false
   }
 
   data class Loading(
@@ -55,6 +59,9 @@ sealed interface PlayerViewState {
       LoadableState.Idle(null)
 
     override val primaryControlState: PrimaryControlState.Loading = PrimaryControlState.Loading
+
+    override val isFavourite: Boolean
+      get() = playlist.favourite
   }
 
   data class Playback(
@@ -68,6 +75,7 @@ sealed interface PlayerViewState {
     override val startPlaylistPlayback: (Playlist) -> Unit,
     override val startCarryOnPlaylistPlayback: (CarryOnPlaylist) -> Unit,
     override val cancelPlayback: () -> Unit,
+    val togglePlaylistFavourite: () -> Unit,
     val playPreviousTrack: () -> Unit,
     val playNextTrack: () -> Unit,
     val playTrackAtIndex: (Int) -> Unit,
@@ -82,6 +90,9 @@ sealed interface PlayerViewState {
 
     val canPlayNext: Boolean
       get() = currentTrackIndex < tracks.lastIndex
+
+    override val isFavourite: Boolean
+      get() = playlist.favourite
   }
 
   data class Error(
@@ -93,5 +104,8 @@ sealed interface PlayerViewState {
   ) : PlayerViewState {
     override val currentTrackImageBitmap: LoadableState.Idle<ImageBitmap?> =
       LoadableState.Idle(null)
+
+    override val isFavourite: Boolean
+      get() = playlist.favourite
   }
 }
