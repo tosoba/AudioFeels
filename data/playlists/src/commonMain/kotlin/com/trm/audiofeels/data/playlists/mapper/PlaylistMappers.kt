@@ -16,20 +16,6 @@ internal fun Playlist.toCurrentPlaylistEntity(): PlaylistEntity =
     favourite = favourite,
   )
 
-internal fun PlaylistPlayback.toCurrentPlaylistEntity(): PlaylistEntity =
-  PlaylistEntity(
-    id = playlist.id,
-    name = playlist.name,
-    description = playlist.description,
-    artworkUrl = playlist.artworkUrl,
-    score = playlist.score,
-    trackCount = playlist.trackCount,
-    currentTrackIndex = currentTrackIndex,
-    currentTrackPositionMs = currentTrackPositionMs,
-    autoPlay = autoPlay,
-    favourite = playlist.favourite,
-  )
-
 internal fun PlaylistEntity.toCarryOn(): CarryOnPlaylist =
   CarryOnPlaylist(playlist = toPlaylist(), lastPlayed = requireNotNull(lastPlayed))
 

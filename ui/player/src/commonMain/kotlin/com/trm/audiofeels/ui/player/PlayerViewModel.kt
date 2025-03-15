@@ -210,7 +210,8 @@ class PlayerViewModel(
     currentTrackPositionMs: Long,
     currentTrackImageBitmap: LoadableState<ImageBitmap?>,
   ): PlayerViewState.Playback {
-    val togglePlayback = TogglePlayback(PlaybackActionArguments(playerState, playerInput, playback))
+    val arguments = PlaybackActionArguments(playerState, playerInput, playback)
+    val togglePlayback = TogglePlayback(arguments)
     return PlayerViewState.Playback(
       playlist = playback.playlist,
       playerState = playerState,
@@ -224,12 +225,9 @@ class PlayerViewModel(
         StartCarryOnPlaylistPlayback(playback.playlist, togglePlayback),
       cancelPlayback = ::cancelPlayback,
       togglePlaylistFavourite = ::toggleCurrentPlaylistFavourite,
-      playPreviousTrack =
-        PlayPreviousTrackAction(PlaybackActionArguments(playerState, playerInput, playback)),
-      playNextTrack =
-        PlayNextTrackAction(PlaybackActionArguments(playerState, playerInput, playback)),
-      playTrackAtIndex =
-        PlayAtIndexTrackAction(PlaybackActionArguments(playerState, playerInput, playback)),
+      playPreviousTrack = PlayPreviousTrackAction(arguments),
+      playNextTrack = PlayNextTrackAction(arguments),
+      playTrackAtIndex = PlayAtIndexTrackAction(arguments),
     )
   }
 
@@ -397,7 +395,7 @@ class PlayerViewModel(
   ) : (CarryOnPlaylist) -> Unit {
     override fun invoke(carryOnPlaylist: CarryOnPlaylist) {
       if (carryOnPlaylist.playlist.id != currentPlaylist?.id) {
-        startNewPlaylistPlayback(playlist = carryOnPlaylist.playlist, carryOn = false)
+        startNewPlaylistPlayback(playlist = carryOnPlaylist.playlist, carryOn = true)
       } else {
         togglePlayback?.invoke()
       }
