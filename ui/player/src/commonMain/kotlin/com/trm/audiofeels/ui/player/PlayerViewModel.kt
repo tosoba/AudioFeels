@@ -48,11 +48,11 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -170,15 +170,12 @@ class PlayerViewModel(
       playerConnection.playerStateFlow.onEach {
         artworkUrlChannel.send(getCurrentTrackArtworkUrl(it, input, playback))
       },
-      artworkUrlChannel.receiveAsFlow().distinctUntilChanged().transformLatest { artworkUrl ->
+      artworkUrlChannel.receiveAsFlow().distinctUntilChanged().mapLatest { artworkUrl ->
         artworkUrl?.let {
-          emit(LoadableState.Loading)
-          emit(
-            imageLoader.loadImageBitmapOrNull(it, platformContext)?.let { artwork ->
-              LoadableState.Idle(artwork)
-            } ?: LoadableState.Error(Exception("Error loading artwork"))
-          )
-        } ?: run { emit(LoadableState.Error(Exception("Missing artworkUrl"))) }
+          imageLoader.loadImageBitmapOrNull(it, platformContext)?.let { artwork ->
+            LoadableState.Idle(artwork)
+          } ?: LoadableState.Error(Exception("Error loading artwork"))
+        } ?: LoadableState.Error(Exception("Missing artworkUrl"))
       },
       playerConnection.currentTrackPositionMsFlow.distinctUntilChanged().onStart { emit(0L) },
     ) { playerState, currentTrackImageBitmap, currentTrackPositionMs ->
