@@ -93,7 +93,8 @@ import com.trm.audiofeels.ui.player.PlayerAudioVisualization
 import com.trm.audiofeels.ui.player.PlayerViewModel
 import com.trm.audiofeels.ui.player.PlayerViewState
 import com.trm.audiofeels.ui.player.composable.PlayerExpandedContent
-import com.trm.audiofeels.ui.player.composable.PlayerRecordAudioPermissionHandler
+import com.trm.audiofeels.ui.player.composable.PlayerRecordAudioPermissionObserver
+import com.trm.audiofeels.ui.player.composable.PlayerRecordAudioPermissionRequest
 import com.trm.audiofeels.ui.player.composable.PlayerSheetContent
 import com.trm.audiofeels.ui.search.SearchPage
 import dev.zwander.compose.rememberThemeInfo
@@ -113,15 +114,17 @@ fun AppContent(applicationComponent: ApplicationComponent) {
     viewModel<PlayerViewModel>(factory = applicationComponent.playerViewModelFactory)
   val playerViewState by playerViewModel.viewState.collectAsStateWithLifecycle()
 
-  val handleRecordAudioPermission by
-    playerViewModel.handleRecordAudioPermission.collectAsStateWithLifecycle()
-  if (handleRecordAudioPermission) {
-    PlayerRecordAudioPermissionHandler(
-      onDenied = playerViewModel::onRecordAudioPermissionDenied,
-      onDeniedPermanently = playerViewModel::onRecordAudioPermissionDeniedPermanently,
-      onGranted = playerViewModel::onRecordAudioPermissionGranted,
+  val requestRecordAudioPermission by
+    playerViewModel.requestRecordAudioPermission.collectAsStateWithLifecycle()
+  if (requestRecordAudioPermission) {
+    PlayerRecordAudioPermissionRequest(
+      onDeniedPermanently = playerViewModel::onRecordAudioPermissionDeniedPermanently
     )
   }
+  PlayerRecordAudioPermissionObserver(
+    onGranted = playerViewModel::onRecordAudioPermissionGranted,
+    onDenied = playerViewModel::onRecordAudioPermissionDenied,
+  )
 
   val fallbackSeedColor = rememberThemeInfo().seedColor
   val seedColor =

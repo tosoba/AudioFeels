@@ -24,9 +24,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.isGranted
-import com.google.accompanist.permissions.rememberPermissionState
 import com.trm.audiofeels.core.base.util.getActivity
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.cancel
@@ -37,24 +34,16 @@ import com.trm.audiofeels.core.ui.resources.record_audio_permission_settings
 import com.trm.audiofeels.core.ui.resources.settings
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(ExperimentalPermissionsApi::class)
 @Composable
-actual fun PlayerRecordAudioPermissionHandler(
-  onDenied: () -> Unit,
-  onDeniedPermanently: () -> Unit,
-  onGranted: () -> Unit,
-) {
+actual fun PlayerRecordAudioPermissionRequest(onDeniedPermanently: () -> Unit) {
   val context = LocalContext.current
 
-  val permissionState = rememberPermissionState(Manifest.permission.RECORD_AUDIO)
   var permissionDialogVisible by rememberSaveable { mutableStateOf(false) }
   var shouldShowRationale by rememberSaveable { mutableStateOf(false) }
 
   val requestPermissionLauncher =
     rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-      if (isGranted) {
-        onGranted()
-      } else {
+      if (!isGranted) {
         shouldShowRationale =
           ActivityCompat.shouldShowRequestPermissionRationale(
             requireNotNull(context.getActivity()),
@@ -103,10 +92,6 @@ actual fun PlayerRecordAudioPermissionHandler(
       if (!shouldShowRationale) onDeniedPermanently()
     },
   )
-
-  LaunchedEffect(permissionState.status.isGranted) {
-    if (permissionState.status.isGranted) onGranted() else onDenied()
-  }
 
   LaunchedEffect(Unit) {
     if (

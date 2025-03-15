@@ -65,7 +65,7 @@ class PlayerViewModel(
   private val imageLoader: ImageLoader,
   private val platformContext: PlatformContext,
 ) : ViewModel() {
-  val handleRecordAudioPermission: StateFlow<Boolean> =
+  val requestRecordAudioPermission: StateFlow<Boolean> =
     flow { emit(!visualizationRepository.isPermissionPermanentlyDenied()) }
       .stateIn(scope = viewModelScope, started = SharingStarted.Lazily, initialValue = false)
 
