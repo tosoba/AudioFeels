@@ -26,6 +26,13 @@ sealed interface PlayerViewState {
 
   val isFavourite: Boolean
 
+  fun copyWithPlaylist(playlist: Playlist): PlayerViewState = when (this) {
+    is Invisible -> this
+    is Loading -> copy(playlist = playlist)
+    is Playback -> copy(playlist = playlist)
+    is Error -> copy(playlist = playlist)
+  }
+
   sealed interface PrimaryControlState {
     data object Loading : PrimaryControlState
 

@@ -106,14 +106,7 @@ class PlayerViewModel(
           },
         playlistsRepository.getCurrentPlaylistFlow(),
       ) { viewState, playlist ->
-        playlist?.let {
-          when (viewState) {
-            is PlayerViewState.Invisible -> viewState
-            is PlayerViewState.Loading -> viewState.copy(playlist = it)
-            is PlayerViewState.Playback -> viewState.copy(playlist = it)
-            is PlayerViewState.Error -> viewState.copy(playlist = it)
-          }
-        } ?: viewState
+        playlist?.let(viewState::copyWithPlaylist) ?: viewState
       }
       .onEach { if (it is PlayerViewState.Playback) onPlayerViewStatePlayback(it) }
       .restartableStateIn(
@@ -384,7 +377,7 @@ class PlayerViewModel(
     }
 
     override fun hashCode(): Int {
-      var result = currentPlaylist?.hashCode() ?: 0
+      var result = currentPlaylist.hashCode()
       result = 31 * result + togglePlayback.hashCode()
       return result
     }
@@ -411,7 +404,7 @@ class PlayerViewModel(
     }
 
     override fun hashCode(): Int {
-      var result = currentPlaylist?.hashCode() ?: 0
+      var result = currentPlaylist.hashCode()
       result = 31 * result + togglePlayback.hashCode()
       return result
     }
