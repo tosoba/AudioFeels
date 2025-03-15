@@ -504,7 +504,7 @@ class PlayerViewModel(
           )
         }
         is PlayerState.Enqueued -> {
-          playerConnection.playPrevious()
+          playerConnection.playNext()
         }
         is PlayerState.Error -> {
           return
