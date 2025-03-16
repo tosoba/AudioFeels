@@ -72,6 +72,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.window.core.layout.WindowHeightSizeClass
 import coil3.compose.setSingletonImageLoaderFactory
 import com.materialkolor.DynamicMaterialTheme
 import com.materialkolor.ktx.rememberThemeColor
@@ -267,6 +268,9 @@ private fun AppBottomSheetScaffold(
         viewState = playerViewState,
         partiallyExpandedAlpha = partiallyExpandedAlpha,
         expandedAlpha = expandedAlpha,
+        showToggleFavourite =
+          currentWindowAdaptiveInfo().windowSizeClass.windowHeightSizeClass !=
+            WindowHeightSizeClass.COMPACT,
         modifier =
           Modifier.fillMaxSize().onGloballyPositioned { layoutCoordinates ->
             sheetHeightPx =
@@ -301,7 +305,13 @@ private fun AppBottomSheetScaffold(
       },
       supportingPane = {
         AnimatedPane {
-          PlayerExpandedContent(viewState = playerViewState, modifier = Modifier.fillMaxSize())
+          PlayerExpandedContent(
+            viewState = playerViewState,
+            showToggleFavourite =
+              currentWindowAdaptiveInfo().windowSizeClass.windowHeightSizeClass !=
+                WindowHeightSizeClass.COMPACT,
+            modifier = Modifier.fillMaxSize(),
+          )
         }
       },
     )

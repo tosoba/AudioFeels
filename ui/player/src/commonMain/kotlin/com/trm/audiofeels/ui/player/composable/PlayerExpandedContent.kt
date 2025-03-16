@@ -16,9 +16,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.SkipNext
 import androidx.compose.material.icons.outlined.SkipPrevious
 import androidx.compose.material3.Card
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -39,17 +42,23 @@ import androidx.compose.ui.util.lerp
 import com.trm.audiofeels.core.ui.compose.AsyncShimmerImage
 import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
 import com.trm.audiofeels.core.ui.resources.Res
+import com.trm.audiofeels.core.ui.resources.add_to_favourites
 import com.trm.audiofeels.core.ui.resources.artwork_placeholder
 import com.trm.audiofeels.core.ui.resources.error_occurred
 import com.trm.audiofeels.core.ui.resources.play_next_track
 import com.trm.audiofeels.core.ui.resources.play_previous_track
+import com.trm.audiofeels.core.ui.resources.remove_from_favourites
 import com.trm.audiofeels.ui.player.PlayerViewState
 import kotlin.math.absoluteValue
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 
 @Composable
-fun PlayerExpandedContent(viewState: PlayerViewState, modifier: Modifier = Modifier) {
+fun PlayerExpandedContent(
+  viewState: PlayerViewState,
+  showToggleFavourite: Boolean,
+  modifier: Modifier = Modifier,
+) {
   BoxWithConstraints(modifier = modifier) {
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
       val pagerModifier =
@@ -75,12 +84,6 @@ fun PlayerExpandedContent(viewState: PlayerViewState, modifier: Modifier = Modif
         horizontalArrangement = Arrangement.SpaceEvenly,
         modifier = Modifier.fillMaxWidth().weight(1f),
       ) {
-        PlaylistFavouriteShuffleButton(
-          checked = false,
-          enabled = viewState is PlayerViewState.Playback,
-          onCheckedChange = {},
-        )
-
         IconButton(
           enabled = viewState is PlayerViewState.Playback,
           onClick = { (viewState as? PlayerViewState.Playback)?.playPreviousTrack?.invoke() },
@@ -102,14 +105,30 @@ fun PlayerExpandedContent(viewState: PlayerViewState, modifier: Modifier = Modif
             contentDescription = stringResource(Res.string.play_next_track),
           )
         }
+      }
 
-        PlaylistFavouriteToggleButton(
-          checked = viewState.isFavourite,
-          enabled = viewState is PlayerViewState.Playback,
-          onCheckedChange = {
-            (viewState as? PlayerViewState.Playback)?.togglePlaylistFavourite?.invoke()
-          },
-        )
+      if (showToggleFavourite) {
+        Box(
+          modifier = Modifier.fillMaxWidth().padding(16.dp),
+          contentAlignment = Alignment.CenterEnd,
+        ) {
+          FloatingActionButton(
+            onClick = {
+              (viewState as? PlayerViewState.Playback)?.togglePlaylistFavourite?.invoke()
+            }
+          ) {
+            Icon(
+              imageVector =
+                if (viewState.isFavourite) Icons.Outlined.Favorite
+                else Icons.Outlined.FavoriteBorder,
+              contentDescription =
+                stringResource(
+                  if (viewState.isFavourite) Res.string.remove_from_favourites
+                  else Res.string.add_to_favourites
+                ),
+            )
+          }
+        }
       }
     }
   }

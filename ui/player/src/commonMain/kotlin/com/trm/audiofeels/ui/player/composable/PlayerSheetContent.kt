@@ -4,8 +4,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import com.trm.audiofeels.ui.player.PlayerViewState
@@ -15,6 +13,7 @@ fun PlayerSheetContent(
   viewState: PlayerViewState,
   partiallyExpandedAlpha: Float,
   expandedAlpha: Float,
+  showToggleFavourite: Boolean,
   modifier: Modifier = Modifier,
 ) {
   Box(modifier = modifier) {
@@ -28,6 +27,7 @@ fun PlayerSheetContent(
     if (expandedAlpha > 0f) {
       PlayerExpandedContent(
         viewState = viewState,
+        showToggleFavourite = showToggleFavourite,
         modifier = Modifier.fillMaxSize().alpha(expandedAlpha),
       )
     }
