@@ -304,13 +304,10 @@ class PlayerViewModel(
       is PlayerState.Enqueued -> {
         viewModelScope.launch {
           playlistsRepository.updateCurrentPlaylist(
-            PlaylistPlayback(
-              playlist = playbackState.playlist,
-              currentTrackIndex = playerState.currentTrackIndex,
-              currentTrackPositionMs =
-                playerState.currentTrack.positionMsOf(playbackState.currentTrackProgress),
-              autoPlay = false,
-            )
+            id = playbackState.playlist.id,
+            currentTrackIndex = playerState.currentTrackIndex,
+            currentTrackPositionMs =
+              playerState.currentTrack.positionMsOf(playbackState.currentTrackProgress),
           )
         }
       }

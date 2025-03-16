@@ -31,11 +31,15 @@ class AudiusPlaylistsRepository(
     playlistDao.setNewCurrentPlaylist(playlist.toCurrentPlaylistEntity(), carryOn)
   }
 
-  override suspend fun updateCurrentPlaylist(playlistPlayback: PlaylistPlayback) {
+  override suspend fun updateCurrentPlaylist(
+    id: String,
+    currentTrackIndex: Int,
+    currentTrackPositionMs: Long,
+  ) {
     playlistDao.updateCurrentPlaylist(
-      id = playlistPlayback.playlist.id,
-      currentTrackIndex = playlistPlayback.currentTrackIndex,
-      currentTrackPositionMs = playlistPlayback.currentTrackPositionMs,
+      id = id,
+      currentTrackIndex = currentTrackIndex,
+      currentTrackPositionMs = currentTrackPositionMs,
     )
   }
 
