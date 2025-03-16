@@ -104,7 +104,7 @@ class PlayerViewModel(
             playback?.let(::playerViewStateFlow)
               ?: flowOf(invisibleViewState()).onEach { playerConnection.reset() }
           },
-        playlistsRepository.getCurrentPlaylistFlow(),
+        playlistsRepository.getCurrentPlaylistFlow().distinctUntilChanged(),
       ) { viewState, playlist ->
         playlist?.let(viewState::copyWithPlaylist) ?: viewState
       }
