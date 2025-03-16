@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 interface PlaylistsRepository {
   suspend fun setNewCurrentPlaylist(playlist: Playlist, carryOn: Boolean)
 
-  suspend fun updateCurrentPlaylistPlayback(playlistPlayback: PlaylistPlayback)
+  suspend fun updateCurrentPlaylist(playlistPlayback: PlaylistPlayback)
 
   suspend fun clearCurrentPlaylist()
 

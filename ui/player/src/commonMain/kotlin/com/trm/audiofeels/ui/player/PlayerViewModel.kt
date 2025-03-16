@@ -303,7 +303,7 @@ class PlayerViewModel(
     when (val playerState = playbackState.playerState) {
       is PlayerState.Enqueued -> {
         viewModelScope.launch {
-          playlistsRepository.updateCurrentPlaylistPlayback(
+          playlistsRepository.updateCurrentPlaylist(
             PlaylistPlayback(
               playlist = playbackState.playlist,
               currentTrackIndex = playerState.currentTrackIndex,
