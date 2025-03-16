@@ -13,15 +13,6 @@ import kotlinx.datetime.Instant
 interface PlaylistDao {
   @Upsert suspend fun upsert(playlist: PlaylistEntity)
 
-  @Query(
-    "UPDATE playlist SET currentTrackIndex = :currentTrackIndex, currentTrackPositionMs = :currentTrackPositionMs, autoPlay = FALSE WHERE id = :id"
-  )
-  suspend fun updateCurrentPlaylist(
-    id: String,
-    currentTrackIndex: Int,
-    currentTrackPositionMs: Long,
-  )
-
   @Query("SELECT * FROM playlist WHERE id = :id")
   suspend fun selectPlaylistById(id: String): PlaylistEntity?
 
