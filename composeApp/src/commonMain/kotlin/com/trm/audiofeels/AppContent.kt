@@ -21,7 +21,7 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.StopCircle
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -351,7 +351,7 @@ private fun AppTopBar(viewState: PlayerViewState, modifier: Modifier = Modifier)
       AnimatedVisibility(viewState.playerVisible) {
         IconButton(onClick = viewState.cancelPlayback) {
           Icon(
-            imageVector = Icons.Outlined.Close,
+            imageVector = Icons.Outlined.StopCircle,
             contentDescription = stringResource(Res.string.cancel_playback),
           )
         }
