@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trm.audiofeels.core.base.model.LoadableState
@@ -64,6 +65,7 @@ import org.jetbrains.compose.resources.vectorResource
 @Composable
 fun DiscoverPage(
   viewModel: DiscoverViewModel,
+  topSpacerHeight: Dp,
   onCarryPlaylistClick: (CarryOnPlaylist) -> Unit,
   onTrendingPlaylistClick: (Playlist) -> Unit,
 ) {
@@ -71,6 +73,8 @@ fun DiscoverPage(
   val trendingPlaylists by viewModel.trendingPlaylists.collectAsStateWithLifecycle()
 
   Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+    Spacer(modifier = Modifier.height(topSpacerHeight))
+
     DiscoverListHeadline(
       text = stringResource(Res.string.carry_on),
       list = carryOnPlaylists,

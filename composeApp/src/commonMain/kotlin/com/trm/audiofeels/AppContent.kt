@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -37,6 +38,7 @@ import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.PermanentDrawerSheet
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.AnimatedPane
@@ -60,6 +62,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -98,6 +101,10 @@ import com.trm.audiofeels.ui.player.composable.PlayerRecordAudioPermissionObserv
 import com.trm.audiofeels.ui.player.composable.PlayerRecordAudioPermissionRequest
 import com.trm.audiofeels.ui.player.composable.PlayerSheetContent
 import com.trm.audiofeels.ui.search.SearchPage
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
 import dev.zwander.compose.rememberThemeInfo
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -286,21 +293,37 @@ private fun AppBottomSheetScaffold(
     },
     sheetPeekHeight = sheetPeekHeight,
     scaffoldState = appLayoutState.playerLayoutState.scaffoldState,
-    topBar = { AppTopAppBar(playerViewState) },
   ) {
     SupportingPaneScaffold(
-      modifier = Modifier.fillMaxSize(),
       directive = paneNavigator.scaffoldDirective,
       value = paneNavigator.scaffoldValue,
       mainPane = {
         AnimatedPane {
-          AppNavHost(
-            navController = navController,
-            discoverViewModelFactory = applicationComponent.discoverViewModelFactory,
-            modifier = Modifier.fillMaxSize(),
-            onCarryOnPlaylistClick = playerViewState.startCarryOnPlaylistPlayback,
-            onTrendingPlaylistClick = playerViewState.startPlaylistPlayback,
-          )
+          Box {
+            val hazeState = remember(::HazeState)
+            val hazeStyle =
+              HazeStyle(backgroundColor = MaterialTheme.colorScheme.background, tint = null)
+
+            AppNavHost(
+              navController = navController,
+              discoverViewModelFactory = applicationComponent.discoverViewModelFactory,
+              topSpacerHeight =
+                with(density) { TopAppBarDefaults.windowInsets.getTop(density).toDp() } +
+                  TopAppBarDefaults.TopAppBarExpandedHeight,
+              modifier = Modifier.fillMaxSize().hazeSource(hazeState),
+              onCarryOnPlaylistClick = playerViewState.startCarryOnPlaylistPlayback,
+              onTrendingPlaylistClick = playerViewState.startPlaylistPlayback,
+            )
+
+            AppTopBar(
+              viewState = playerViewState,
+              modifier =
+                Modifier.hazeEffect(hazeState) {
+                  style = hazeStyle
+                  blurRadius = 10.dp
+                },
+            )
+          }
         }
       },
       supportingPane = {
@@ -310,7 +333,7 @@ private fun AppBottomSheetScaffold(
             showToggleFavourite =
               currentWindowAdaptiveInfo().windowSizeClass.windowHeightSizeClass !=
                 WindowHeightSizeClass.COMPACT,
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().padding(top = 32.dp, bottom = 16.dp),
           )
         }
       },
@@ -320,7 +343,8 @@ private fun AppBottomSheetScaffold(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AppTopAppBar(viewState: PlayerViewState) {
+private fun AppTopBar(viewState: PlayerViewState, modifier: Modifier = Modifier) {
+  val colors = TopAppBarDefaults.centerAlignedTopAppBarColors()
   CenterAlignedTopAppBar(
     title = { Text(stringResource(Res.string.app_name)) },
     actions = {
@@ -333,6 +357,8 @@ private fun AppTopAppBar(viewState: PlayerViewState) {
         }
       }
     },
+    colors = colors.copy(containerColor = colors.containerColor.copy(alpha = .8f)),
+    modifier = modifier,
   )
 }
 
@@ -456,6 +482,7 @@ private fun AppPermanentNavigationDrawer(
 private fun AppNavHost(
   navController: NavHostController,
   discoverViewModelFactory: DiscoverViewModelFactory,
+  topSpacerHeight: Dp,
   modifier: Modifier = Modifier,
   onCarryOnPlaylistClick: (CarryOnPlaylist) -> Unit,
   onTrendingPlaylistClick: (Playlist) -> Unit,
@@ -468,12 +495,13 @@ private fun AppNavHost(
     composable<AppRoute.Discover> {
       DiscoverPage(
         viewModel = viewModel(factory = discoverViewModelFactory),
+        topSpacerHeight = topSpacerHeight,
         onCarryPlaylistClick = onCarryOnPlaylistClick,
         onTrendingPlaylistClick = onTrendingPlaylistClick,
       )
     }
-    composable<AppRoute.Favourites> { FavouritesPage(modifier = Modifier.fillMaxSize()) }
-    composable<AppRoute.Search> { SearchPage(modifier = Modifier.fillMaxSize()) }
+    composable<AppRoute.Favourites> { FavouritesPage(topSpacerHeight = topSpacerHeight) }
+    composable<AppRoute.Search> { SearchPage(topSpacerHeight = topSpacerHeight) }
   }
 }
 

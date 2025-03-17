@@ -21,6 +21,7 @@ compose-plugin = "1.6.11"
 coroutines = "1.9.0"
 datastore = "1.1.1"
 desugarjdklibs = "2.1.3"
+haze = "1.5.0"
 jetbrains-lifecycle = "2.8.4"
 junit = "4.13.2"
 kachetor = "1.0.0"
@@ -63,6 +64,7 @@ androidx-window = { module = "androidx.window:window", version.ref = "androidx-w
 coil-core = { module = "io.coil-kt.coil3:coil-core", version.ref = "coil" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-network = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
+haze = { group = "dev.chrisbanes.haze", name = "haze", version.ref = "haze" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 kachetor = { group = "com.vipulasri.kachetor", name = "kachetor", version.ref = "kachetor" }
 kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
