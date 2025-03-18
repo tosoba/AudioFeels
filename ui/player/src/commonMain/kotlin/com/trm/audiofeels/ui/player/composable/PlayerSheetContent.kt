@@ -28,6 +28,7 @@ fun PlayerSheetContent(
       PlayerExpandedContent(
         viewState = viewState,
         showToggleFavourite = showToggleFavourite,
+        showEdgeGradients = false,
         modifier = Modifier.fillMaxSize().alpha(expandedAlpha),
       )
     }

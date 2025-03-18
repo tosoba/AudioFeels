@@ -40,6 +40,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.util.lerp
 import com.trm.audiofeels.core.ui.compose.AsyncShimmerImage
+import com.trm.audiofeels.core.ui.compose.EndEdgeGradient
+import com.trm.audiofeels.core.ui.compose.StartEdgeGradient
 import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.add_to_favourites
@@ -57,6 +59,7 @@ import org.jetbrains.compose.resources.vectorResource
 fun PlayerExpandedContent(
   viewState: PlayerViewState,
   showToggleFavourite: Boolean,
+  showEdgeGradients: Boolean,
   modifier: Modifier = Modifier,
 ) {
   BoxWithConstraints(modifier = modifier) {
@@ -130,6 +133,11 @@ fun PlayerExpandedContent(
           }
         }
       }
+    }
+
+    if (showEdgeGradients) {
+      StartEdgeGradient()
+      EndEdgeGradient()
     }
   }
 }

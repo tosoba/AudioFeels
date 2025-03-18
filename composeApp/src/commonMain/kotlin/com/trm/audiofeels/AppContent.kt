@@ -333,6 +333,7 @@ private fun AppBottomSheetScaffold(
             showToggleFavourite =
               currentWindowAdaptiveInfo().windowSizeClass.windowHeightSizeClass !=
                 WindowHeightSizeClass.COMPACT,
+            showEdgeGradients = true,
             modifier = Modifier.fillMaxSize().padding(top = 32.dp, bottom = 16.dp),
           )
         }

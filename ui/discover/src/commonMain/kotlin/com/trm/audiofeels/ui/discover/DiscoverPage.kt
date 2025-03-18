@@ -41,6 +41,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trm.audiofeels.core.base.model.LoadableState
 import com.trm.audiofeels.core.ui.compose.AsyncShimmerImage
+import com.trm.audiofeels.core.ui.compose.BottomEdgeGradient
+import com.trm.audiofeels.core.ui.compose.EndEdgeGradient
+import com.trm.audiofeels.core.ui.compose.StartEdgeGradient
 import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.carry_on
@@ -72,59 +75,65 @@ fun DiscoverPage(
   val carryOnPlaylists by viewModel.carryOnPlaylists.collectAsStateWithLifecycle()
   val trendingPlaylists by viewModel.trendingPlaylists.collectAsStateWithLifecycle()
 
-  Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-    Spacer(modifier = Modifier.height(topSpacerHeight))
+  Box {
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+      Spacer(modifier = Modifier.height(topSpacerHeight))
 
-    DiscoverListHeadline(
-      text = stringResource(Res.string.carry_on),
-      list = carryOnPlaylists,
-      modifier = Modifier.padding(top = 12.dp, start = 12.dp, end = 12.dp),
-    )
-
-    DiscoverListLazyRow(
-      list = carryOnPlaylists,
-      onRetryClick = {},
-      placeholderItemContent = {
-        Spacer(modifier = Modifier.height(158.dp))
-        Text(text = "", style = MaterialTheme.typography.labelLarge)
-        Text(text = "", style = MaterialTheme.typography.labelSmall)
-        Spacer(modifier = Modifier.height(8.dp))
-      },
-    ) { index, lastIndex, carryOn ->
-      CarryOnPlaylistItem(
-        carryOn = carryOn,
-        modifier =
-          Modifier.width(150.dp)
-            .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = lastIndex))
-            .animateItem(),
-        onClick = onCarryPlaylistClick,
+      DiscoverListHeadline(
+        text = stringResource(Res.string.carry_on),
+        list = carryOnPlaylists,
+        modifier = Modifier.padding(top = 12.dp, start = 12.dp, end = 12.dp),
       )
+
+      DiscoverListLazyRow(
+        list = carryOnPlaylists,
+        onRetryClick = {},
+        placeholderItemContent = {
+          Spacer(modifier = Modifier.height(158.dp))
+          Text(text = "", style = MaterialTheme.typography.labelLarge)
+          Text(text = "", style = MaterialTheme.typography.labelSmall)
+          Spacer(modifier = Modifier.height(8.dp))
+        },
+      ) { index, lastIndex, carryOn ->
+        CarryOnPlaylistItem(
+          carryOn = carryOn,
+          modifier =
+            Modifier.width(150.dp)
+              .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = lastIndex))
+              .animateItem(),
+          onClick = onCarryPlaylistClick,
+        )
+      }
+
+      DiscoverListHeadline(
+        text = stringResource(Res.string.trending),
+        list = trendingPlaylists,
+        modifier = Modifier.padding(horizontal = 12.dp),
+      )
+
+      DiscoverListLazyRow(
+        list = trendingPlaylists,
+        onRetryClick = viewModel.trendingPlaylists::restart,
+        placeholderItemContent = {
+          Spacer(modifier = Modifier.height(158.dp))
+          Text(text = "", style = MaterialTheme.typography.labelLarge)
+          Spacer(modifier = Modifier.height(8.dp))
+        },
+      ) { index, lastIndex, playlist ->
+        PlaylistItem(
+          playlist = playlist,
+          modifier =
+            Modifier.width(150.dp)
+              .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = lastIndex))
+              .animateItem(),
+          onClick = onTrendingPlaylistClick,
+        )
+      }
     }
 
-    DiscoverListHeadline(
-      text = stringResource(Res.string.trending),
-      list = trendingPlaylists,
-      modifier = Modifier.padding(horizontal = 12.dp),
-    )
-
-    DiscoverListLazyRow(
-      list = trendingPlaylists,
-      onRetryClick = viewModel.trendingPlaylists::restart,
-      placeholderItemContent = {
-        Spacer(modifier = Modifier.height(158.dp))
-        Text(text = "", style = MaterialTheme.typography.labelLarge)
-        Spacer(modifier = Modifier.height(8.dp))
-      },
-    ) { index, lastIndex, playlist ->
-      PlaylistItem(
-        playlist = playlist,
-        modifier =
-          Modifier.width(150.dp)
-            .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = lastIndex))
-            .animateItem(),
-        onClick = onTrendingPlaylistClick,
-      )
-    }
+    StartEdgeGradient()
+    EndEdgeGradient()
+    BottomEdgeGradient()
   }
 }
 
