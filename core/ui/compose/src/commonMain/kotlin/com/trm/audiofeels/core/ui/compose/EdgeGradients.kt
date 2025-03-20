@@ -51,6 +51,24 @@ fun BoxScope.EndEdgeGradient() {
 }
 
 @Composable
+fun BoxScope.TopEdgeGradient() {
+  Box(
+    modifier =
+      Modifier.fillMaxWidth()
+        .height(8.dp)
+        .align(Alignment.TopStart)
+        .background(
+          Brush.verticalGradient(
+            listOf(
+              MaterialTheme.colorScheme.background,
+              MaterialTheme.colorScheme.background.copy(alpha = 0f),
+            )
+          )
+        )
+  )
+}
+
+@Composable
 fun BoxScope.BottomEdgeGradient() {
   Box(
     modifier =

@@ -104,6 +104,7 @@ import com.trm.audiofeels.ui.player.composable.PlayerSheetContent
 import com.trm.audiofeels.ui.search.SearchPage
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.zwander.compose.rememberThemeInfo
@@ -270,6 +271,13 @@ private fun AppBottomSheetScaffold(
   val expandedAlpha = remember(thresholdProgress) { 1f - thresholdProgress }.coerceIn(0f, 1f)
   val partiallyExpandedAlpha = remember(thresholdProgress) { thresholdProgress }.coerceIn(0f, 1f)
 
+  val hazeState = remember(::HazeState)
+  val sheetHazeStyle =
+    HazeStyle(
+      backgroundColor = BottomSheetDefaults.ContainerColor,
+      tint = HazeTint(BottomSheetDefaults.ContainerColor.copy(alpha = .85f)),
+    )
+
   BottomSheetScaffold(
     sheetContent = {
       PlayerSheetContent(
@@ -280,14 +288,26 @@ private fun AppBottomSheetScaffold(
           currentWindowAdaptiveInfo().windowSizeClass.windowHeightSizeClass !=
             WindowHeightSizeClass.COMPACT,
         modifier =
-          Modifier.fillMaxSize().onGloballyPositioned { layoutCoordinates ->
-            sheetHeightPx =
-              layoutCoordinates.size.height.toFloat() - with(density) { sheetPeekHeight.toPx() }
-          },
+          Modifier.fillMaxSize()
+            .hazeEffect(hazeState) {
+              style = sheetHazeStyle
+              blurRadius = 10.dp
+            }
+            .onGloballyPositioned { layoutCoordinates ->
+              sheetHeightPx =
+                layoutCoordinates.size.height.toFloat() - with(density) { sheetPeekHeight.toPx() }
+            },
       )
     },
     sheetDragHandle = {
-      Column {
+      Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier =
+          Modifier.fillMaxWidth().hazeEffect(hazeState) {
+            style = sheetHazeStyle
+            blurRadius = 10.dp
+          },
+      ) {
         Spacer(modifier = Modifier.height(paddingValues.calculateTopPadding() * expandedAlpha))
         BottomSheetDefaults.DragHandle()
       }
@@ -301,10 +321,6 @@ private fun AppBottomSheetScaffold(
       mainPane = {
         AnimatedPane {
           Box {
-            val hazeState = remember(::HazeState)
-            val hazeStyle =
-              HazeStyle(backgroundColor = MaterialTheme.colorScheme.background, tint = null)
-
             AppNavHost(
               navController = navController,
               discoverViewModelFactory = applicationComponent.discoverViewModelFactory,
@@ -325,11 +341,13 @@ private fun AppBottomSheetScaffold(
               onTrendingPlaylistClick = playerViewState.startPlaylistPlayback,
             )
 
+            val topBarHazeStyle =
+              HazeStyle(backgroundColor = MaterialTheme.colorScheme.background, tint = null)
             AppTopBar(
               viewState = playerViewState,
               modifier =
                 Modifier.hazeEffect(hazeState) {
-                  style = hazeStyle
+                  style = topBarHazeStyle
                   blurRadius = 10.dp
                 },
             )
@@ -368,7 +386,7 @@ private fun AppTopBar(viewState: PlayerViewState, modifier: Modifier = Modifier)
         }
       }
     },
-    colors = colors.copy(containerColor = colors.containerColor.copy(alpha = .8f)),
+    colors = colors.copy(containerColor = colors.containerColor.copy(alpha = .85f)),
     modifier = modifier,
   )
 }

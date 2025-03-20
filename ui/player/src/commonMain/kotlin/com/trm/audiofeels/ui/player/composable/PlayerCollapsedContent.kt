@@ -1,6 +1,8 @@
 package com.trm.audiofeels.ui.player.composable
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
@@ -19,8 +21,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.SkipNext
 import androidx.compose.material.icons.outlined.SkipPrevious
-import androidx.compose.material3.BottomSheetDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -49,47 +49,60 @@ import com.trm.audiofeels.ui.player.PlayerViewState
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun PlayerCollapsedContent(viewState: PlayerViewState, modifier: Modifier = Modifier) {
   Box(modifier = modifier) {
     val playback = viewState as? PlayerViewState.Playback
+    val swipeState =
+      rememberPlayerSwipeState(
+        onStartToEndSwipe = playback?.playPreviousTrack,
+        onEndToStartSwipe = playback?.playNextTrack,
+      )
     SwipeToDismissBox(
-      state =
-        rememberPlayerSwipeState(
-          onStartToEndSwipe = playback?.playPreviousTrack,
-          onEndToStartSwipe = playback?.playNextTrack,
-        ),
+      state = swipeState,
       gesturesEnabled = viewState is PlayerViewState.Playback,
       enableDismissFromStartToEnd =
         viewState is PlayerViewState.Playback && viewState.canPlayPrevious,
       enableDismissFromEndToStart = viewState is PlayerViewState.Playback && viewState.canPlayNext,
       backgroundContent = {
-        Row(
-          modifier =
-            Modifier.fillMaxSize()
-              .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-              .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 12.dp),
-          verticalAlignment = Alignment.CenterVertically,
+        AnimatedVisibility(
+          visible = viewState is PlayerViewState.Playback,
+          enter = fadeIn(),
+          exit = fadeOut(),
         ) {
-          Icon(
-            imageVector = Icons.Outlined.SkipPrevious,
-            contentDescription = stringResource(Res.string.play_previous_track),
-          )
-          Spacer(modifier = Modifier.weight(1f))
-          Icon(
-            imageVector = Icons.Outlined.SkipNext,
-            contentDescription = stringResource(Res.string.play_next_track),
-          )
+          Row(
+            modifier =
+              Modifier.fillMaxSize()
+                .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+          ) {
+            AnimatedVisibility(
+              visible = swipeState.targetValue == SwipeToDismissBoxValue.StartToEnd
+            ) {
+              Icon(
+                imageVector = Icons.Outlined.SkipPrevious,
+                contentDescription = stringResource(Res.string.play_previous_track),
+              )
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            AnimatedVisibility(
+              visible = swipeState.targetValue == SwipeToDismissBoxValue.EndToStart
+            ) {
+              Icon(
+                imageVector = Icons.Outlined.SkipNext,
+                contentDescription = stringResource(Res.string.play_next_track),
+              )
+            }
+          }
         }
       },
     ) {
       Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier =
-          Modifier.fillMaxWidth()
-            .background(BottomSheetDefaults.ContainerColor)
-            .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 12.dp),
+          Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 12.dp),
       ) {
         when (viewState) {
           is PlayerViewState.Invisible,

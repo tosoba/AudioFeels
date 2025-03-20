@@ -51,6 +51,7 @@ import com.trm.audiofeels.core.ui.compose.AsyncShimmerImage
 import com.trm.audiofeels.core.ui.compose.BottomEdgeGradient
 import com.trm.audiofeels.core.ui.compose.EndEdgeGradient
 import com.trm.audiofeels.core.ui.compose.StartEdgeGradient
+import com.trm.audiofeels.core.ui.compose.TopEdgeGradient
 import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.carry_on
@@ -189,6 +190,7 @@ fun DiscoverPage(
       Spacer(modifier = Modifier.height(bottomSpacerHeight))
     }
 
+    TopEdgeGradient()
     StartEdgeGradient()
     EndEdgeGradient()
     BottomEdgeGradient()
