@@ -42,6 +42,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.AnimatedPane
+import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
 import androidx.compose.material3.adaptive.layout.SupportingPaneScaffold
 import androidx.compose.material3.adaptive.layout.SupportingPaneScaffoldRole
 import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
@@ -310,6 +311,15 @@ private fun AppBottomSheetScaffold(
               topSpacerHeight =
                 with(density) { TopAppBarDefaults.windowInsets.getTop(density).toDp() } +
                   TopAppBarDefaults.TopAppBarExpandedHeight,
+              bottomSpacerHeight =
+                if (
+                  supportingPaneValue == PaneAdaptedValue.Expanded ||
+                    appLayoutState.playerLayoutState.currentSheetValue == SheetValue.Hidden
+                ) {
+                  0.dp
+                } else {
+                  sheetPeekHeight
+                },
               modifier = Modifier.fillMaxSize().hazeSource(hazeState),
               onCarryOnPlaylistClick = playerViewState.startCarryOnPlaylistPlayback,
               onTrendingPlaylistClick = playerViewState.startPlaylistPlayback,
@@ -484,6 +494,7 @@ private fun AppNavHost(
   navController: NavHostController,
   discoverViewModelFactory: DiscoverViewModelFactory,
   topSpacerHeight: Dp,
+  bottomSpacerHeight: Dp,
   modifier: Modifier = Modifier,
   onCarryOnPlaylistClick: (CarryOnPlaylist) -> Unit,
   onTrendingPlaylistClick: (Playlist) -> Unit,
@@ -497,12 +508,17 @@ private fun AppNavHost(
       DiscoverPage(
         viewModel = viewModel(factory = discoverViewModelFactory),
         topSpacerHeight = topSpacerHeight,
+        bottomSpacerHeight = bottomSpacerHeight,
         onCarryPlaylistClick = onCarryOnPlaylistClick,
         onTrendingPlaylistClick = onTrendingPlaylistClick,
       )
     }
-    composable<AppRoute.Favourites> { FavouritesPage(topSpacerHeight = topSpacerHeight) }
-    composable<AppRoute.Search> { SearchPage(topSpacerHeight = topSpacerHeight) }
+    composable<AppRoute.Favourites> {
+      FavouritesPage(topSpacerHeight = topSpacerHeight, bottomSpacerHeight = bottomSpacerHeight)
+    }
+    composable<AppRoute.Search> {
+      SearchPage(topSpacerHeight = topSpacerHeight, bottomSpacerHeight = bottomSpacerHeight)
+    }
   }
 }
 

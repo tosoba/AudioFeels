@@ -77,6 +77,7 @@ import org.jetbrains.compose.resources.vectorResource
 fun DiscoverPage(
   viewModel: DiscoverViewModel,
   topSpacerHeight: Dp,
+  bottomSpacerHeight: Dp,
   onCarryPlaylistClick: (CarryOnPlaylist) -> Unit,
   onTrendingPlaylistClick: (Playlist) -> Unit,
 ) {
@@ -184,6 +185,8 @@ fun DiscoverPage(
           onClick = onTrendingPlaylistClick,
         )
       }
+
+      Spacer(modifier = Modifier.height(bottomSpacerHeight))
     }
 
     StartEdgeGradient()

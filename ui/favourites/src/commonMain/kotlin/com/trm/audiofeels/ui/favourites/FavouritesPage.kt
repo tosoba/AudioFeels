@@ -15,10 +15,12 @@ import com.trm.audiofeels.core.ui.resources.favourites
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun FavouritesPage(topSpacerHeight: Dp) {
+fun FavouritesPage(topSpacerHeight: Dp, bottomSpacerHeight: Dp) {
   Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
     Spacer(modifier = Modifier.height(topSpacerHeight))
 
     Text(stringResource(Res.string.favourites))
+
+    Spacer(modifier = Modifier.height(bottomSpacerHeight))
   }
 }
