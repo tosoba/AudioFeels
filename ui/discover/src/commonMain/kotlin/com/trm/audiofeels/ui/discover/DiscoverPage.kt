@@ -90,7 +90,7 @@ fun DiscoverPage(
       DiscoverListHeadline(
         text = stringResource(Res.string.carry_on),
         list = carryOnPlaylists,
-        modifier = Modifier.padding(top = 12.dp, start = 12.dp, end = 12.dp),
+        modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp),
       )
 
       DiscoverListLazyRow(
@@ -117,9 +117,9 @@ fun DiscoverPage(
         text = stringResource(Res.string.mood),
         modifier =
           Modifier.padding(
-            top = if (carryOnPlaylists.valueOrNull.isNullOrEmpty()) 12.dp else 0.dp,
-            start = 12.dp,
-            end = 12.dp,
+            top = if (carryOnPlaylists.valueOrNull.isNullOrEmpty()) 16.dp else 0.dp,
+            start = 16.dp,
+            end = 16.dp,
           ),
       )
 
@@ -131,9 +131,9 @@ fun DiscoverPage(
               else -> 2
             }
           ),
-        contentPadding = PaddingValues(12.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        contentPadding = PaddingValues(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
         modifier =
           Modifier.fillMaxWidth()
             .heightIn(
@@ -163,7 +163,7 @@ fun DiscoverPage(
       DiscoverListHeadline(
         text = stringResource(Res.string.trending),
         list = trendingPlaylists,
-        modifier = Modifier.padding(top = 12.dp, start = 12.dp, end = 12.dp),
+        modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp),
       )
 
       DiscoverListLazyRow(
@@ -234,7 +234,7 @@ private fun <T : Any> DiscoverListLazyRow(
   AnimatedVisibility(visible = list.discoverListVisible(), enter = fadeIn(), exit = fadeOut()) {
     LazyRow(
       modifier = Modifier.fillMaxWidth(),
-      contentPadding = PaddingValues(12.dp),
+      contentPadding = PaddingValues(16.dp),
       userScrollEnabled = list !is LoadableState.Error,
     ) {
       when (list) {
@@ -269,7 +269,7 @@ private fun LazyItemScope.DiscoverListPlaceholderItem(
     modifier =
       Modifier.width(150.dp)
         .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = lastIndex))
-        .shimmerBackground(enabled = true, shape = RoundedCornerShape(12.dp))
+        .shimmerBackground(enabled = true, shape = RoundedCornerShape(16.dp))
         .animateItem(),
     content = content,
   )
@@ -284,7 +284,7 @@ private fun LazyItemScope.DiscoverListErrorItem(onClick: () -> Unit) {
         contentDescription = null,
         modifier =
           Modifier.size(150.dp)
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.errorContainer),
       )
 
@@ -343,8 +343,8 @@ private fun PlaylistArtworkImage(playlist: Playlist) {
     contentDescription = playlist.name,
     modifier = { enabled ->
       Modifier.size(150.dp)
-        .clip(RoundedCornerShape(12.dp))
-        .shimmerBackground(enabled = enabled, shape = RoundedCornerShape(12.dp))
+        .clip(RoundedCornerShape(16.dp))
+        .shimmerBackground(enabled = enabled, shape = RoundedCornerShape(16.dp))
     },
   )
 }
@@ -394,6 +394,6 @@ private fun PlaylistLastPlayedAgoText(duration: Duration) {
 
 private fun playlistItemPaddingValues(itemIndex: Int, lastIndex: Int): PaddingValues =
   PaddingValues(
-    start = if (itemIndex > 0) 6.dp else 0.dp,
-    end = if (itemIndex < lastIndex) 6.dp else 0.dp,
+    start = if (itemIndex > 0) 8.dp else 0.dp,
+    end = if (itemIndex < lastIndex) 8.dp else 0.dp,
   )
