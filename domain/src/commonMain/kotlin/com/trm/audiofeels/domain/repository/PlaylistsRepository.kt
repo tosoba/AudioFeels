@@ -28,4 +28,6 @@ interface PlaylistsRepository {
   fun getCurrentPlaylistFlow(): Flow<Playlist?>
 
   fun getCurrentPlaylistPlaybackFlow(): Flow<PlaylistPlayback?>
+
+  fun getFavouritePlaylistsFlow(): Flow<List<Playlist>>
 }

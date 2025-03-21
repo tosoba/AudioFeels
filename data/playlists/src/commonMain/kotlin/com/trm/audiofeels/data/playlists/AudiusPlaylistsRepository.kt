@@ -77,4 +77,7 @@ class AudiusPlaylistsRepository(
 
   override fun getCarryOnPlaylistsFlow(): Flow<List<CarryOnPlaylist>> =
     playlistDao.selectAllOrderByLastPlayed().map { it.map(PlaylistEntity::toCarryOn) }
+
+  override fun getFavouritePlaylistsFlow(): Flow<List<Playlist>> =
+    playlistDao.selectFavouritePlaylists().map { it.map(PlaylistEntity::toPlaylist) }
 }

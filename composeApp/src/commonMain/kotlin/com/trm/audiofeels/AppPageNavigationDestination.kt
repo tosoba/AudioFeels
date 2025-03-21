@@ -2,12 +2,10 @@ package com.trm.audiofeels
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Explore
-import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.discover
-import com.trm.audiofeels.core.ui.resources.favourites
 import com.trm.audiofeels.core.ui.resources.search
 import org.jetbrains.compose.resources.StringResource
 
@@ -23,11 +21,6 @@ val PAGE_NAVIGATION_DESTINATIONS =
       route = AppRoute.Discover,
       icon = Icons.Outlined.Explore,
       labelResource = Res.string.discover,
-    ),
-    AppPageNavigationDestination(
-      route = AppRoute.Favourites,
-      icon = Icons.Outlined.Favorite,
-      labelResource = Res.string.favourites,
     ),
     AppPageNavigationDestination(
       route = AppRoute.Search,

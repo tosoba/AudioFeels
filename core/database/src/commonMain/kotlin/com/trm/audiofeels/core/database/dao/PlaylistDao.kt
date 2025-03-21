@@ -58,4 +58,7 @@ interface PlaylistDao {
       }
     } ?: run { upsert(playlist) }
   }
+
+  @Query("SELECT * FROM playlist WHERE favourite = TRUE")
+  fun selectFavouritePlaylists(): Flow<List<PlaylistEntity>>
 }

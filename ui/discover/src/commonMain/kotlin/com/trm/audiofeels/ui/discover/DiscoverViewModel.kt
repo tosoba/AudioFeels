@@ -25,6 +25,16 @@ class DiscoverViewModel(private val playlistsRepository: PlaylistsRepository) : 
         initialValue = LoadableState.Loading,
       )
 
+  val favouritePlaylists: StateFlow<LoadableState<List<Playlist>>> =
+    playlistsRepository
+      .getFavouritePlaylistsFlow()
+      .map { LoadableState.Idle(it) }
+      .stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000L),
+        initialValue = LoadableState.Loading,
+      )
+
   val trendingPlaylists: RestartableStateFlow<LoadableState<List<Playlist>>> =
     loadableStateFlowOf { playlistsRepository.getPlaylists(null) }
       .restartableStateIn(

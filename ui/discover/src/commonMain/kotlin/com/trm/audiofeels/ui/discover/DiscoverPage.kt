@@ -57,6 +57,7 @@ import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.carry_on
 import com.trm.audiofeels.core.ui.resources.days_ago
 import com.trm.audiofeels.core.ui.resources.error_occurred
+import com.trm.audiofeels.core.ui.resources.favourites
 import com.trm.audiofeels.core.ui.resources.hours_ago
 import com.trm.audiofeels.core.ui.resources.minutes_ago
 import com.trm.audiofeels.core.ui.resources.moments_ago
@@ -80,9 +81,10 @@ fun DiscoverPage(
   topSpacerHeight: Dp,
   bottomSpacerHeight: Dp,
   onCarryPlaylistClick: (CarryOnPlaylist) -> Unit,
-  onTrendingPlaylistClick: (Playlist) -> Unit,
+  onPlaylistClick: (Playlist) -> Unit,
 ) {
   val carryOnPlaylists by viewModel.carryOnPlaylists.collectAsStateWithLifecycle()
+  val favouritePlaylists by viewModel.favouritePlaylists.collectAsStateWithLifecycle()
   val trendingPlaylists by viewModel.trendingPlaylists.collectAsStateWithLifecycle()
 
   Box {
@@ -98,12 +100,7 @@ fun DiscoverPage(
       DiscoverListLazyRow(
         list = carryOnPlaylists,
         onRetryClick = {},
-        placeholderItemContent = {
-          Spacer(modifier = Modifier.height(158.dp))
-          Text(text = "", style = MaterialTheme.typography.labelLarge)
-          Text(text = "", style = MaterialTheme.typography.labelSmall)
-          Spacer(modifier = Modifier.height(8.dp))
-        },
+        placeholderItemContent = { CarryOnPlaylistPlaceholderItemContent() },
       ) { index, lastIndex, carryOn ->
         CarryOnPlaylistItem(
           carryOn = carryOn,
@@ -163,6 +160,27 @@ fun DiscoverPage(
       }
 
       DiscoverListHeadline(
+        text = stringResource(Res.string.favourites),
+        list = favouritePlaylists,
+        modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp),
+      )
+
+      DiscoverListLazyRow(
+        list = favouritePlaylists,
+        onRetryClick = {},
+        placeholderItemContent = { PlaylistPlaceholderItemContent() },
+      ) { index, lastIndex, playlist ->
+        PlaylistItem(
+          playlist = playlist,
+          modifier =
+            Modifier.width(150.dp)
+              .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = lastIndex))
+              .animateItem(),
+          onClick = onPlaylistClick,
+        )
+      }
+
+      DiscoverListHeadline(
         text = stringResource(Res.string.trending),
         list = trendingPlaylists,
         modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp),
@@ -171,11 +189,7 @@ fun DiscoverPage(
       DiscoverListLazyRow(
         list = trendingPlaylists,
         onRetryClick = viewModel.trendingPlaylists::restart,
-        placeholderItemContent = {
-          Spacer(modifier = Modifier.height(158.dp))
-          Text(text = "", style = MaterialTheme.typography.labelLarge)
-          Spacer(modifier = Modifier.height(8.dp))
-        },
+        placeholderItemContent = { PlaylistPlaceholderItemContent() },
       ) { index, lastIndex, playlist ->
         PlaylistItem(
           playlist = playlist,
@@ -183,7 +197,7 @@ fun DiscoverPage(
             Modifier.width(150.dp)
               .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = lastIndex))
               .animateItem(),
-          onClick = onTrendingPlaylistClick,
+          onClick = onPlaylistClick,
         )
       }
 
@@ -195,6 +209,21 @@ fun DiscoverPage(
     EndEdgeGradient()
     BottomEdgeGradient()
   }
+}
+
+@Composable
+private fun ColumnScope.CarryOnPlaylistPlaceholderItemContent() {
+  Spacer(modifier = Modifier.height(158.dp))
+  Text(text = "", style = MaterialTheme.typography.labelLarge)
+  Text(text = "", style = MaterialTheme.typography.labelSmall)
+  Spacer(modifier = Modifier.height(8.dp))
+}
+
+@Composable
+private fun ColumnScope.PlaylistPlaceholderItemContent() {
+  Spacer(modifier = Modifier.height(158.dp))
+  Text(text = "", style = MaterialTheme.typography.labelLarge)
+  Spacer(modifier = Modifier.height(8.dp))
 }
 
 @Composable

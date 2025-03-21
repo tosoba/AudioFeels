@@ -93,7 +93,6 @@ import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.ui.discover.DiscoverPage
 import com.trm.audiofeels.ui.discover.DiscoverViewModelFactory
-import com.trm.audiofeels.ui.favourites.FavouritesPage
 import com.trm.audiofeels.ui.player.PlayerAudioVisualization
 import com.trm.audiofeels.ui.player.PlayerViewModel
 import com.trm.audiofeels.ui.player.PlayerViewState
@@ -528,11 +527,8 @@ private fun AppNavHost(
         topSpacerHeight = topSpacerHeight,
         bottomSpacerHeight = bottomSpacerHeight,
         onCarryPlaylistClick = onCarryOnPlaylistClick,
-        onTrendingPlaylistClick = onTrendingPlaylistClick,
+        onPlaylistClick = onTrendingPlaylistClick,
       )
-    }
-    composable<AppRoute.Favourites> {
-      FavouritesPage(topSpacerHeight = topSpacerHeight, bottomSpacerHeight = bottomSpacerHeight)
     }
     composable<AppRoute.Search> {
       SearchPage(topSpacerHeight = topSpacerHeight, bottomSpacerHeight = bottomSpacerHeight)
