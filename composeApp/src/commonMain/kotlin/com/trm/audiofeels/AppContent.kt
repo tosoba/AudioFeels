@@ -361,7 +361,13 @@ private fun AppBottomSheetScaffold(
               currentWindowAdaptiveInfo().windowSizeClass.windowHeightSizeClass !=
                 WindowHeightSizeClass.COMPACT,
             showEdgeGradients = true,
-            modifier = Modifier.fillMaxSize().padding(top = 32.dp, bottom = 16.dp),
+            modifier =
+              Modifier.fillMaxSize()
+                .padding(
+                  top =
+                    with(density) { TopAppBarDefaults.windowInsets.getTop(density).toDp() } + 16.dp,
+                  bottom = 16.dp,
+                ),
           )
         }
       },
