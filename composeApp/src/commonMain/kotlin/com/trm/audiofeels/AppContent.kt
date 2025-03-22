@@ -80,7 +80,6 @@ import androidx.window.core.layout.WindowHeightSizeClass
 import coil3.compose.setSingletonImageLoaderFactory
 import com.materialkolor.DynamicMaterialTheme
 import com.materialkolor.ktx.rememberThemeColor
-import com.trm.audiofeels.core.ui.compose.AnimatedNullableVisibility
 import com.trm.audiofeels.core.ui.compose.theme.UpdateEdgeToEdge
 import com.trm.audiofeels.core.ui.compose.util.NavigationContentPosition
 import com.trm.audiofeels.core.ui.compose.util.NavigationType
@@ -93,9 +92,9 @@ import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.ui.discover.DiscoverPage
 import com.trm.audiofeels.ui.discover.DiscoverViewModelFactory
-import com.trm.audiofeels.ui.player.composable.PlayerAudioVisualization
 import com.trm.audiofeels.ui.player.PlayerViewModel
 import com.trm.audiofeels.ui.player.PlayerViewState
+import com.trm.audiofeels.ui.player.composable.PlayerAudioVisualization
 import com.trm.audiofeels.ui.player.composable.PlayerExpandedContent
 import com.trm.audiofeels.ui.player.composable.PlayerRecordAudioPermissionObserver
 import com.trm.audiofeels.ui.player.composable.PlayerRecordAudioPermissionRequest
@@ -215,11 +214,15 @@ fun AppContent(applicationComponent: ApplicationComponent) {
     }
 
     val audioData by playerViewModel.audioData.collectAsStateWithLifecycle()
-    AnimatedNullableVisibility(value = audioData, enter = fadeIn(), exit = fadeOut()) {
+    AnimatedVisibility(
+      visible = audioData != null && playerViewState is PlayerViewState.Playback,
+      enter = fadeIn(),
+      exit = fadeOut(),
+    ) {
       PlayerAudioVisualization(
         minValueColor = MaterialTheme.colorScheme.inversePrimary,
         maxValueColor = MaterialTheme.colorScheme.primary,
-        values = it,
+        values = audioData.orEmpty(),
         animationDurationMs = 360,
         modifier = Modifier.fillMaxSize(),
         isPlaying = playerViewState.isPlaying,

@@ -29,6 +29,8 @@ fun PlayerAudioVisualization(
   modifier: Modifier = Modifier,
   isPlaying: Boolean,
 ) {
+  if (values.isEmpty()) return
+
   val animatedValues =
     remember(values.size) { mutableStateListOf<State<Float>>() }
       .apply {
