@@ -176,11 +176,7 @@ class PlayerViewModel(
         artworkUrlChannel.send(getCurrentTrackArtworkUrl(it, input, playback))
       },
       artworkUrlChannel.receiveAsFlow().distinctUntilChanged().mapLatest { artworkUrl ->
-        artworkUrl?.let {
-          imageLoader.loadImageBitmapOrNull(it, platformContext)?.let { artwork ->
-            LoadableState.Idle(artwork)
-          } ?: LoadableState.Error(Exception("Error loading artwork"))
-        } ?: LoadableState.Error(Exception("Missing artworkUrl"))
+        artworkUrl?.let { imageLoader.loadImageBitmapOrNull(it, platformContext) }
       },
       playerConnection.currentTrackPositionMsFlow.distinctUntilChanged().onStart { emit(0L) },
     ) { playerState, currentTrackImageBitmap, currentTrackPositionMs ->
@@ -201,7 +197,7 @@ class PlayerViewModel(
     playback: PlaylistPlayback,
     playerState: PlayerState,
     currentTrackPositionMs: Long,
-    currentTrackImageBitmap: LoadableState<ImageBitmap?>,
+    currentTrackImageBitmap: ImageBitmap?,
   ): PlayerViewState.Playback {
     val arguments = PlaybackActionArguments(playerState, playerInput, playback)
     val togglePlayback = TogglePlayback(arguments)

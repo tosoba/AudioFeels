@@ -32,7 +32,7 @@ interface NetworkCoreComponent : NetworkPlatformComponent {
 
   @Provides
   @ApplicationScope
-  fun newImageLoader(
+  fun imageLoader(
     platformContext: PlatformContext,
     coilPlatformContext: coil3.PlatformContext,
     buildInfo: BuildInfo,
