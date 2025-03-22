@@ -38,6 +38,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -162,7 +163,10 @@ class PlayerViewModel(
   ): Flow<PlayerViewState> =
     combine(
       playerConnection.playerStateFlow,
-      playerConnection.currentTrackPositionMsFlow.distinctUntilChanged().onStart { emit(0L) },
+      playerConnection.currentTrackPositionMsFlow
+        .distinctUntilChanged()
+        .filter { it > 0L }
+        .onStart { emit(playback.currentTrackPositionMs) },
     ) { playerState, currentTrackPositionMs ->
       playbackViewState(
         playerInput = input,
@@ -187,7 +191,8 @@ class PlayerViewModel(
       playerState = playerState,
       tracks = playerInput.tracks,
       currentTrackIndex = getCurrentTrackIndex(playerState, playback),
-      currentTrackProgress = currentTrackProgress(playerState, currentTrackPositionMs),
+      currentTrackProgress =
+        currentTrackProgress(playerInput, playback, playerState, currentTrackPositionMs),
       primaryControlState = primaryControlState(playback.playlist, playerState, togglePlayback),
       startPlaylistPlayback = StartPlaylistPlayback(playback.playlist, togglePlayback),
       startCarryOnPlaylistPlayback =
@@ -262,12 +267,21 @@ class PlayerViewModel(
     viewModelScope.launch { playlistsRepository.toggleCurrentPlaylistFavourite() }
   }
 
-  private fun currentTrackProgress(playerState: PlayerState, currentTrackPositionMs: Long): Double =
+  private fun currentTrackProgress(
+    playerInput: PlayerInput,
+    playback: PlaylistPlayback,
+    playerState: PlayerState,
+    currentTrackPositionMs: Long,
+  ): Double =
     when (playerState) {
+      PlayerState.Idle -> {
+        playerInput.tracks.getOrNull(playback.currentTrackIndex)?.duration?.toDouble()?.let {
+          playback.currentTrackPositionMs.toDouble() / it / 1000.0
+        } ?: 0.0
+      }
       is PlayerState.Enqueued -> {
         currentTrackPositionMs.toDouble() / playerState.currentTrack.duration.toDouble() / 1000.0
       }
-      PlayerState.Idle,
       is PlayerState.Error -> {
         0.0
       }

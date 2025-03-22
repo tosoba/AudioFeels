@@ -44,7 +44,6 @@ import com.trm.audiofeels.core.ui.resources.artwork_placeholder
 import com.trm.audiofeels.core.ui.resources.error_occurred
 import com.trm.audiofeels.core.ui.resources.play_next_track
 import com.trm.audiofeels.core.ui.resources.play_previous_track
-import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.ui.player.PlayerViewState
 import org.jetbrains.compose.resources.stringResource
@@ -177,10 +176,7 @@ internal fun PlayerCollapsedContent(
       }
     }
 
-    TrackProgressIndicator(
-      visible =
-        viewState is PlayerViewState.Playback && viewState.playerState is PlayerState.Enqueued
-    ) {
+    TrackProgressIndicator(visible = viewState is PlayerViewState.Playback) {
       (viewState as? PlayerViewState.Playback)?.currentTrackProgress?.toFloat() ?: 0.0f
     }
   }

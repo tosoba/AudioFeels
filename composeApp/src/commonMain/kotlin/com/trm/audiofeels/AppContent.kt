@@ -391,7 +391,7 @@ private fun AppBottomSheetScaffold(
           PlayerExpandedContent(
             viewState = playerViewState,
             currentPlaylist = currentPlaylist,
-            showToggleFavourite =
+            showAdditionalControls =
               currentWindowAdaptiveInfo().windowSizeClass.windowHeightSizeClass !=
                 WindowHeightSizeClass.COMPACT,
             showEdgeGradients = true,

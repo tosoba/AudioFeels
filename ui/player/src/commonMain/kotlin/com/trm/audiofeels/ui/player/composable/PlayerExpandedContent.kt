@@ -1,5 +1,6 @@
 package com.trm.audiofeels.ui.player.composable
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
@@ -21,10 +22,13 @@ import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.SkipNext
 import androidx.compose.material.icons.outlined.SkipPrevious
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -56,11 +60,12 @@ import kotlin.math.absoluteValue
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayerExpandedContent(
   viewState: PlayerViewState,
   currentPlaylist: Playlist?,
-  showToggleFavourite: Boolean,
+  showAdditionalControls: Boolean,
   showEdgeGradients: Boolean,
   modifier: Modifier = Modifier,
 ) {
@@ -81,6 +86,21 @@ fun PlayerExpandedContent(
         }
         is PlayerViewState.Error -> {
           PlayerErrorPager(modifier = pagerModifier)
+        }
+      }
+
+      if (showAdditionalControls) {
+        AnimatedVisibility(visible = viewState is PlayerViewState.Playback) {
+          Slider(
+            state =
+              SliderState(
+                value =
+                  (viewState as? PlayerViewState.Playback)?.currentTrackProgress?.toFloat() ?: 0f,
+                onValueChangeFinished = {},
+              ),
+            enabled = viewState is PlayerViewState.Playback,
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+          )
         }
       }
 
@@ -112,7 +132,7 @@ fun PlayerExpandedContent(
         }
       }
 
-      if (showToggleFavourite) {
+      if (showAdditionalControls) {
         Box(
           modifier = Modifier.fillMaxWidth().padding(16.dp),
           contentAlignment = Alignment.CenterEnd,
