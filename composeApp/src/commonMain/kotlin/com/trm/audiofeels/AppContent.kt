@@ -93,7 +93,7 @@ import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.ui.discover.DiscoverPage
 import com.trm.audiofeels.ui.discover.DiscoverViewModelFactory
-import com.trm.audiofeels.ui.player.PlayerAudioVisualization
+import com.trm.audiofeels.ui.player.composable.PlayerAudioVisualization
 import com.trm.audiofeels.ui.player.PlayerViewModel
 import com.trm.audiofeels.ui.player.PlayerViewState
 import com.trm.audiofeels.ui.player.composable.PlayerExpandedContent
@@ -122,6 +122,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
   val playerViewModel =
     viewModel<PlayerViewModel>(factory = applicationComponent.playerViewModelFactory)
   val playerViewState by playerViewModel.viewState.collectAsStateWithLifecycle()
+  val playlist by playerViewModel.playlist.collectAsStateWithLifecycle()
 
   val requestRecordAudioPermission by
     playerViewModel.requestRecordAudioPermission.collectAsStateWithLifecycle()
@@ -207,6 +208,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
       AppBottomSheetScaffold(
         appLayoutState = appLayoutState,
         playerViewState = playerViewState,
+        playlist = playlist,
         navController = navController,
         applicationComponent = applicationComponent,
       )
@@ -231,6 +233,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
 private fun AppBottomSheetScaffold(
   appLayoutState: AppLayoutState,
   playerViewState: PlayerViewState,
+  playlist: Playlist?,
   navController: NavHostController,
   applicationComponent: ApplicationComponent,
 ) {
@@ -281,6 +284,7 @@ private fun AppBottomSheetScaffold(
     sheetContent = {
       PlayerSheetContent(
         viewState = playerViewState,
+        playlist = playlist,
         partiallyExpandedAlpha = partiallyExpandedAlpha,
         expandedAlpha = expandedAlpha,
         showToggleFavourite =
@@ -357,6 +361,7 @@ private fun AppBottomSheetScaffold(
         AnimatedPane {
           PlayerExpandedContent(
             viewState = playerViewState,
+            playlist = playlist,
             showToggleFavourite =
               currentWindowAdaptiveInfo().windowSizeClass.windowHeightSizeClass !=
                 WindowHeightSizeClass.COMPACT,

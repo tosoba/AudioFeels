@@ -24,15 +24,6 @@ sealed interface PlayerViewState {
   val isPlaying: Boolean
     get() = this is Playback && playerState is PlayerState.Enqueued && playerState.isPlaying
 
-  val isFavourite: Boolean
-
-  fun copyWithPlaylist(playlist: Playlist): PlayerViewState = when (this) {
-    is Invisible -> this
-    is Loading -> copy(playlist = playlist)
-    is Playback -> copy(playlist = playlist)
-    is Error -> copy(playlist = playlist)
-  }
-
   sealed interface PrimaryControlState {
     data object Loading : PrimaryControlState
 
@@ -52,12 +43,9 @@ sealed interface PlayerViewState {
       LoadableState.Idle(null)
 
     override val primaryControlState: PrimaryControlState.Loading = PrimaryControlState.Loading
-
-    override val isFavourite: Boolean = false
   }
 
   data class Loading(
-    val playlist: Playlist,
     override val startPlaylistPlayback: (Playlist) -> Unit,
     override val startCarryOnPlaylistPlayback: (CarryOnPlaylist) -> Unit,
     override val cancelPlayback: () -> Unit,
@@ -66,13 +54,10 @@ sealed interface PlayerViewState {
       LoadableState.Idle(null)
 
     override val primaryControlState: PrimaryControlState.Loading = PrimaryControlState.Loading
-
-    override val isFavourite: Boolean
-      get() = playlist.favourite
   }
 
   data class Playback(
-    val playlist: Playlist,
+    val playlistId: String,
     val playerState: PlayerState,
     val tracks: List<Track>,
     val currentTrackIndex: Int,
@@ -97,13 +82,9 @@ sealed interface PlayerViewState {
 
     val canPlayNext: Boolean
       get() = currentTrackIndex < tracks.lastIndex
-
-    override val isFavourite: Boolean
-      get() = playlist.favourite
   }
 
   data class Error(
-    val playlist: Playlist,
     override val primaryControlState: PrimaryControlState.Action,
     override val startPlaylistPlayback: (Playlist) -> Unit,
     override val startCarryOnPlaylistPlayback: (CarryOnPlaylist) -> Unit,
@@ -111,8 +92,5 @@ sealed interface PlayerViewState {
   ) : PlayerViewState {
     override val currentTrackImageBitmap: LoadableState.Idle<ImageBitmap?> =
       LoadableState.Idle(null)
-
-    override val isFavourite: Boolean
-      get() = playlist.favourite
   }
 }

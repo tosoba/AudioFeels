@@ -45,12 +45,17 @@ import com.trm.audiofeels.core.ui.resources.error_occurred
 import com.trm.audiofeels.core.ui.resources.play_next_track
 import com.trm.audiofeels.core.ui.resources.play_previous_track
 import com.trm.audiofeels.domain.model.PlayerState
+import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.ui.player.PlayerViewState
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 
 @Composable
-internal fun PlayerCollapsedContent(viewState: PlayerViewState, modifier: Modifier = Modifier) {
+internal fun PlayerCollapsedContent(
+  viewState: PlayerViewState,
+  playlist: Playlist?,
+  modifier: Modifier = Modifier,
+) {
   Box(modifier = modifier) {
     val playback = viewState as? PlayerViewState.Playback
     val swipeState =
@@ -146,11 +151,11 @@ internal fun PlayerCollapsedContent(viewState: PlayerViewState, modifier: Modifi
               Spacer(modifier = Modifier.weight(1f))
             }
             is PlayerViewState.Loading -> {
-              SecondaryText(text = viewState.playlist.name)
+              SecondaryText(text = playlist?.name.orEmpty())
             }
             is PlayerViewState.Playback -> {
               viewState.currentTrack?.let { PrimaryText(text = it.title) }
-              SecondaryText(text = viewState.playlist.name)
+              SecondaryText(text = playlist?.name.orEmpty())
             }
             is PlayerViewState.Error -> {
               PrimaryText(text = stringResource(Res.string.error_occurred))
@@ -159,7 +164,7 @@ internal fun PlayerCollapsedContent(viewState: PlayerViewState, modifier: Modifi
         }
 
         PlaylistFavouriteToggleButton(
-          checked = viewState.isFavourite,
+          checked = playlist?.favourite == true,
           enabled = viewState is PlayerViewState.Playback,
           onCheckedChange = {
             (viewState as? PlayerViewState.Playback)?.togglePlaylistFavourite?.invoke()

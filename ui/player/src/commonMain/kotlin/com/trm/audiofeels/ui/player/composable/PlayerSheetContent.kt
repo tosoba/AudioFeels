@@ -6,11 +6,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.ui.player.PlayerViewState
 
 @Composable
 fun PlayerSheetContent(
   viewState: PlayerViewState,
+  playlist: Playlist?,
   partiallyExpandedAlpha: Float,
   expandedAlpha: Float,
   showToggleFavourite: Boolean,
@@ -20,6 +22,7 @@ fun PlayerSheetContent(
     if (partiallyExpandedAlpha > 0f) {
       PlayerCollapsedContent(
         viewState = viewState,
+        playlist = playlist,
         modifier = Modifier.fillMaxWidth().alpha(partiallyExpandedAlpha),
       )
     }
@@ -27,6 +30,7 @@ fun PlayerSheetContent(
     if (expandedAlpha > 0f) {
       PlayerExpandedContent(
         viewState = viewState,
+        playlist = playlist,
         showToggleFavourite = showToggleFavourite,
         showEdgeGradients = false,
         modifier = Modifier.fillMaxSize().alpha(expandedAlpha),

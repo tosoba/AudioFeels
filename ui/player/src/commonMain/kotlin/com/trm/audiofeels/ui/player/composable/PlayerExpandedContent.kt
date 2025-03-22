@@ -50,6 +50,7 @@ import com.trm.audiofeels.core.ui.resources.error_occurred
 import com.trm.audiofeels.core.ui.resources.play_next_track
 import com.trm.audiofeels.core.ui.resources.play_previous_track
 import com.trm.audiofeels.core.ui.resources.remove_from_favourites
+import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.ui.player.PlayerViewState
 import kotlin.math.absoluteValue
 import org.jetbrains.compose.resources.stringResource
@@ -58,6 +59,7 @@ import org.jetbrains.compose.resources.vectorResource
 @Composable
 fun PlayerExpandedContent(
   viewState: PlayerViewState,
+  playlist: Playlist?,
   showToggleFavourite: Boolean,
   showEdgeGradients: Boolean,
   modifier: Modifier = Modifier,
@@ -122,11 +124,11 @@ fun PlayerExpandedContent(
           ) {
             Icon(
               imageVector =
-                if (viewState.isFavourite) Icons.Outlined.Favorite
+                if (playlist?.favourite == true) Icons.Outlined.Favorite
                 else Icons.Outlined.FavoriteBorder,
               contentDescription =
                 stringResource(
-                  if (viewState.isFavourite) Res.string.remove_from_favourites
+                  if (playlist?.favourite == true) Res.string.remove_from_favourites
                   else Res.string.add_to_favourites
                 ),
             )

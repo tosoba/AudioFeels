@@ -1,4 +1,4 @@
-package com.trm.audiofeels.ui.player
+package com.trm.audiofeels.ui.player.composable
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState

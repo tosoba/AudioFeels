@@ -95,18 +95,19 @@ class PlayerViewModel(
     _audioData.value = null
   }
 
+  val playlist: StateFlow<Playlist?> =
+    playlistsRepository
+      .getCurrentPlaylistFlow()
+      .distinctUntilChanged()
+      .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), null)
+
   val viewState: RestartableStateFlow<PlayerViewState> =
-    combine(
-        playlistsRepository
-          .getCurrentPlaylistPlaybackFlow()
-          .distinctUntilChangedBy { playback -> playback?.playlist?.id }
-          .flatMapLatest { playback ->
-            playback?.let(::playerViewStateFlow)
-              ?: flowOf(invisibleViewState()).onEach { playerConnection.reset() }
-          },
-        playlistsRepository.getCurrentPlaylistFlow().distinctUntilChanged(),
-      ) { viewState, playlist ->
-        playlist?.let(viewState::copyWithPlaylist) ?: viewState
+    playlistsRepository
+      .getCurrentPlaylistPlaybackFlow()
+      .distinctUntilChangedBy { playback -> playback?.playlist?.id }
+      .flatMapLatest { playback ->
+        playback?.let(::playerViewStateFlow)
+          ?: flowOf(invisibleViewState()).onEach { playerConnection.reset() }
       }
       .onEach { if (it is PlayerViewState.Playback) onPlayerViewStatePlayback(it) }
       .restartableStateIn(
@@ -144,7 +145,6 @@ class PlayerViewModel(
       LoadableState.Loading -> {
         flowOf(
           PlayerViewState.Loading(
-            playlist = playback.playlist,
             startPlaylistPlayback = StartPlaylistPlayback(),
             startCarryOnPlaylistPlayback = StartCarryOnPlaylistPlayback(),
             cancelPlayback = ::cancelPlayback,
@@ -157,7 +157,6 @@ class PlayerViewModel(
       is LoadableState.Error -> {
         flowOf(
           PlayerViewState.Error(
-            playlist = playback.playlist,
             startPlaylistPlayback = StartPlaylistPlayback(),
             startCarryOnPlaylistPlayback = StartCarryOnPlaylistPlayback(),
             cancelPlayback = ::cancelPlayback,
@@ -207,7 +206,7 @@ class PlayerViewModel(
     val arguments = PlaybackActionArguments(playerState, playerInput, playback)
     val togglePlayback = TogglePlayback(arguments)
     return PlayerViewState.Playback(
-      playlist = playback.playlist,
+      playlistId = playback.playlist.id,
       playerState = playerState,
       tracks = playerInput.tracks,
       currentTrackIndex = getCurrentTrackIndex(playerState, playback),
@@ -304,7 +303,7 @@ class PlayerViewModel(
       is PlayerState.Enqueued -> {
         viewModelScope.launch {
           playlistsRepository.updateCurrentPlaylist(
-            id = playbackState.playlist.id,
+            id = playbackState.playlistId,
             currentTrackIndex = playerState.currentTrackIndex,
             currentTrackPositionMs =
               playerState.currentTrack.positionMsOf(playbackState.currentTrackProgress),
