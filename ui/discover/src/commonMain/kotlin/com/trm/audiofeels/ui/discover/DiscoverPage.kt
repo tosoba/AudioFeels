@@ -1,9 +1,7 @@
 package com.trm.audiofeels.ui.discover
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
@@ -233,7 +231,7 @@ private fun <T : Any> DiscoverListHeadline(
   modifier: Modifier = Modifier,
   shimmerShape: Shape = RoundedCornerShape(6.dp),
 ) {
-  Crossfade(list) {
+  AnimatedContent(list) {
     when (it) {
       is LoadableState.Loading -> {
         Box(modifier.shimmerBackground(enabled = true, shape = shimmerShape)) {
@@ -265,7 +263,7 @@ private fun <T : Any> DiscoverListLazyRow(
   placeholderItemContent: @Composable ColumnScope.() -> Unit,
   item: @Composable LazyItemScope.(Int, Int, T) -> Unit,
 ) {
-  AnimatedVisibility(visible = list.discoverListVisible(), enter = fadeIn(), exit = fadeOut()) {
+  AnimatedVisibility(visible = list.discoverListVisible()) {
     LazyRow(
       modifier = Modifier.fillMaxWidth(),
       contentPadding = PaddingValues(16.dp),
