@@ -205,7 +205,6 @@ fun AppContent(applicationComponent: ApplicationComponent) {
         appLayoutState = appLayoutState,
         playerViewState = playerViewState,
         currentPlaylist = currentPlaylist,
-        onCancelPlaybackClick = playerViewModel::cancelPlayback,
         navController = navController,
         applicationComponent = applicationComponent,
       )
@@ -264,7 +263,6 @@ private fun AppBottomSheetScaffold(
   appLayoutState: AppLayoutState,
   playerViewState: PlayerViewState,
   currentPlaylist: Playlist?,
-  onCancelPlaybackClick: () -> Unit,
   navController: NavHostController,
   applicationComponent: ApplicationComponent,
 ) {
@@ -379,7 +377,6 @@ private fun AppBottomSheetScaffold(
               HazeStyle(backgroundColor = MaterialTheme.colorScheme.background, tint = null)
             AppTopBar(
               viewState = playerViewState,
-              onCancelPlaybackClick = onCancelPlaybackClick,
               modifier =
                 Modifier.hazeEffect(hazeState) {
                   style = topBarHazeStyle
@@ -414,17 +411,13 @@ private fun AppBottomSheetScaffold(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AppTopBar(
-  viewState: PlayerViewState,
-  onCancelPlaybackClick: () -> Unit,
-  modifier: Modifier = Modifier,
-) {
+private fun AppTopBar(viewState: PlayerViewState, modifier: Modifier = Modifier) {
   val colors = TopAppBarDefaults.centerAlignedTopAppBarColors()
   CenterAlignedTopAppBar(
     title = { Text(stringResource(Res.string.app_name)) },
     actions = {
       AnimatedVisibility(viewState.playerVisible) {
-        IconButton(onClick = onCancelPlaybackClick) {
+        IconButton(onClick = viewState.cancelPlayback) {
           Icon(
             imageVector = Icons.Outlined.StopCircle,
             contentDescription = stringResource(Res.string.cancel_playback),
