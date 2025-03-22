@@ -16,7 +16,6 @@ sealed interface PlayerViewState {
 
   val startPlaylistPlayback: (Playlist) -> Unit
   val startCarryOnPlaylistPlayback: (CarryOnPlaylist) -> Unit
-  val cancelPlayback: () -> Unit
 
   val primaryControlState: PrimaryControlState
 
@@ -36,7 +35,6 @@ sealed interface PlayerViewState {
   data class Invisible(
     override val startPlaylistPlayback: (Playlist) -> Unit,
     override val startCarryOnPlaylistPlayback: (CarryOnPlaylist) -> Unit,
-    override val cancelPlayback: () -> Unit,
   ) : PlayerViewState {
     override val currentTrackImageBitmap: ImageBitmap? = null
     override val primaryControlState: PrimaryControlState.Loading = PrimaryControlState.Loading
@@ -45,7 +43,6 @@ sealed interface PlayerViewState {
   data class Loading(
     override val startPlaylistPlayback: (Playlist) -> Unit,
     override val startCarryOnPlaylistPlayback: (CarryOnPlaylist) -> Unit,
-    override val cancelPlayback: () -> Unit,
   ) : PlayerViewState {
     override val currentTrackImageBitmap: ImageBitmap? = null
     override val primaryControlState: PrimaryControlState.Loading = PrimaryControlState.Loading
@@ -61,7 +58,6 @@ sealed interface PlayerViewState {
     override val primaryControlState: PrimaryControlState,
     override val startPlaylistPlayback: (Playlist) -> Unit,
     override val startCarryOnPlaylistPlayback: (CarryOnPlaylist) -> Unit,
-    override val cancelPlayback: () -> Unit,
     val togglePlaylistFavourite: () -> Unit,
     val playPreviousTrack: () -> Unit,
     val playNextTrack: () -> Unit,
@@ -83,7 +79,6 @@ sealed interface PlayerViewState {
     override val primaryControlState: PrimaryControlState.Action,
     override val startPlaylistPlayback: (Playlist) -> Unit,
     override val startCarryOnPlaylistPlayback: (CarryOnPlaylist) -> Unit,
-    override val cancelPlayback: () -> Unit,
   ) : PlayerViewState {
     override val currentTrackImageBitmap: ImageBitmap? = null
   }

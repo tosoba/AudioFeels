@@ -120,7 +120,6 @@ class PlayerViewModel(
     PlayerViewState.Invisible(
       startPlaylistPlayback = StartPlaylistPlayback(),
       startCarryOnPlaylistPlayback = StartCarryOnPlaylistPlayback(),
-      cancelPlayback = ::cancelPlayback,
     )
 
   private fun playerViewStateFlow(playback: PlaylistPlayback): Flow<PlayerViewState> =
@@ -147,7 +146,6 @@ class PlayerViewModel(
           PlayerViewState.Loading(
             startPlaylistPlayback = StartPlaylistPlayback(),
             startCarryOnPlaylistPlayback = StartCarryOnPlaylistPlayback(),
-            cancelPlayback = ::cancelPlayback,
           )
         )
       }
@@ -159,7 +157,6 @@ class PlayerViewModel(
           PlayerViewState.Error(
             startPlaylistPlayback = StartPlaylistPlayback(),
             startCarryOnPlaylistPlayback = StartCarryOnPlaylistPlayback(),
-            cancelPlayback = ::cancelPlayback,
             primaryControlState = retryAction(playlist = playback.playlist, clearHost = false),
           )
         )
@@ -212,7 +209,6 @@ class PlayerViewModel(
       startPlaylistPlayback = StartPlaylistPlayback(playback.playlist, togglePlayback),
       startCarryOnPlaylistPlayback =
         StartCarryOnPlaylistPlayback(playback.playlist, togglePlayback),
-      cancelPlayback = ::cancelPlayback,
       togglePlaylistFavourite = ::toggleCurrentPlaylistFavourite,
       playPreviousTrack = PlayPreviousTrackAction(arguments),
       playNextTrack = PlayNextTrackAction(arguments),
@@ -409,7 +405,7 @@ class PlayerViewModel(
     playlistsRepository.setNewCurrentPlaylist(playlist, carryOn)
   }
 
-  private fun cancelPlayback() {
+  fun cancelPlayback() {
     viewModelScope.launch { playlistsRepository.clearCurrentPlaylist() }
   }
 
