@@ -176,7 +176,7 @@ actual class AudioPlayerConnection(
     }
   }
 
-  override fun skipTo(positionMs: Long) {
+  override fun seekTo(positionMs: Long) {
     withMediaBrowser {
       seekTo(positionMs)
       play()

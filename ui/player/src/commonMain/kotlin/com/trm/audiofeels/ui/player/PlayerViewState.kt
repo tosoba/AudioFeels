@@ -63,6 +63,7 @@ sealed interface PlayerViewState {
     val playPreviousTrack: () -> Unit,
     val playNextTrack: () -> Unit,
     val playTrackAtIndex: (Int) -> Unit,
+    val seekToProgress: (Float) -> Unit,
   ) : PlayerViewState {
     val currentTrack: Track?
       get() =

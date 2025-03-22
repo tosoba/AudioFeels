@@ -21,7 +21,7 @@ interface PlayerConnection {
   
   fun playAtIndex(index: Int)
 
-  fun skipTo(positionMs: Long)
+  fun seekTo(positionMs: Long)
 
   fun enqueue(input: PlayerInput, startTrackIndex: Int, startPositionMs: Long)
 

@@ -22,12 +22,14 @@ import com.trm.audiofeels.domain.model.PlayerInput
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.model.PlaylistPlayback
+import com.trm.audiofeels.domain.model.Track
 import com.trm.audiofeels.domain.player.PlayerConnection
 import com.trm.audiofeels.domain.repository.HostsRepository
 import com.trm.audiofeels.domain.repository.PlaylistsRepository
 import com.trm.audiofeels.domain.repository.VisualizationRepository
 import com.trm.audiofeels.domain.usecase.GetPlayerInputUseCase
 import io.github.aakira.napier.Napier
+import kotlin.math.roundToLong
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
@@ -202,6 +204,14 @@ class PlayerViewModel(
       playPreviousTrack = PlayPreviousTrackAction(arguments),
       playNextTrack = PlayNextTrackAction(arguments),
       playTrackAtIndex = PlayAtIndexTrackAction(arguments),
+      seekToProgress =
+        SeekToProgress(
+          when (playerState) {
+            PlayerState.Idle -> null
+            is PlayerState.Enqueued -> playerState.currentTrack
+            is PlayerState.Error -> null
+          }
+        ),
     )
   }
 
@@ -372,6 +382,22 @@ class PlayerViewModel(
       result = 31 * result + togglePlayback.hashCode()
       return result
     }
+  }
+
+  private inner class SeekToProgress(private val currentTrack: Track?) : (Float) -> Unit {
+    override fun invoke(progress: Float) {
+      currentTrack
+        ?.duration
+        ?.toFloat()
+        ?.let { it * progress * 1000f }
+        ?.roundToLong()
+        ?.let(playerConnection::seekTo)
+    }
+
+    override fun equals(other: Any?): Boolean =
+      other is SeekToProgress && currentTrack == other.currentTrack
+
+    override fun hashCode(): Int = currentTrack.hashCode()
   }
 
   private fun startNewPlaylistPlayback(playlist: Playlist, carryOn: Boolean): Job =
