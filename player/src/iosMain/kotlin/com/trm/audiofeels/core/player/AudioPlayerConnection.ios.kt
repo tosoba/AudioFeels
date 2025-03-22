@@ -61,7 +61,6 @@ import platform.darwin.dispatch_get_main_queue
 actual class AudioPlayerConnection : PlayerConnection {
   private val player by lazy {
     AVPlayer().apply {
-      // TODO: should this be removed at any point?
       addObserver(
         observer = timeControlObserver,
         forKeyPath = "timeControlStatus",
@@ -118,7 +117,6 @@ actual class AudioPlayerConnection : PlayerConnection {
       ) {
         _playerState.update {
           when (player.currentItem?.status) {
-            // TODO: check if there's a way to figure out error type
             AVPlayerStatusUnknown -> enqueuedWithPlaybackState(PlaybackState.BUFFERING) ?: it
             AVPlayerItemStatusReadyToPlay -> enqueuedWithPlaybackState(PlaybackState.READY) ?: it
             AVPlayerStatusFailed -> PlayerState.Error(PlayerError.OTHER_ERROR, it)
