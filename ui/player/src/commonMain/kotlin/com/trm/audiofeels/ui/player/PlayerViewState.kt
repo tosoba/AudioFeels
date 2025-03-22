@@ -11,17 +11,17 @@ sealed interface PlayerViewState {
   val playerVisible: Boolean
     get() = this !is Invisible
 
+  val isPlaying: Boolean
+    get() = this is Playback && playerState is PlayerState.Enqueued && playerState.isPlaying
+
   val currentTrackArtworkUrl: String?
     get() = (this as? Playback)?.currentTrack?.artworkUrl
+
+  val primaryControlState: PrimaryControlState
 
   val startPlaylistPlayback: (Playlist) -> Unit
   val startCarryOnPlaylistPlayback: (CarryOnPlaylist) -> Unit
   val cancelPlayback: () -> Unit
-
-  val primaryControlState: PrimaryControlState
-
-  val isPlaying: Boolean
-    get() = this is Playback && playerState is PlayerState.Enqueued && playerState.isPlaying
 
   sealed interface PrimaryControlState {
     data object Loading : PrimaryControlState
