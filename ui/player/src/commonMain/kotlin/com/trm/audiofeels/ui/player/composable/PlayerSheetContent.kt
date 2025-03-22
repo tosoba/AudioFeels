@@ -12,7 +12,7 @@ import com.trm.audiofeels.ui.player.PlayerViewState
 @Composable
 fun PlayerSheetContent(
   viewState: PlayerViewState,
-  playlist: Playlist?,
+  currentPlaylist: Playlist?,
   partiallyExpandedAlpha: Float,
   expandedAlpha: Float,
   showToggleFavourite: Boolean,
@@ -22,7 +22,7 @@ fun PlayerSheetContent(
     if (partiallyExpandedAlpha > 0f) {
       PlayerCollapsedContent(
         viewState = viewState,
-        playlist = playlist,
+        currentPlaylist = currentPlaylist,
         modifier = Modifier.fillMaxWidth().alpha(partiallyExpandedAlpha),
       )
     }
@@ -30,7 +30,7 @@ fun PlayerSheetContent(
     if (expandedAlpha > 0f) {
       PlayerExpandedContent(
         viewState = viewState,
-        playlist = playlist,
+        currentPlaylist = currentPlaylist,
         showToggleFavourite = showToggleFavourite,
         showEdgeGradients = false,
         modifier = Modifier.fillMaxSize().alpha(expandedAlpha),

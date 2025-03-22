@@ -124,7 +124,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
   val playerViewModel =
     viewModel<PlayerViewModel>(factory = applicationComponent.playerViewModelFactory)
   val playerViewState by playerViewModel.viewState.collectAsStateWithLifecycle()
-  val playlist by playerViewModel.playlist.collectAsStateWithLifecycle()
+  val currentPlaylist by playerViewModel.currentPlaylist.collectAsStateWithLifecycle()
 
   val requestRecordAudioPermission by
     playerViewModel.requestRecordAudioPermission.collectAsStateWithLifecycle()
@@ -204,7 +204,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
       AppBottomSheetScaffold(
         appLayoutState = appLayoutState,
         playerViewState = playerViewState,
-        playlist = playlist,
+        currentPlaylist = currentPlaylist,
         onCancelPlaybackClick = playerViewModel::cancelPlayback,
         navController = navController,
         applicationComponent = applicationComponent,
@@ -263,7 +263,7 @@ private fun rememberThemeSeedColor(
 private fun AppBottomSheetScaffold(
   appLayoutState: AppLayoutState,
   playerViewState: PlayerViewState,
-  playlist: Playlist?,
+  currentPlaylist: Playlist?,
   onCancelPlaybackClick: () -> Unit,
   navController: NavHostController,
   applicationComponent: ApplicationComponent,
@@ -315,7 +315,7 @@ private fun AppBottomSheetScaffold(
     sheetContent = {
       PlayerSheetContent(
         viewState = playerViewState,
-        playlist = playlist,
+        currentPlaylist = currentPlaylist,
         partiallyExpandedAlpha = partiallyExpandedAlpha,
         expandedAlpha = expandedAlpha,
         showToggleFavourite =
@@ -393,7 +393,7 @@ private fun AppBottomSheetScaffold(
         AnimatedPane {
           PlayerExpandedContent(
             viewState = playerViewState,
-            playlist = playlist,
+            currentPlaylist = currentPlaylist,
             showToggleFavourite =
               currentWindowAdaptiveInfo().windowSizeClass.windowHeightSizeClass !=
                 WindowHeightSizeClass.COMPACT,

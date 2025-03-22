@@ -59,7 +59,7 @@ import org.jetbrains.compose.resources.vectorResource
 @Composable
 fun PlayerExpandedContent(
   viewState: PlayerViewState,
-  playlist: Playlist?,
+  currentPlaylist: Playlist?,
   showToggleFavourite: Boolean,
   showEdgeGradients: Boolean,
   modifier: Modifier = Modifier,
@@ -124,11 +124,11 @@ fun PlayerExpandedContent(
           ) {
             Icon(
               imageVector =
-                if (playlist?.favourite == true) Icons.Outlined.Favorite
+                if (currentPlaylist?.favourite == true) Icons.Outlined.Favorite
                 else Icons.Outlined.FavoriteBorder,
               contentDescription =
                 stringResource(
-                  if (playlist?.favourite == true) Res.string.remove_from_favourites
+                  if (currentPlaylist?.favourite == true) Res.string.remove_from_favourites
                   else Res.string.add_to_favourites
                 ),
             )

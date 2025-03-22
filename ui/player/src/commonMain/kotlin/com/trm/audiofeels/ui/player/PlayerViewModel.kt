@@ -85,7 +85,7 @@ class PlayerViewModel(
     _audioData.value = null
   }
 
-  val playlist: StateFlow<Playlist?> =
+  val currentPlaylist: StateFlow<Playlist?> =
     playlistsRepository
       .getCurrentPlaylistFlow()
       .distinctUntilChanged()

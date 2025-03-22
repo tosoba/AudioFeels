@@ -53,7 +53,7 @@ import org.jetbrains.compose.resources.vectorResource
 @Composable
 internal fun PlayerCollapsedContent(
   viewState: PlayerViewState,
-  playlist: Playlist?,
+  currentPlaylist: Playlist?,
   modifier: Modifier = Modifier,
 ) {
   Box(modifier = modifier) {
@@ -151,11 +151,11 @@ internal fun PlayerCollapsedContent(
               Spacer(modifier = Modifier.weight(1f))
             }
             is PlayerViewState.Loading -> {
-              SecondaryText(text = playlist?.name.orEmpty())
+              SecondaryText(text = currentPlaylist?.name.orEmpty())
             }
             is PlayerViewState.Playback -> {
               viewState.currentTrack?.let { PrimaryText(text = it.title) }
-              SecondaryText(text = playlist?.name.orEmpty())
+              SecondaryText(text = currentPlaylist?.name.orEmpty())
             }
             is PlayerViewState.Error -> {
               PrimaryText(text = stringResource(Res.string.error_occurred))
@@ -164,7 +164,7 @@ internal fun PlayerCollapsedContent(
         }
 
         PlaylistFavouriteToggleButton(
-          checked = playlist?.favourite == true,
+          checked = currentPlaylist?.favourite == true,
           enabled = viewState is PlayerViewState.Playback,
           onCheckedChange = {
             (viewState as? PlayerViewState.Playback)?.togglePlaylistFavourite?.invoke()
