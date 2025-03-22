@@ -3,8 +3,6 @@ package com.trm.audiofeels.ui.player
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
-import coil3.ImageLoader
-import coil3.PlatformContext
 import com.trm.audiofeels.domain.player.PlayerConnection
 import com.trm.audiofeels.domain.repository.HostsRepository
 import com.trm.audiofeels.domain.repository.PlaylistsRepository
@@ -21,8 +19,6 @@ class PlayerViewModelFactory(
   private val playlistsRepository: PlaylistsRepository,
   private val visualizationRepository: VisualizationRepository,
   private val hostsRepository: HostsRepository,
-  private val imageLoader: ImageLoader,
-  private val platformContext: PlatformContext,
 ) : ViewModelProvider.Factory {
   override fun <T : ViewModel> create(modelClass: KClass<T>, extras: CreationExtras): T =
     modelClass.cast(
@@ -32,8 +28,6 @@ class PlayerViewModelFactory(
         playlistsRepository = playlistsRepository,
         visualizationRepository = visualizationRepository,
         hostsRepository = hostsRepository,
-        imageLoader = imageLoader,
-        platformContext = platformContext,
       )
     )
 }

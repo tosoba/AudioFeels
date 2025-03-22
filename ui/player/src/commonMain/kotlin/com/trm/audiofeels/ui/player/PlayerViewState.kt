@@ -1,6 +1,5 @@
 package com.trm.audiofeels.ui.player
 
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import com.trm.audiofeels.domain.model.PlayerState
@@ -12,7 +11,8 @@ sealed interface PlayerViewState {
   val playerVisible: Boolean
     get() = this !is Invisible
 
-  val currentTrackImageBitmap: ImageBitmap?
+  val currentTrackArtworkUrl: String?
+    get() = (this as? Playback)?.currentTrack?.artworkUrl
 
   val startPlaylistPlayback: (Playlist) -> Unit
   val startCarryOnPlaylistPlayback: (CarryOnPlaylist) -> Unit
@@ -36,7 +36,6 @@ sealed interface PlayerViewState {
     override val startPlaylistPlayback: (Playlist) -> Unit,
     override val startCarryOnPlaylistPlayback: (CarryOnPlaylist) -> Unit,
   ) : PlayerViewState {
-    override val currentTrackImageBitmap: ImageBitmap? = null
     override val primaryControlState: PrimaryControlState.Loading = PrimaryControlState.Loading
   }
 
@@ -44,7 +43,6 @@ sealed interface PlayerViewState {
     override val startPlaylistPlayback: (Playlist) -> Unit,
     override val startCarryOnPlaylistPlayback: (CarryOnPlaylist) -> Unit,
   ) : PlayerViewState {
-    override val currentTrackImageBitmap: ImageBitmap? = null
     override val primaryControlState: PrimaryControlState.Loading = PrimaryControlState.Loading
   }
 
@@ -54,7 +52,6 @@ sealed interface PlayerViewState {
     val tracks: List<Track>,
     val currentTrackIndex: Int,
     val currentTrackProgress: Double,
-    override val currentTrackImageBitmap: ImageBitmap?,
     override val primaryControlState: PrimaryControlState,
     override val startPlaylistPlayback: (Playlist) -> Unit,
     override val startCarryOnPlaylistPlayback: (CarryOnPlaylist) -> Unit,
@@ -79,7 +76,5 @@ sealed interface PlayerViewState {
     override val primaryControlState: PrimaryControlState.Action,
     override val startPlaylistPlayback: (Playlist) -> Unit,
     override val startCarryOnPlaylistPlayback: (CarryOnPlaylist) -> Unit,
-  ) : PlayerViewState {
-    override val currentTrackImageBitmap: ImageBitmap? = null
-  }
+  ) : PlayerViewState
 }

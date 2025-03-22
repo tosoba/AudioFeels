@@ -19,6 +19,7 @@ import me.tatarka.inject.annotations.Provides
 
 interface NetworkCoreComponent : NetworkPlatformComponent {
   val imageLoader: ImageLoader
+  val coilPlatformContext: coil3.PlatformContext
 
   @Provides @ApplicationScope fun hostValidator(): HostValidator = HostValidator()
 

@@ -4,17 +4,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import coil3.ImageLoader
-import coil3.PlatformContext
 import com.trm.audiofeels.core.base.model.LoadableState
 import com.trm.audiofeels.core.base.model.loadableStateFlowOf
 import com.trm.audiofeels.core.base.util.RestartableStateFlow
 import com.trm.audiofeels.core.base.util.restartableStateIn
 import com.trm.audiofeels.core.base.util.roundTo
-import com.trm.audiofeels.core.ui.compose.util.loadImageBitmapOrNull
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.pause
 import com.trm.audiofeels.core.ui.resources.play
@@ -34,8 +30,6 @@ import com.trm.audiofeels.domain.usecase.GetPlayerInputUseCase
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -48,10 +42,8 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -62,8 +54,6 @@ class PlayerViewModel(
   private val playlistsRepository: PlaylistsRepository,
   private val visualizationRepository: VisualizationRepository,
   private val hostsRepository: HostsRepository,
-  private val imageLoader: ImageLoader,
-  private val platformContext: PlatformContext,
 ) : ViewModel() {
   val requestRecordAudioPermission: StateFlow<Boolean> =
     flow { emit(!visualizationRepository.isPermissionPermanentlyDenied()) }
@@ -166,17 +156,11 @@ class PlayerViewModel(
   private fun playbackViewStateFlow(
     input: PlayerInput,
     playback: PlaylistPlayback,
-  ): Flow<PlayerViewState> {
-    val artworkUrlChannel = Channel<String?>(onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    return combine(
-      playerConnection.playerStateFlow.onEach {
-        artworkUrlChannel.send(getCurrentTrackArtworkUrl(it, input, playback))
-      },
-      artworkUrlChannel.receiveAsFlow().distinctUntilChanged().mapLatest { artworkUrl ->
-        artworkUrl?.let { imageLoader.loadImageBitmapOrNull(it, platformContext) }
-      },
+  ): Flow<PlayerViewState> =
+    combine(
+      playerConnection.playerStateFlow,
       playerConnection.currentTrackPositionMsFlow.distinctUntilChanged().onStart { emit(0L) },
-    ) { playerState, currentTrackImageBitmap, currentTrackPositionMs ->
+    ) { playerState, currentTrackPositionMs ->
       playbackViewState(
         playerInput = input,
         playback = playback,
@@ -184,17 +168,14 @@ class PlayerViewModel(
         currentTrackPositionMs =
           if (playerState is PlayerState.Idle) playback.currentTrackPositionMs
           else currentTrackPositionMs,
-        currentTrackImageBitmap = currentTrackImageBitmap,
       )
     }
-  }
 
   private fun playbackViewState(
     playerInput: PlayerInput,
     playback: PlaylistPlayback,
     playerState: PlayerState,
     currentTrackPositionMs: Long,
-    currentTrackImageBitmap: ImageBitmap?,
   ): PlayerViewState.Playback {
     val arguments = PlaybackActionArguments(playerState, playerInput, playback)
     val togglePlayback = TogglePlayback(arguments)
@@ -204,7 +185,6 @@ class PlayerViewModel(
       tracks = playerInput.tracks,
       currentTrackIndex = getCurrentTrackIndex(playerState, playback),
       currentTrackProgress = currentTrackProgress(playerState, currentTrackPositionMs),
-      currentTrackImageBitmap = currentTrackImageBitmap,
       primaryControlState = primaryControlState(playback.playlist, playerState, togglePlayback),
       startPlaylistPlayback = StartPlaylistPlayback(playback.playlist, togglePlayback),
       startCarryOnPlaylistPlayback =
@@ -305,28 +285,6 @@ class PlayerViewModel(
       is PlayerState.Idle,
       is PlayerState.Error -> {
         return
-      }
-    }
-  }
-
-  private fun getCurrentTrackArtworkUrl(
-    playerState: PlayerState,
-    input: PlayerInput,
-    playback: PlaylistPlayback,
-  ): String? {
-    fun initialTrackArtworkUrl(input: PlayerInput, playback: PlaylistPlayback): String? =
-      input.tracks.getOrNull(playback.currentTrackIndex)?.artworkUrl
-
-    return when (playerState) {
-      PlayerState.Idle -> {
-        initialTrackArtworkUrl(input, playback)
-      }
-      is PlayerState.Enqueued -> {
-        playerState.currentTrack.artworkUrl
-      }
-      is PlayerState.Error -> {
-        playerState.previousEnqueuedState?.currentTrack?.artworkUrl
-          ?: initialTrackArtworkUrl(input, playback)
       }
     }
   }

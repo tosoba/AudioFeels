@@ -54,12 +54,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -84,6 +86,7 @@ import com.trm.audiofeels.core.ui.compose.theme.UpdateEdgeToEdge
 import com.trm.audiofeels.core.ui.compose.util.NavigationContentPosition
 import com.trm.audiofeels.core.ui.compose.util.NavigationType
 import com.trm.audiofeels.core.ui.compose.util.calculateWindowSize
+import com.trm.audiofeels.core.ui.compose.util.loadImageBitmapOrNull
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.app_name
 import com.trm.audiofeels.core.ui.resources.cancel_playback
@@ -135,12 +138,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
     onDenied = playerViewModel::onRecordAudioPermissionDenied,
   )
 
-  val fallbackSeedColor = rememberThemeInfo().seedColor
-  val seedColor =
-    playerViewState.currentTrackImageBitmap?.let { rememberThemeColor(it, fallbackSeedColor) }
-      ?: fallbackSeedColor
-
-  DynamicMaterialTheme(seedColor = seedColor) {
+  DynamicMaterialTheme(seedColor = rememberThemeSeedColor(playerViewState, applicationComponent)) {
     val adaptiveInfo = currentWindowAdaptiveInfo()
     val navigationType =
       NavigationType(adaptiveInfo = adaptiveInfo, windowSize = calculateWindowSize())
@@ -229,6 +227,35 @@ fun AppContent(applicationComponent: ApplicationComponent) {
       )
     }
   }
+}
+
+@Composable
+private fun rememberThemeSeedColor(
+  playerViewState: PlayerViewState,
+  applicationComponent: ApplicationComponent,
+): Color {
+  val fallbackSeedColor = rememberThemeInfo().seedColor
+  val currentTrackImageBitmap by
+    produceState<ImageBitmap?>(initialValue = null, key1 = playerViewState.currentTrackArtworkUrl) {
+      when (playerViewState) {
+        is PlayerViewState.Invisible -> {
+          value = null
+        }
+        is PlayerViewState.Playback -> {
+          value =
+            playerViewState.currentTrack?.artworkUrl?.let {
+              applicationComponent.imageLoader.loadImageBitmapOrNull(
+                url = it,
+                platformContext = applicationComponent.coilPlatformContext,
+              )
+            }
+        }
+        is PlayerViewState.Loading,
+        is PlayerViewState.Error -> {}
+      }
+    }
+  return currentTrackImageBitmap?.let { rememberThemeColor(it, fallbackSeedColor) }
+    ?: fallbackSeedColor
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
