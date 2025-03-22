@@ -37,7 +37,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filter
@@ -45,6 +44,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
@@ -163,21 +163,20 @@ class PlayerViewModel(
     input: PlayerInput,
     playback: PlaylistPlayback,
   ): Flow<PlayerViewState> =
-    combine(
-      playerConnection.playerStateFlow,
+    playerConnection.playerStateFlow.flatMapLatest { playerState ->
       playerConnection.currentTrackPositionMsFlow
         .distinctUntilChanged()
         .filter { it > 0L }
-        .onStart { emit(playback.currentTrackPositionMs) },
-    ) { playerState, currentTrackPositionMs ->
-      playbackViewState(
-        playerInput = input,
-        playback = playback,
-        playerState = playerState,
-        currentTrackPositionMs =
-          if (playerState is PlayerState.Idle) playback.currentTrackPositionMs
-          else currentTrackPositionMs,
-      )
+        .onStart { emit(playback.currentTrackPositionMs) }
+        .map {
+          playbackViewState(
+            playerInput = input,
+            playback = playback,
+            playerState = playerState,
+            currentTrackPositionMs =
+              if (playerState is PlayerState.Idle) playback.currentTrackPositionMs else it,
+          )
+        }
     }
 
   private fun playbackViewState(
