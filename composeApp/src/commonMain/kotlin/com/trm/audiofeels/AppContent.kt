@@ -379,7 +379,7 @@ private fun AppBottomSheetScaffold(
                   supportingPaneValue == PaneAdaptedValue.Expanded ||
                     appLayoutState.playerLayoutState.currentSheetValue == SheetValue.Hidden
                 ) {
-                  0.dp
+                  16.dp
                 } else {
                   sheetPeekHeight
                 },
