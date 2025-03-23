@@ -68,7 +68,7 @@ class AudiusHostsRepository(
   }
 
   private suspend fun List<String>?.findAndStoreFirstValidOrThrow(): String =
-    this?.firstOrNull { validator.isValid(it) }?.also { storeHost(it) }
+    this?.firstOrNull { validator.isValid(it) }?.also { storeHost(it) }?.trimHttps()
       ?: throw NoHostAvailableException
 
   companion object {

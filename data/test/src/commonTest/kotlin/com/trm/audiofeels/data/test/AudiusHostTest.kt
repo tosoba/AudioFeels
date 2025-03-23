@@ -239,6 +239,24 @@ class AudiusHostTest {
     }
 
   @Test
+  fun `given invalid host stored in preferences - when call to getPlaylists - then no double https requests`() =
+    runTest {
+      val invalidHost = "audius-invalid-host.com"
+      val hostsEngine = defaultHostsEngine()
+      val playlistsEngine = defaultPlaylistsEngine(invalidHost)
+
+      playlistsRepository(
+          hostsEngine = hostsEngine,
+          playlistsEngine = playlistsEngine,
+          dataStore =
+            FakeDataStorePreferences(AudiusHostsRepository.hostPreferenceKey to invalidHost),
+        )
+        .getPlaylists(null)
+
+      playlistsEngine.assertNoDoubleHttpsRequests()
+    }
+
+  @Test
   fun `given invalid host stored in preferences - when call to getPlaylists - then fetched valid host is stored in memory`() =
     runTest {
       val invalidHost = "audius-invalid-host.com"
@@ -397,6 +415,10 @@ class AudiusHostTest {
       expected = 1,
       actual = requestHistory.count { it.url.toString() == HostsEndpoints.HOSTS_URL },
     )
+  }
+
+  private fun MockEngine.assertNoDoubleHttpsRequests() {
+    assertTrue(requestHistory.none { it.url.toString().startsWith("https://https://") })
   }
 
   companion object {
