@@ -15,7 +15,7 @@ import com.trm.audiofeels.core.ui.resources.search
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun SearchPage(topSpacerHeight: Dp, bottomSpacerHeight: Dp) {
+fun SearchPage(viewModel: SearchViewModel, topSpacerHeight: Dp, bottomSpacerHeight: Dp) {
   Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
     Spacer(modifier = Modifier.height(topSpacerHeight))
 

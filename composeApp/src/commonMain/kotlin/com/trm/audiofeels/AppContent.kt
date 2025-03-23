@@ -94,7 +94,6 @@ import com.trm.audiofeels.di.ApplicationComponent
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.ui.discover.DiscoverPage
-import com.trm.audiofeels.ui.discover.DiscoverViewModelFactory
 import com.trm.audiofeels.ui.player.PlayerViewModel
 import com.trm.audiofeels.ui.player.PlayerViewState
 import com.trm.audiofeels.ui.player.composable.PlayerAudioVisualization
@@ -354,8 +353,8 @@ private fun AppBottomSheetScaffold(
         AnimatedPane {
           Box {
             AppNavHost(
+              applicationComponent = applicationComponent,
               navController = navController,
-              discoverViewModelFactory = applicationComponent.discoverViewModelFactory,
               topSpacerHeight =
                 with(density) { TopAppBarDefaults.windowInsets.getTop(density).toDp() } +
                   TopAppBarDefaults.TopAppBarExpandedHeight,
@@ -548,8 +547,8 @@ private fun AppPermanentNavigationDrawer(
 
 @Composable
 private fun AppNavHost(
+  applicationComponent: ApplicationComponent,
   navController: NavHostController,
-  discoverViewModelFactory: DiscoverViewModelFactory,
   topSpacerHeight: Dp,
   bottomSpacerHeight: Dp,
   modifier: Modifier = Modifier,
@@ -563,7 +562,7 @@ private fun AppNavHost(
   ) {
     composable<AppRoute.Discover> {
       DiscoverPage(
-        viewModel = viewModel(factory = discoverViewModelFactory),
+        viewModel = viewModel(factory = applicationComponent.discoverViewModelFactory),
         topSpacerHeight = topSpacerHeight,
         bottomSpacerHeight = bottomSpacerHeight,
         onCarryPlaylistClick = onCarryOnPlaylistClick,
@@ -571,7 +570,11 @@ private fun AppNavHost(
       )
     }
     composable<AppRoute.Search> {
-      SearchPage(topSpacerHeight = topSpacerHeight, bottomSpacerHeight = bottomSpacerHeight)
+      SearchPage(
+        viewModel = viewModel(factory = applicationComponent.searchViewModelFactory),
+        topSpacerHeight = topSpacerHeight,
+        bottomSpacerHeight = bottomSpacerHeight,
+      )
     }
   }
 }
