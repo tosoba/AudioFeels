@@ -16,15 +16,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Favorite
-import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.SkipNext
-import androidx.compose.material.icons.outlined.SkipPrevious
 import androidx.compose.material3.Card
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
@@ -50,12 +42,8 @@ import com.trm.audiofeels.core.ui.compose.EndEdgeGradient
 import com.trm.audiofeels.core.ui.compose.StartEdgeGradient
 import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
 import com.trm.audiofeels.core.ui.resources.Res
-import com.trm.audiofeels.core.ui.resources.add_to_favourites
 import com.trm.audiofeels.core.ui.resources.artwork_placeholder
 import com.trm.audiofeels.core.ui.resources.error_occurred
-import com.trm.audiofeels.core.ui.resources.play_next_track
-import com.trm.audiofeels.core.ui.resources.play_previous_track
-import com.trm.audiofeels.core.ui.resources.remove_from_favourites
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.ui.player.PlayerViewState
 import kotlin.math.absoluteValue
@@ -66,7 +54,7 @@ import org.jetbrains.compose.resources.vectorResource
 fun PlayerExpandedContent(
   viewState: PlayerViewState,
   currentPlaylist: Playlist?,
-  showAdditionalControls: Boolean,
+  showSlider: Boolean,
   showEdgeGradients: Boolean,
   modifier: Modifier = Modifier,
 ) {
@@ -90,7 +78,7 @@ fun PlayerExpandedContent(
         }
       }
 
-      if (showAdditionalControls) {
+      if (showSlider) {
         AnimatedVisibility(visible = viewState is PlayerViewState.Playback) {
           var sliderValue by
             remember(viewState) {
@@ -115,51 +103,17 @@ fun PlayerExpandedContent(
         horizontalArrangement = Arrangement.SpaceEvenly,
         modifier = Modifier.fillMaxWidth().weight(1f),
       ) {
-        IconButton(
+        PlaylistFavouriteToggleButton(
+          checked = currentPlaylist?.favourite == true,
           enabled = viewState is PlayerViewState.Playback,
-          onClick = { (viewState as? PlayerViewState.Playback)?.playPreviousTrack?.invoke() },
-        ) {
-          Icon(
-            imageVector = Icons.Outlined.SkipPrevious,
-            contentDescription = stringResource(Res.string.play_previous_track),
-          )
-        }
+          onCheckedChange = {
+            (viewState as? PlayerViewState.Playback)?.togglePlaylistFavourite?.invoke()
+          },
+        )
 
         PlayerPrimaryControl(viewState.primaryControlState)
 
-        IconButton(
-          enabled = viewState is PlayerViewState.Playback,
-          onClick = { (viewState as? PlayerViewState.Playback)?.playNextTrack?.invoke() },
-        ) {
-          Icon(
-            imageVector = Icons.Outlined.SkipNext,
-            contentDescription = stringResource(Res.string.play_next_track),
-          )
-        }
-      }
-
-      if (showAdditionalControls) {
-        Box(
-          modifier = Modifier.fillMaxWidth().padding(16.dp),
-          contentAlignment = Alignment.CenterEnd,
-        ) {
-          FloatingActionButton(
-            onClick = {
-              (viewState as? PlayerViewState.Playback)?.togglePlaylistFavourite?.invoke()
-            }
-          ) {
-            Icon(
-              imageVector =
-                if (currentPlaylist?.favourite == true) Icons.Outlined.Favorite
-                else Icons.Outlined.FavoriteBorder,
-              contentDescription =
-                stringResource(
-                  if (currentPlaylist?.favourite == true) Res.string.remove_from_favourites
-                  else Res.string.add_to_favourites
-                ),
-            )
-          }
-        }
+        PlayerCancelPlaybackButton(onClick = viewState.cancelPlayback)
       }
     }
 

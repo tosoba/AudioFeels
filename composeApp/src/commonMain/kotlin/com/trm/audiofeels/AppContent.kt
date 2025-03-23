@@ -20,14 +20,11 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.StopCircle
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -60,6 +57,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -89,7 +87,6 @@ import com.trm.audiofeels.core.ui.compose.util.calculateWindowSize
 import com.trm.audiofeels.core.ui.compose.util.loadImageBitmapOrNull
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.app_name
-import com.trm.audiofeels.core.ui.resources.cancel_playback
 import com.trm.audiofeels.di.ApplicationComponent
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import com.trm.audiofeels.domain.model.Playlist
@@ -97,6 +94,7 @@ import com.trm.audiofeels.ui.discover.DiscoverPage
 import com.trm.audiofeels.ui.player.PlayerViewModel
 import com.trm.audiofeels.ui.player.PlayerViewState
 import com.trm.audiofeels.ui.player.composable.PlayerAudioVisualization
+import com.trm.audiofeels.ui.player.composable.PlayerCancelPlaybackButton
 import com.trm.audiofeels.ui.player.composable.PlayerExpandedContent
 import com.trm.audiofeels.ui.player.composable.PlayerRecordAudioPermissionObserver
 import com.trm.audiofeels.ui.player.composable.PlayerRecordAudioPermissionRequest
@@ -280,7 +278,7 @@ private fun AppBottomSheetScaffold(
     scope.launch { appLayoutState.onSupportingPaneValueChange(supportingPaneValue) }
   }
 
-  val paddingValues = WindowInsets.safeDrawing.asPaddingValues()
+  val safeDrawingPaddingValues = WindowInsets.safeDrawing.asPaddingValues()
   val density = LocalDensity.current
 
   val sheetOffset = appLayoutState.playerLayoutState.currentSheetOffset
@@ -332,15 +330,28 @@ private fun AppBottomSheetScaffold(
     },
     sheetDragHandle = {
       Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
         modifier =
           Modifier.fillMaxWidth().hazeEffect(hazeState) {
             style = sheetHazeStyle
             blurRadius = 10.dp
-          },
+          }
       ) {
-        Spacer(modifier = Modifier.height(paddingValues.calculateTopPadding() * expandedAlpha))
-        BottomSheetDefaults.DragHandle()
+        Spacer(
+          modifier = Modifier.height(safeDrawingPaddingValues.calculateTopPadding() * expandedAlpha)
+        )
+
+        Box(modifier = Modifier.fillMaxWidth()) {
+          BottomSheetDefaults.DragHandle(modifier = Modifier.align(Alignment.Center))
+
+          PlayerCancelPlaybackButton(
+            modifier =
+              Modifier.align(Alignment.CenterEnd)
+                .alpha(partiallyExpandedAlpha)
+                .padding(end = 16.dp),
+            enabled = partiallyExpandedAlpha == 1f,
+            onClick = playerViewState.cancelPlayback,
+          )
+        }
       }
     },
     sheetPeekHeight = sheetPeekHeight,
@@ -375,12 +386,11 @@ private fun AppBottomSheetScaffold(
             val topBarHazeStyle =
               HazeStyle(backgroundColor = MaterialTheme.colorScheme.background, tint = null)
             AppTopBar(
-              viewState = playerViewState,
               modifier =
                 Modifier.hazeEffect(hazeState) {
                   style = topBarHazeStyle
                   blurRadius = 10.dp
-                },
+                }
             )
           }
         }
@@ -390,7 +400,7 @@ private fun AppBottomSheetScaffold(
           PlayerExpandedContent(
             viewState = playerViewState,
             currentPlaylist = currentPlaylist,
-            showAdditionalControls =
+            showSlider =
               currentWindowAdaptiveInfo().windowSizeClass.windowHeightSizeClass !=
                 WindowHeightSizeClass.COMPACT,
             showEdgeGradients = true,
@@ -410,20 +420,10 @@ private fun AppBottomSheetScaffold(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AppTopBar(viewState: PlayerViewState, modifier: Modifier = Modifier) {
+private fun AppTopBar(modifier: Modifier = Modifier) {
   val colors = TopAppBarDefaults.centerAlignedTopAppBarColors()
   CenterAlignedTopAppBar(
     title = { Text(stringResource(Res.string.app_name)) },
-    actions = {
-      AnimatedVisibility(viewState.playerVisible) {
-        IconButton(onClick = viewState.cancelPlayback) {
-          Icon(
-            imageVector = Icons.Outlined.StopCircle,
-            contentDescription = stringResource(Res.string.cancel_playback),
-          )
-        }
-      }
-    },
     colors = colors.copy(containerColor = colors.containerColor.copy(alpha = .85f)),
     modifier = modifier,
   )
