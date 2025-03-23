@@ -21,6 +21,8 @@ interface PlaylistsRepository {
 
   suspend fun getPlaylists(mood: String?): List<Playlist>
 
+  suspend fun searchPlaylists(query: String): List<Playlist>
+
   suspend fun getPlaylistTracks(playlistId: String): List<Track>
 
   fun getCarryOnPlaylistsFlow(): Flow<List<CarryOnPlaylist>>

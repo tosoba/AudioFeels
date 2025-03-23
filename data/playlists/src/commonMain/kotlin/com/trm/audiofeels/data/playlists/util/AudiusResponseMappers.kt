@@ -1,12 +1,17 @@
 package com.trm.audiofeels.data.playlists.util
 
 import com.trm.audiofeels.api.audius.model.Artwork
+import com.trm.audiofeels.api.audius.model.PlaylistResponse
+import com.trm.audiofeels.api.audius.model.PlaylistsResponse
 import com.trm.audiofeels.api.audius.model.PlaylistsResponseItem
 import com.trm.audiofeels.api.audius.model.TrackResponseItem
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.model.Track
 
-fun PlaylistsResponseItem.toPlaylist() =
+internal fun PlaylistsResponse.toPlaylists(): List<Playlist> =
+  items?.filter(PlaylistsResponseItem::isValid)?.map(PlaylistsResponseItem::toPlaylist).orEmpty()
+
+internal fun PlaylistsResponseItem.toPlaylist() =
   Playlist(
     id = requireNotNull(id),
     name = requireNotNull(playlistName),
@@ -17,7 +22,15 @@ fun PlaylistsResponseItem.toPlaylist() =
     favourite = false,
   )
 
-fun TrackResponseItem.toTrack() =
+internal fun PlaylistResponse.toTracks(): List<Track> =
+  items
+    ?.firstOrNull()
+    ?.tracks
+    ?.filter(TrackResponseItem::isValid)
+    ?.map(TrackResponseItem::toTrack)
+    .orEmpty()
+
+internal fun TrackResponseItem.toTrack() =
   Track(
     artworkUrl = artwork?.url,
     description = description,

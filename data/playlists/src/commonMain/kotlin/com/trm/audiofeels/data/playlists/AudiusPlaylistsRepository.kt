@@ -1,17 +1,14 @@
 package com.trm.audiofeels.data.playlists
 
 import com.trm.audiofeels.api.audius.AudiusEndpoints
-import com.trm.audiofeels.api.audius.model.PlaylistsResponseItem
-import com.trm.audiofeels.api.audius.model.TrackResponseItem
 import com.trm.audiofeels.core.database.dao.PlaylistDao
 import com.trm.audiofeels.core.database.model.PlaylistEntity
 import com.trm.audiofeels.data.playlists.mapper.toCarryOn
 import com.trm.audiofeels.data.playlists.mapper.toCurrentPlaylistEntity
 import com.trm.audiofeels.data.playlists.mapper.toPlaylist
 import com.trm.audiofeels.data.playlists.mapper.toPlaylistPlayback
-import com.trm.audiofeels.data.playlists.util.isValid
-import com.trm.audiofeels.data.playlists.util.toPlaylist
-import com.trm.audiofeels.data.playlists.util.toTrack
+import com.trm.audiofeels.data.playlists.util.toPlaylists
+import com.trm.audiofeels.data.playlists.util.toTracks
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.model.PlaylistPlayback
@@ -58,22 +55,13 @@ class AudiusPlaylistsRepository(
     playlistDao.selectCurrentPlaylist().map { it?.toPlaylistPlayback() }
 
   override suspend fun getPlaylists(mood: String?): List<Playlist> =
-    audiusEndpoints
-      .getPlaylists(mood)
-      .items
-      ?.filter(PlaylistsResponseItem::isValid)
-      ?.map(PlaylistsResponseItem::toPlaylist)
-      .orEmpty()
+    audiusEndpoints.getPlaylists(mood).toPlaylists()
+
+  override suspend fun searchPlaylists(query: String): List<Playlist> =
+    audiusEndpoints.searchPlaylists(query).toPlaylists()
 
   override suspend fun getPlaylistTracks(playlistId: String): List<Track> =
-    audiusEndpoints
-      .getPlaylistById(playlistId)
-      .items
-      ?.firstOrNull()
-      ?.tracks
-      ?.filter(TrackResponseItem::isValid)
-      ?.map(TrackResponseItem::toTrack)
-      .orEmpty()
+    audiusEndpoints.getPlaylistById(playlistId).toTracks()
 
   override fun getCarryOnPlaylistsFlow(): Flow<List<CarryOnPlaylist>> =
     playlistDao.selectAllOrderByLastPlayed().map { it.map(PlaylistEntity::toCarryOn) }
