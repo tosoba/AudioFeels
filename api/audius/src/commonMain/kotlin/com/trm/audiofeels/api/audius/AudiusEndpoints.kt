@@ -37,7 +37,7 @@ class AudiusEndpoints(
     client
       .get {
         url {
-          httpsPlaylistsEndpoint()
+          httpsFullPlaylistsEndpoint()
           appendPathSegments("top")
           parameter("type", "playlist")
           mood?.let { parameter("mood", it) }
@@ -60,11 +60,16 @@ class AudiusEndpoints(
     client
       .get {
         url {
-          httpsPlaylistsEndpoint()
+          httpsFullPlaylistsEndpoint()
           appendPathSegments(id)
         }
       }
       .body()
+
+  private fun URLBuilder.httpsFullPlaylistsEndpoint() {
+    protocol = URLProtocol.HTTPS
+    appendPathSegments(FULL_PLAYLISTS_PATH_SEGMENTS)
+  }
 
   private fun URLBuilder.httpsPlaylistsEndpoint() {
     protocol = URLProtocol.HTTPS
@@ -72,6 +77,7 @@ class AudiusEndpoints(
   }
 
   companion object {
-    private val PLAYLISTS_PATH_SEGMENTS = listOf("v1", "full", "playlists")
+    private val PLAYLISTS_PATH_SEGMENTS = listOf("v1", "playlists")
+    private val FULL_PLAYLISTS_PATH_SEGMENTS = listOf("v1", "full", "playlists")
   }
 }
