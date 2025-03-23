@@ -1,5 +1,6 @@
 package com.trm.audiofeels
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -33,6 +34,7 @@ import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.PermanentDrawerSheet
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -58,6 +60,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -100,6 +103,7 @@ import com.trm.audiofeels.ui.player.composable.PlayerRecordAudioPermissionObserv
 import com.trm.audiofeels.ui.player.composable.PlayerRecordAudioPermissionRequest
 import com.trm.audiofeels.ui.player.composable.PlayerSheetContent
 import com.trm.audiofeels.ui.search.SearchPage
+import com.trm.audiofeels.ui.search.SearchTopBar
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
@@ -383,15 +387,8 @@ private fun AppBottomSheetScaffold(
               onPlaylistClick = playerViewState.startPlaylistPlayback,
             )
 
-            val topBarHazeStyle =
-              HazeStyle(backgroundColor = MaterialTheme.colorScheme.background, tint = null)
-            AppTopBar(
-              modifier =
-                Modifier.hazeEffect(hazeState) {
-                  style = topBarHazeStyle
-                  blurRadius = 10.dp
-                }
-            )
+            val currentBackStackEntry by navController.currentBackStackEntryAsState()
+            TopBar(destination = currentBackStackEntry?.destination, hazeState = hazeState)
           }
         }
       },
@@ -415,6 +412,44 @@ private fun AppBottomSheetScaffold(
         }
       },
     )
+  }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TopBar(destination: NavDestination?, hazeState: HazeState) {
+  val density = LocalDensity.current
+  val barHazeStyle = HazeStyle(backgroundColor = MaterialTheme.colorScheme.background, tint = null)
+
+  AnimatedContent(destination) {
+    when {
+      it?.hasRoute(AppRoute.Search::class) == true -> {
+        SearchTopBar(
+          modifier =
+            Modifier.fillMaxWidth()
+              .padding(
+                top =
+                  with(density) { TopAppBarDefaults.windowInsets.getTop(density).toDp() } + 16.dp,
+                start = 16.dp,
+                end = 16.dp,
+              )
+              .clip(SearchBarDefaults.dockedShape)
+              .hazeEffect(hazeState) {
+                style = barHazeStyle
+                blurRadius = 10.dp
+              }
+        )
+      }
+      it?.hasRoute(AppRoute.Discover::class) == true -> {
+        AppTopBar(
+          modifier =
+            Modifier.hazeEffect(hazeState) {
+              style = barHazeStyle
+              blurRadius = 10.dp
+            }
+        )
+      }
+    }
   }
 }
 
