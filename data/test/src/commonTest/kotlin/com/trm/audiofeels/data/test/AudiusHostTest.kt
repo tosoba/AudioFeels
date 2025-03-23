@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.Preferences
 import com.trm.audiofeels.api.audius.AudiusEndpoints
 import com.trm.audiofeels.api.hosts.HostsEndpoints
 import com.trm.audiofeels.api.hosts.model.HostsResponse
+import com.trm.audiofeels.core.base.util.HTTPS_PREFIX
 import com.trm.audiofeels.core.base.util.trimHttps
 import com.trm.audiofeels.core.network.host.HostValidator
 import com.trm.audiofeels.core.preferences.get
@@ -418,7 +419,7 @@ class AudiusHostTest {
   }
 
   private fun MockEngine.assertNoDoubleHttpsRequests() {
-    assertTrue(requestHistory.none { it.url.toString().startsWith("https://https://") })
+    assertTrue(requestHistory.none { it.url.toString().startsWith("$HTTPS_PREFIX$HTTPS_PREFIX") })
   }
 
   companion object {
