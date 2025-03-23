@@ -52,6 +52,7 @@ class AudiusEndpoints(
           httpsPlaylistsEndpoint()
           appendPathSegments("search")
           parameter("query", query)
+          parameter("limit", MAX_LIMIT)
         }
       }
       .body()
@@ -79,5 +80,6 @@ class AudiusEndpoints(
   companion object {
     private val PLAYLISTS_PATH_SEGMENTS = listOf("v1", "playlists")
     private val FULL_PLAYLISTS_PATH_SEGMENTS = listOf("v1", "full", "playlists")
+    private const val MAX_LIMIT = 100
   }
 }
