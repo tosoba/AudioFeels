@@ -37,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -111,12 +112,7 @@ fun DiscoverPage(
 
       DiscoverListHeadlineText(
         text = stringResource(Res.string.mood),
-        modifier =
-          Modifier.padding(
-            top = if (carryOnPlaylists.valueOrNull.isNullOrEmpty()) 16.dp else 0.dp,
-            start = 16.dp,
-            end = 16.dp,
-          ),
+        modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp),
       )
 
       LazyHorizontalGrid(
@@ -140,7 +136,7 @@ fun DiscoverPage(
       DiscoverListHeadline(
         text = stringResource(Res.string.favourites),
         list = favouritePlaylists,
-        modifier = Modifier.padding(horizontal = 16.dp),
+        modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp),
       )
 
       DiscoverListLazyRow(
@@ -162,7 +158,7 @@ fun DiscoverPage(
       DiscoverListHeadline(
         text = stringResource(Res.string.trending),
         list = trendingPlaylists,
-        modifier = Modifier.padding(horizontal = 16.dp),
+        modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp),
       )
 
       DiscoverListLazyRow(
@@ -236,7 +232,7 @@ private fun <T : Any> DiscoverListHeadline(
         Box(modifier.shimmerBackground(enabled = true, shape = shimmerShape)) {
           Text(
             text = text,
-            style = MaterialTheme.typography.headlineSmall.copy(color = Color.Transparent),
+            style = MaterialTheme.typography.titleLarge.copy(color = Color.Transparent),
           )
         }
       }
@@ -252,7 +248,12 @@ private fun <T : Any> DiscoverListHeadline(
 
 @Composable
 private fun DiscoverListHeadlineText(text: String, modifier: Modifier) {
-  Text(text = text, style = MaterialTheme.typography.headlineSmall, modifier = modifier)
+  Text(
+    text = text,
+    style = MaterialTheme.typography.titleLarge,
+    fontWeight = FontWeight.Medium,
+    modifier = modifier,
+  )
 }
 
 @Composable

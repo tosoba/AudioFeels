@@ -23,7 +23,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -37,6 +36,7 @@ import androidx.compose.material3.PermanentDrawerSheet
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
@@ -66,6 +66,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -456,10 +457,17 @@ private fun TopBar(destination: NavDestination?, hazeState: HazeState) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AppTopBar(modifier: Modifier = Modifier) {
-  val colors = TopAppBarDefaults.centerAlignedTopAppBarColors()
-  CenterAlignedTopAppBar(
-    title = { Text(stringResource(Res.string.app_name)) },
-    colors = colors.copy(containerColor = colors.containerColor.copy(alpha = .85f)),
+  TopAppBar(
+    title = {
+      Text(
+        text = stringResource(Res.string.app_name),
+        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+      )
+    },
+    colors =
+      TopAppBarDefaults.topAppBarColors().run {
+        copy(containerColor = containerColor.copy(alpha = .85f))
+      },
     modifier = modifier,
   )
 }
