@@ -306,7 +306,7 @@ private fun AppBottomSheetScaffold(
   val sheetHazeStyle =
     HazeStyle(
       backgroundColor = BottomSheetDefaults.ContainerColor,
-      tint = HazeTint(BottomSheetDefaults.ContainerColor.copy(alpha = .85f)),
+      tint = HazeTint(BottomSheetDefaults.ContainerColor.copy(alpha = .85f + expandedAlpha * .1f)),
     )
 
   BottomSheetScaffold(
