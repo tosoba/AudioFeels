@@ -2,8 +2,6 @@ package com.trm.audiofeels.ui.discover
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyRow
@@ -35,26 +32,27 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowHeightSizeClass
 import com.trm.audiofeels.core.base.model.LoadableState
-import com.trm.audiofeels.core.ui.compose.AsyncShimmerImage
 import com.trm.audiofeels.core.ui.compose.BottomEdgeGradient
 import com.trm.audiofeels.core.ui.compose.EndEdgeGradient
+import com.trm.audiofeels.core.ui.compose.ErrorListItem
+import com.trm.audiofeels.core.ui.compose.PlaylistArtworkImage
+import com.trm.audiofeels.core.ui.compose.PlaylistLazyRowItem
+import com.trm.audiofeels.core.ui.compose.PlaylistLazyRowItemArtworkImageModifier
+import com.trm.audiofeels.core.ui.compose.PlaylistNameText
+import com.trm.audiofeels.core.ui.compose.PlaylistPlaceholderItemContent
 import com.trm.audiofeels.core.ui.compose.StartEdgeGradient
 import com.trm.audiofeels.core.ui.compose.TopEdgeGradient
 import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.carry_on
 import com.trm.audiofeels.core.ui.resources.days_ago
-import com.trm.audiofeels.core.ui.resources.error_occurred
 import com.trm.audiofeels.core.ui.resources.favourites
 import com.trm.audiofeels.core.ui.resources.hours_ago
 import com.trm.audiofeels.core.ui.resources.minutes_ago
@@ -62,7 +60,6 @@ import com.trm.audiofeels.core.ui.resources.moments_ago
 import com.trm.audiofeels.core.ui.resources.mood
 import com.trm.audiofeels.core.ui.resources.one_hour_ago
 import com.trm.audiofeels.core.ui.resources.one_minute_ago
-import com.trm.audiofeels.core.ui.resources.refresh
 import com.trm.audiofeels.core.ui.resources.trending
 import com.trm.audiofeels.core.ui.resources.yesterday
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
@@ -71,7 +68,6 @@ import kotlin.time.Duration
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.resources.vectorResource
 
 @Composable
 fun DiscoverPage(
@@ -168,13 +164,14 @@ fun DiscoverPage(
         onRetryClick = {},
         placeholderItemContent = { PlaylistPlaceholderItemContent() },
       ) { index, lastIndex, playlist ->
-        PlaylistItem(
-          playlist = playlist,
+        PlaylistLazyRowItem(
+          name = playlist.name,
+          artworkUrl = playlist.artworkUrl,
           modifier =
             Modifier.width(150.dp)
               .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = lastIndex))
               .animateItem(),
-          onClick = onPlaylistClick,
+          onClick = { onPlaylistClick(playlist) },
         )
       }
 
@@ -189,13 +186,14 @@ fun DiscoverPage(
         onRetryClick = viewModel.trendingPlaylists::restart,
         placeholderItemContent = { PlaylistPlaceholderItemContent() },
       ) { index, lastIndex, playlist ->
-        PlaylistItem(
-          playlist = playlist,
+        PlaylistLazyRowItem(
+          name = playlist.name,
+          artworkUrl = playlist.artworkUrl,
           modifier =
             Modifier.width(150.dp)
               .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = lastIndex))
               .animateItem(),
-          onClick = onPlaylistClick,
+          onClick = { onPlaylistClick(playlist) },
         )
       }
 
@@ -214,13 +212,6 @@ private fun ColumnScope.CarryOnPlaylistPlaceholderItemContent() {
   Spacer(modifier = Modifier.height(158.dp))
   Text(text = "", style = MaterialTheme.typography.labelLarge)
   Text(text = "", style = MaterialTheme.typography.labelSmall)
-  Spacer(modifier = Modifier.height(8.dp))
-}
-
-@Composable
-private fun ColumnScope.PlaylistPlaceholderItemContent() {
-  Spacer(modifier = Modifier.height(158.dp))
-  Text(text = "", style = MaterialTheme.typography.labelLarge)
   Spacer(modifier = Modifier.height(8.dp))
 }
 
@@ -284,7 +275,12 @@ private fun <T : Any> DiscoverListLazyRow(
           itemsIndexed(list.value) { index, carryOn -> item(index, list.value.lastIndex, carryOn) }
         }
         is LoadableState.Error -> {
-          item { DiscoverListErrorItem(onClick = onRetryClick) }
+          item {
+            ErrorListItem(
+              modifier = Modifier.fillParentMaxWidth().animateItem(),
+              onClick = onRetryClick,
+            )
+          }
         }
       }
     }
@@ -307,50 +303,8 @@ private fun LazyItemScope.DiscoverListPlaceholderItem(
   )
 }
 
-@Composable
-private fun LazyItemScope.DiscoverListErrorItem(onClick: () -> Unit) {
-  Box(modifier = Modifier.fillParentMaxWidth().animateItem(), contentAlignment = Alignment.Center) {
-    Card(modifier = Modifier.width(150.dp), onClick = onClick) {
-      Image(
-        painter = rememberVectorPainter(vectorResource(Res.drawable.refresh)),
-        contentDescription = null,
-        modifier =
-          Modifier.size(150.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.errorContainer),
-      )
-
-      Spacer(modifier = Modifier.height(8.dp))
-
-      Text(
-        text = stringResource(Res.string.error_occurred),
-        style = MaterialTheme.typography.labelLarge,
-        maxLines = 1,
-        textAlign = TextAlign.Center,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp).basicMarquee(),
-      )
-
-      Spacer(modifier = Modifier.height(8.dp))
-    }
-  }
-}
-
 private fun <T : Any> LoadableState<List<T>>.discoverListVisible(): Boolean =
   this !is LoadableState.Idle || !valueOrNull.isNullOrEmpty()
-
-@Composable
-private fun PlaylistItem(
-  playlist: Playlist,
-  modifier: Modifier = Modifier,
-  onClick: (Playlist) -> Unit,
-) {
-  Card(onClick = { onClick(playlist) }, modifier = modifier) {
-    PlaylistArtworkImage(playlist)
-    Spacer(modifier = Modifier.height(8.dp))
-    PlaylistNameText(playlist)
-    Spacer(modifier = Modifier.height(8.dp))
-  }
-}
 
 @Composable
 private fun CarryOnPlaylistItem(
@@ -360,35 +314,16 @@ private fun CarryOnPlaylistItem(
   onClick: (CarryOnPlaylist) -> Unit,
 ) {
   Card(onClick = { onClick(carryOn) }, modifier = modifier) {
-    PlaylistArtworkImage(carryOn.playlist)
+    PlaylistArtworkImage(
+      name = carryOn.playlist.name,
+      artworkUrl = carryOn.playlist.artworkUrl,
+      modifier = { PlaylistLazyRowItemArtworkImageModifier(it) },
+    )
     Spacer(modifier = Modifier.height(8.dp))
-    PlaylistNameText(carryOn.playlist)
+    PlaylistNameText(name = carryOn.playlist.name)
     PlaylistLastPlayedAgoText(duration = now - carryOn.lastPlayed)
     Spacer(modifier = Modifier.height(8.dp))
   }
-}
-
-@Composable
-private fun PlaylistArtworkImage(playlist: Playlist) {
-  AsyncShimmerImage(
-    model = playlist.artworkUrl,
-    contentDescription = playlist.name,
-    modifier = { enabled ->
-      Modifier.size(150.dp)
-        .clip(RoundedCornerShape(16.dp))
-        .shimmerBackground(enabled = enabled, shape = RoundedCornerShape(16.dp))
-    },
-  )
-}
-
-@Composable
-private fun PlaylistNameText(playlist: Playlist) {
-  Text(
-    text = playlist.name,
-    style = MaterialTheme.typography.labelLarge,
-    maxLines = 1,
-    modifier = Modifier.padding(horizontal = 8.dp).basicMarquee(),
-  )
 }
 
 @Composable

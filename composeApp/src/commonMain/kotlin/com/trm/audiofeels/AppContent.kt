@@ -369,7 +369,7 @@ private fun AppBottomSheetScaffold(
                 },
               modifier = Modifier.fillMaxSize().hazeSource(hazeState),
               onCarryOnPlaylistClick = playerViewState.startCarryOnPlaylistPlayback,
-              onTrendingPlaylistClick = playerViewState.startPlaylistPlayback,
+              onPlaylistClick = playerViewState.startPlaylistPlayback,
             )
 
             val topBarHazeStyle =
@@ -553,7 +553,7 @@ private fun AppNavHost(
   bottomSpacerHeight: Dp,
   modifier: Modifier = Modifier,
   onCarryOnPlaylistClick: (CarryOnPlaylist) -> Unit,
-  onTrendingPlaylistClick: (Playlist) -> Unit,
+  onPlaylistClick: (Playlist) -> Unit,
 ) {
   NavHost(
     modifier = modifier,
@@ -566,7 +566,7 @@ private fun AppNavHost(
         topSpacerHeight = topSpacerHeight,
         bottomSpacerHeight = bottomSpacerHeight,
         onCarryPlaylistClick = onCarryOnPlaylistClick,
-        onPlaylistClick = onTrendingPlaylistClick,
+        onPlaylistClick = onPlaylistClick,
       )
     }
     composable<AppRoute.Search> {
@@ -574,6 +574,7 @@ private fun AppNavHost(
         viewModel = viewModel(factory = applicationComponent.searchViewModelFactory),
         topSpacerHeight = topSpacerHeight,
         bottomSpacerHeight = bottomSpacerHeight,
+        onPlaylistClick = onPlaylistClick,
       )
     }
   }
