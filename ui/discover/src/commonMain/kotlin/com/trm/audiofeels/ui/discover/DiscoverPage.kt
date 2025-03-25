@@ -1,14 +1,17 @@
 package com.trm.audiofeels.ui.discover
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -30,6 +33,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -37,6 +41,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -65,6 +71,7 @@ import com.trm.audiofeels.core.ui.resources.mood
 import com.trm.audiofeels.core.ui.resources.one_hour_ago
 import com.trm.audiofeels.core.ui.resources.one_minute_ago
 import com.trm.audiofeels.core.ui.resources.trending
+import com.trm.audiofeels.core.ui.resources.view_all
 import com.trm.audiofeels.core.ui.resources.yesterday
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import com.trm.audiofeels.domain.model.Playlist
@@ -92,7 +99,7 @@ fun DiscoverPage(
       DiscoverListHeadline(
         text = stringResource(Res.string.carry_on),
         list = carryOnPlaylists,
-        modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp),
+        modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp),
       )
 
       DiscoverListLazyRow(
@@ -110,14 +117,20 @@ fun DiscoverPage(
         )
       }
 
-      DiscoverListHeadlineText(
-        text = stringResource(Res.string.mood),
-        modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp),
-      )
+      Row(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
+        DiscoverListHeadlineText(
+          text = stringResource(Res.string.mood),
+          modifier = Modifier.alignByBaseline().basicMarquee(),
+        )
+
+        Spacer(modifier = Modifier.weight(1f).padding(horizontal = 4.dp))
+
+        TextButton(onClick = {}, modifier = Modifier.alignByBaseline()) { Text("View all") }
+      }
 
       LazyHorizontalGrid(
         rows = GridCells.FixedSize(90.dp),
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
         modifier =
@@ -125,8 +138,8 @@ fun DiscoverPage(
             .heightIn(
               max =
                 when (currentWindowAdaptiveInfo().windowSizeClass.windowHeightSizeClass) {
-                  WindowHeightSizeClass.COMPACT -> 122
-                  else -> 228
+                  WindowHeightSizeClass.COMPACT -> 124
+                  else -> 220
                 }.dp
             ),
       ) {
@@ -136,7 +149,7 @@ fun DiscoverPage(
       DiscoverListHeadline(
         text = stringResource(Res.string.favourites),
         list = favouritePlaylists,
-        modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp),
+        modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp),
       )
 
       DiscoverListLazyRow(
@@ -158,7 +171,7 @@ fun DiscoverPage(
       DiscoverListHeadline(
         text = stringResource(Res.string.trending),
         list = trendingPlaylists,
-        modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp),
+        modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp),
       )
 
       DiscoverListLazyRow(
@@ -226,19 +239,41 @@ private fun <T : Any> DiscoverListHeadline(
   modifier: Modifier = Modifier,
   shimmerShape: Shape = RoundedCornerShape(6.dp),
 ) {
-  AnimatedContent(list) {
+  Crossfade(list) {
     when (it) {
       is LoadableState.Loading -> {
-        Box(modifier.shimmerBackground(enabled = true, shape = shimmerShape)) {
-          Text(
+        Row(modifier = modifier) {
+          DiscoverListHeadlineText(
             text = text,
             style = MaterialTheme.typography.titleLarge.copy(color = Color.Transparent),
+            modifier =
+              Modifier.shimmerBackground(enabled = true, shape = shimmerShape)
+                .alignByBaseline()
+                .basicMarquee(),
+          )
+
+          Spacer(modifier = Modifier.weight(1f).padding(horizontal = 4.dp))
+
+          Text(
+            text = stringResource(Res.string.view_all),
+            color = Color.Transparent,
+            modifier =
+              Modifier.shimmerBackground(enabled = true, shape = shimmerShape).alignByBaseline(),
           )
         }
       }
       is LoadableState.Idle -> {
         if (!it.valueOrNull.isNullOrEmpty()) {
-          DiscoverListHeadlineText(text, modifier)
+          Row(modifier = modifier) {
+            DiscoverListHeadlineText(
+              text = text,
+              modifier = Modifier.alignByBaseline().basicMarquee(),
+            )
+            Spacer(modifier = Modifier.weight(1f).padding(horizontal = 8.dp))
+            TextButton(onClick = {}, modifier = Modifier.alignByBaseline()) {
+              Text(stringResource(Res.string.view_all))
+            }
+          }
         }
       }
       is LoadableState.Error -> {}
@@ -247,10 +282,15 @@ private fun <T : Any> DiscoverListHeadline(
 }
 
 @Composable
-private fun DiscoverListHeadlineText(text: String, modifier: Modifier) {
+private fun DiscoverListHeadlineText(
+  text: String,
+  style: TextStyle = MaterialTheme.typography.titleLarge,
+  modifier: Modifier = Modifier,
+) {
   Text(
     text = text,
-    style = MaterialTheme.typography.titleLarge,
+    style = style,
+    maxLines = 1,
     fontWeight = FontWeight.Medium,
     modifier = modifier,
   )
@@ -266,7 +306,7 @@ private fun <T : Any> DiscoverListLazyRow(
   AnimatedVisibility(visible = list.discoverListVisible()) {
     LazyRow(
       modifier = Modifier.fillMaxWidth(),
-      contentPadding = PaddingValues(16.dp),
+      contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
       userScrollEnabled = list !is LoadableState.Error,
     ) {
       when (list) {
@@ -302,10 +342,16 @@ private fun LazyItemScope.DiscoverListPlaceholderItem(
   lastIndex: Int,
   content: @Composable ColumnScope.() -> Unit,
 ) {
+  val horizontalPaddingValues = playlistItemPaddingValues(itemIndex = index, lastIndex = lastIndex)
   Column(
     modifier =
       Modifier.width(150.dp)
-        .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = lastIndex))
+        .padding(
+          top = 16.dp,
+          start = horizontalPaddingValues.calculateStartPadding(LocalLayoutDirection.current),
+          end = horizontalPaddingValues.calculateEndPadding(LocalLayoutDirection.current),
+          bottom = 16.dp,
+        )
         .shimmerBackground(enabled = true, shape = RoundedCornerShape(16.dp))
         .animateItem(),
     content = content,
