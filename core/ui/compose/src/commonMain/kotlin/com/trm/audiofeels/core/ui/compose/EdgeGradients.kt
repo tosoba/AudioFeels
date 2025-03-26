@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -19,16 +20,9 @@ fun BoxScope.StartEdgeGradient() {
   Box(
     modifier =
       Modifier.fillMaxHeight()
-        .width(8.dp)
+        .width(GRADIENT_SIZE)
         .align(Alignment.TopStart)
-        .background(
-          Brush.horizontalGradient(
-            listOf(
-              MaterialTheme.colorScheme.background,
-              MaterialTheme.colorScheme.background.copy(alpha = 0f),
-            )
-          )
-        )
+        .background(Brush.horizontalGradient(opaqueToTransparentColors()))
   )
 }
 
@@ -37,34 +31,9 @@ fun BoxScope.EndEdgeGradient() {
   Box(
     modifier =
       Modifier.fillMaxHeight()
-        .width(8.dp)
+        .width(GRADIENT_SIZE)
         .align(Alignment.TopEnd)
-        .background(
-          Brush.horizontalGradient(
-            listOf(
-              MaterialTheme.colorScheme.background.copy(alpha = 0f),
-              MaterialTheme.colorScheme.background,
-            )
-          )
-        )
-  )
-}
-
-@Composable
-fun BoxScope.TopEdgeGradient() {
-  Box(
-    modifier =
-      Modifier.fillMaxWidth()
-        .height(8.dp)
-        .align(Alignment.TopStart)
-        .background(
-          Brush.verticalGradient(
-            listOf(
-              MaterialTheme.colorScheme.background,
-              MaterialTheme.colorScheme.background.copy(alpha = 0f),
-            )
-          )
-        )
+        .background(Brush.horizontalGradient(transparentToOpaqueColors()))
   )
 }
 
@@ -73,15 +42,24 @@ fun BoxScope.BottomEdgeGradient() {
   Box(
     modifier =
       Modifier.fillMaxWidth()
-        .height(8.dp)
+        .height(GRADIENT_SIZE)
         .align(Alignment.BottomStart)
-        .background(
-          Brush.verticalGradient(
-            listOf(
-              MaterialTheme.colorScheme.background.copy(alpha = 0f),
-              MaterialTheme.colorScheme.background,
-            )
-          )
-        )
+        .background(Brush.verticalGradient(transparentToOpaqueColors()))
   )
 }
+
+val GRADIENT_SIZE = 8.dp
+
+@Composable
+fun opaqueToTransparentColors(): List<Color> =
+  listOf(
+    MaterialTheme.colorScheme.background,
+    MaterialTheme.colorScheme.background.copy(alpha = 0f),
+  )
+
+@Composable
+fun transparentToOpaqueColors(): List<Color> =
+  listOf(
+    MaterialTheme.colorScheme.background.copy(alpha = 0f),
+    MaterialTheme.colorScheme.background,
+  )

@@ -2,6 +2,7 @@ package com.trm.audiofeels.ui.discover
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,6 +40,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -52,13 +54,13 @@ import com.trm.audiofeels.core.base.model.LoadableState
 import com.trm.audiofeels.core.ui.compose.BottomEdgeGradient
 import com.trm.audiofeels.core.ui.compose.EndEdgeGradient
 import com.trm.audiofeels.core.ui.compose.ErrorListItem
+import com.trm.audiofeels.core.ui.compose.GRADIENT_SIZE
 import com.trm.audiofeels.core.ui.compose.PlaylistArtworkImage
 import com.trm.audiofeels.core.ui.compose.PlaylistLazyRowItem
 import com.trm.audiofeels.core.ui.compose.PlaylistLazyRowItemArtworkImageModifier
 import com.trm.audiofeels.core.ui.compose.PlaylistNameText
 import com.trm.audiofeels.core.ui.compose.PlaylistPlaceholderItemContent
 import com.trm.audiofeels.core.ui.compose.StartEdgeGradient
-import com.trm.audiofeels.core.ui.compose.TopEdgeGradient
 import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.carry_on
@@ -195,7 +197,22 @@ fun DiscoverPage(
       Spacer(modifier = Modifier.height(bottomSpacerHeight))
     }
 
-    TopEdgeGradient()
+    Column(modifier = Modifier.fillMaxWidth().height(topSpacerHeight + 8.dp)) {
+      Spacer(modifier = Modifier.weight(1f))
+      Box(
+        modifier =
+          Modifier.fillMaxWidth()
+            .height(GRADIENT_SIZE)
+            .background(
+              Brush.verticalGradient(
+                listOf(
+                  MaterialTheme.colorScheme.background.copy(alpha = .85f),
+                  MaterialTheme.colorScheme.background.copy(alpha = 0f),
+                )
+              )
+            )
+      )
+    }
     StartEdgeGradient()
     EndEdgeGradient()
     BottomEdgeGradient()
@@ -249,12 +266,13 @@ private fun <T : Any> DiscoverListHeadline(
             text = text,
             style = MaterialTheme.typography.titleLarge.copy(color = Color.Transparent),
             modifier =
-              Modifier.shimmerBackground(enabled = true, shape = shimmerShape)
+              Modifier
+                .shimmerBackground(enabled = true, shape = shimmerShape)
                 .alignByBaseline()
                 .basicMarquee(),
           )
 
-          Spacer(modifier = Modifier.weight(1f).padding(horizontal = 4.dp))
+          Spacer(modifier = Modifier.weight(1f).padding(horizontal = 8.dp))
 
           Text(
             text = stringResource(Res.string.view_all),
@@ -265,13 +283,15 @@ private fun <T : Any> DiscoverListHeadline(
         }
       }
       is LoadableState.Idle -> {
-        if (!it.valueOrNull.isNullOrEmpty()) {
-          Row(modifier = modifier) {
+        Row(modifier = modifier) {
+          if (!it.valueOrNull.isNullOrEmpty()) {
             DiscoverListHeadlineText(
               text = text,
               modifier = Modifier.alignByBaseline().basicMarquee(),
             )
+
             Spacer(modifier = Modifier.weight(1f).padding(horizontal = 8.dp))
+
             TextButton(onClick = {}, modifier = Modifier.alignByBaseline()) {
               Text(stringResource(Res.string.view_all))
             }
