@@ -99,7 +99,7 @@ fun DiscoverPage(
       DiscoverListHeadline(
         text = stringResource(Res.string.carry_on),
         list = carryOnPlaylists,
-        modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
       )
 
       DiscoverListLazyRow(
@@ -117,7 +117,7 @@ fun DiscoverPage(
         )
       }
 
-      Row(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
+      Row(modifier = Modifier.padding(horizontal = 16.dp)) {
         DiscoverListHeadlineText(
           text = stringResource(Res.string.mood),
           modifier = Modifier.alignByBaseline().basicMarquee(),
@@ -125,7 +125,9 @@ fun DiscoverPage(
 
         Spacer(modifier = Modifier.weight(1f).padding(horizontal = 4.dp))
 
-        TextButton(onClick = {}, modifier = Modifier.alignByBaseline()) { Text("View all") }
+        TextButton(onClick = {}, modifier = Modifier.alignByBaseline()) {
+          Text(stringResource(Res.string.view_all))
+        }
       }
 
       LazyHorizontalGrid(
@@ -149,7 +151,7 @@ fun DiscoverPage(
       DiscoverListHeadline(
         text = stringResource(Res.string.favourites),
         list = favouritePlaylists,
-        modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
       )
 
       DiscoverListLazyRow(
@@ -171,7 +173,7 @@ fun DiscoverPage(
       DiscoverListHeadline(
         text = stringResource(Res.string.trending),
         list = trendingPlaylists,
-        modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
       )
 
       DiscoverListLazyRow(
