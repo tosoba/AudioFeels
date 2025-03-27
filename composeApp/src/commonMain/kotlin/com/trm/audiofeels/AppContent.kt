@@ -33,7 +33,6 @@ import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.PermanentDrawerSheet
-import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -60,7 +59,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -419,33 +417,36 @@ private fun AppBottomSheetScaffold(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TopBar(destination: NavDestination?, hazeState: HazeState) {
-  val density = LocalDensity.current
-  val barHazeStyle = HazeStyle(backgroundColor = MaterialTheme.colorScheme.background, tint = null)
+  val topBarHazeStyle =
+    HazeStyle(backgroundColor = MaterialTheme.colorScheme.background, tint = null)
+  val searchBarHazeStyle =
+    HazeStyle(
+      backgroundColor = TopAppBarDefaults.topAppBarColors().containerColor,
+      tint =
+        HazeTint(
+          TopAppBarDefaults.topAppBarColors()
+            .run { copy(containerColor = containerColor.copy(alpha = .85f)) }
+            .containerColor
+        ),
+    )
 
   AnimatedContent(destination) {
     when {
       it?.hasRoute(AppRoute.Search::class) == true -> {
         SearchTopBar(
+          hazeState = hazeState,
           modifier =
-            Modifier.fillMaxWidth()
-              .padding(
-                top =
-                  with(density) { TopAppBarDefaults.windowInsets.getTop(density).toDp() } + 16.dp,
-                start = 16.dp,
-                end = 16.dp,
-              )
-              .clip(SearchBarDefaults.dockedShape)
-              .hazeEffect(hazeState) {
-                style = barHazeStyle
-                blurRadius = 10.dp
-              }
+            Modifier.fillMaxWidth().hazeEffect(hazeState) {
+              style = searchBarHazeStyle
+              blurRadius = 10.dp
+            },
         )
       }
       it?.hasRoute(AppRoute.Discover::class) == true -> {
         AppTopBar(
           modifier =
             Modifier.hazeEffect(hazeState) {
-              style = barHazeStyle
+              style = topBarHazeStyle
               blurRadius = 10.dp
             }
         )
