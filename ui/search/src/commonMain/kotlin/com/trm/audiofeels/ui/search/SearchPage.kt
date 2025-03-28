@@ -29,10 +29,13 @@ import com.trm.audiofeels.core.ui.compose.PlaylistPlaceholderItemContent
 import com.trm.audiofeels.core.ui.compose.TopEdgeGradient
 import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
 import com.trm.audiofeels.domain.model.Playlist
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.hazeSource
 
 @Composable
 fun SearchPage(
   viewModel: SearchViewModel,
+  hazeState: HazeState,
   topSpacerHeight: Dp,
   bottomSpacerHeight: Dp,
   onPlaylistClick: (Playlist) -> Unit,
@@ -41,7 +44,7 @@ fun SearchPage(
 
   Box {
     LazyVerticalGrid(
-      modifier = Modifier.fillMaxSize(),
+      modifier = Modifier.fillMaxSize().hazeSource(hazeState),
       columns = GridCells.Adaptive(150.dp),
       contentPadding = PaddingValues(16.dp),
       horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -76,6 +79,8 @@ fun SearchPage(
         Spacer(modifier = Modifier.height(bottomSpacerHeight))
       }
     }
+
+    SearchTopBar(hazeState = hazeState)
 
     TopEdgeGradient(topOffset = topSpacerHeight + 8.dp)
     BottomEdgeGradient()

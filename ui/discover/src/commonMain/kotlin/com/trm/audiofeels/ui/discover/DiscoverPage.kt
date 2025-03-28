@@ -75,6 +75,8 @@ import com.trm.audiofeels.core.ui.resources.view_all
 import com.trm.audiofeels.core.ui.resources.yesterday
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import com.trm.audiofeels.domain.model.Playlist
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.hazeSource
 import kotlin.time.Duration
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -83,6 +85,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun DiscoverPage(
   viewModel: DiscoverViewModel,
+  hazeState: HazeState,
   topSpacerHeight: Dp,
   bottomSpacerHeight: Dp,
   onCarryPlaylistClick: (CarryOnPlaylist) -> Unit,
@@ -93,7 +96,9 @@ fun DiscoverPage(
   val trendingPlaylists by viewModel.trendingPlaylists.collectAsStateWithLifecycle()
 
   Box {
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+    Column(
+      modifier = Modifier.fillMaxSize().hazeSource(hazeState).verticalScroll(rememberScrollState())
+    ) {
       Spacer(modifier = Modifier.height(topSpacerHeight))
 
       DiscoverListHeadline(
@@ -194,6 +199,8 @@ fun DiscoverPage(
 
       Spacer(modifier = Modifier.height(bottomSpacerHeight))
     }
+
+    DiscoverTopBar(hazeState = hazeState)
 
     StartEdgeGradient()
     EndEdgeGradient()

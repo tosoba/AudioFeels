@@ -1,6 +1,5 @@
 package com.trm.audiofeels
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -35,7 +34,6 @@ import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.PermanentDrawerSheet
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
@@ -64,7 +62,6 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -87,8 +84,6 @@ import com.trm.audiofeels.core.ui.compose.util.NavigationContentPosition
 import com.trm.audiofeels.core.ui.compose.util.NavigationType
 import com.trm.audiofeels.core.ui.compose.util.calculateWindowSize
 import com.trm.audiofeels.core.ui.compose.util.loadImageBitmapOrNull
-import com.trm.audiofeels.core.ui.resources.Res
-import com.trm.audiofeels.core.ui.resources.app_name
 import com.trm.audiofeels.di.ApplicationComponent
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import com.trm.audiofeels.domain.model.Playlist
@@ -102,12 +97,10 @@ import com.trm.audiofeels.ui.player.composable.PlayerRecordAudioPermissionObserv
 import com.trm.audiofeels.ui.player.composable.PlayerRecordAudioPermissionRequest
 import com.trm.audiofeels.ui.player.composable.PlayerSheetContent
 import com.trm.audiofeels.ui.search.SearchPage
-import com.trm.audiofeels.ui.search.SearchTopBar
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
-import dev.chrisbanes.haze.hazeSource
 import dev.zwander.compose.rememberThemeInfo
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -365,30 +358,25 @@ private fun AppBottomSheetScaffold(
       value = paneNavigator.scaffoldValue,
       mainPane = {
         AnimatedPane {
-          Box {
-            AppNavHost(
-              applicationComponent = applicationComponent,
-              navController = navController,
-              topSpacerHeight =
-                with(density) { TopAppBarDefaults.windowInsets.getTop(density).toDp() } +
-                  TopAppBarDefaults.TopAppBarExpandedHeight,
-              bottomSpacerHeight =
-                if (
-                  supportingPaneValue == PaneAdaptedValue.Expanded ||
-                    appLayoutState.playerLayoutState.currentSheetValue == SheetValue.Hidden
-                ) {
-                  16.dp
-                } else {
-                  sheetPeekHeight
-                },
-              modifier = Modifier.fillMaxSize().hazeSource(hazeState),
-              onCarryOnPlaylistClick = playerViewState.startCarryOnPlaylistPlayback,
-              onPlaylistClick = playerViewState.startPlaylistPlayback,
-            )
-
-            val currentBackStackEntry by navController.currentBackStackEntryAsState()
-            TopBar(destination = currentBackStackEntry?.destination, hazeState = hazeState)
-          }
+          AppNavHost(
+            applicationComponent = applicationComponent,
+            navController = navController,
+            hazeState = hazeState,
+            topSpacerHeight =
+              with(density) { TopAppBarDefaults.windowInsets.getTop(density).toDp() } +
+                TopAppBarDefaults.TopAppBarExpandedHeight,
+            bottomSpacerHeight =
+              if (
+                supportingPaneValue == PaneAdaptedValue.Expanded ||
+                  appLayoutState.playerLayoutState.currentSheetValue == SheetValue.Hidden
+              ) {
+                16.dp
+              } else {
+                sheetPeekHeight
+              },
+            onCarryOnPlaylistClick = playerViewState.startCarryOnPlaylistPlayback,
+            onPlaylistClick = playerViewState.startPlaylistPlayback,
+          )
         }
       },
       supportingPane = {
@@ -412,65 +400,6 @@ private fun AppBottomSheetScaffold(
       },
     )
   }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun TopBar(destination: NavDestination?, hazeState: HazeState) {
-  val topBarHazeStyle =
-    HazeStyle(backgroundColor = MaterialTheme.colorScheme.background, tint = null)
-  val searchBarHazeStyle =
-    HazeStyle(
-      backgroundColor = TopAppBarDefaults.topAppBarColors().containerColor,
-      tint =
-        HazeTint(
-          TopAppBarDefaults.topAppBarColors()
-            .run { copy(containerColor = containerColor.copy(alpha = .85f)) }
-            .containerColor
-        ),
-    )
-
-  AnimatedContent(destination) {
-    when {
-      it?.hasRoute(AppRoute.Search::class) == true -> {
-        SearchTopBar(
-          hazeState = hazeState,
-          modifier =
-            Modifier.fillMaxWidth().hazeEffect(hazeState) {
-              style = searchBarHazeStyle
-              blurRadius = 10.dp
-            },
-        )
-      }
-      it?.hasRoute(AppRoute.Discover::class) == true -> {
-        AppTopBar(
-          modifier =
-            Modifier.hazeEffect(hazeState) {
-              style = topBarHazeStyle
-              blurRadius = 10.dp
-            }
-        )
-      }
-    }
-  }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun AppTopBar(modifier: Modifier = Modifier) {
-  TopAppBar(
-    title = {
-      Text(
-        text = stringResource(Res.string.app_name),
-        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-      )
-    },
-    colors =
-      TopAppBarDefaults.topAppBarColors().run {
-        copy(containerColor = containerColor.copy(alpha = .85f))
-      },
-    modifier = modifier,
-  )
 }
 
 @Composable
@@ -593,20 +522,21 @@ private fun AppPermanentNavigationDrawer(
 private fun AppNavHost(
   applicationComponent: ApplicationComponent,
   navController: NavHostController,
+  hazeState: HazeState,
   topSpacerHeight: Dp,
   bottomSpacerHeight: Dp,
-  modifier: Modifier = Modifier,
   onCarryOnPlaylistClick: (CarryOnPlaylist) -> Unit,
   onPlaylistClick: (Playlist) -> Unit,
 ) {
   NavHost(
-    modifier = modifier,
+    modifier = Modifier.fillMaxSize(),
     navController = navController,
     startDestination = AppRoute.Discover,
   ) {
     composable<AppRoute.Discover> {
       DiscoverPage(
         viewModel = viewModel(factory = applicationComponent.discoverViewModelFactory),
+        hazeState = hazeState,
         topSpacerHeight = topSpacerHeight,
         bottomSpacerHeight = bottomSpacerHeight,
         onCarryPlaylistClick = onCarryOnPlaylistClick,
@@ -616,6 +546,7 @@ private fun AppNavHost(
     composable<AppRoute.Search> {
       SearchPage(
         viewModel = viewModel(factory = applicationComponent.searchViewModelFactory),
+        hazeState = hazeState,
         topSpacerHeight = topSpacerHeight,
         bottomSpacerHeight = bottomSpacerHeight,
         onPlaylistClick = onPlaylistClick,

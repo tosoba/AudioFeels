@@ -33,24 +33,38 @@ import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.search
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchTopBar(
-  hazeState: HazeState,
-  modifier: Modifier = Modifier,
-  suggestions: List<String> = emptyList(),
-) {
+internal fun SearchTopBar(hazeState: HazeState, suggestions: List<String> = emptyList()) {
   var query by remember { mutableStateOf("") }
   var expanded by remember { mutableStateOf(false) }
   val onExpandedChange: (Boolean) -> Unit = { expanded = it }
 
-  val barHazeStyle =
-    HazeStyle(backgroundColor = SearchBarDefaults.colors().containerColor, tint = null)
+  val boxHazeStyle =
+    HazeStyle(
+      backgroundColor = TopAppBarDefaults.topAppBarColors().containerColor,
+      tint =
+        HazeTint(
+          TopAppBarDefaults.topAppBarColors()
+            .run { copy(containerColor = containerColor.copy(alpha = .85f)) }
+            .containerColor
+        ),
+    )
 
-  Box(modifier = modifier, contentAlignment = Alignment.BottomCenter) {
+  Box(
+    modifier =
+      Modifier.fillMaxWidth().hazeEffect(hazeState) {
+        style = boxHazeStyle
+        blurRadius = 10.dp
+      },
+    contentAlignment = Alignment.BottomCenter,
+  ) {
+    val searchBarHazeStyle =
+      HazeStyle(backgroundColor = SearchBarDefaults.colors().containerColor, tint = null)
     DockedSearchBar(
       modifier =
         Modifier.fillMaxWidth()
@@ -63,7 +77,7 @@ fun SearchTopBar(
           )
           .clip(SearchBarDefaults.dockedShape)
           .hazeEffect(hazeState) {
-            style = barHazeStyle
+            style = searchBarHazeStyle
             blurRadius = 10.dp
           },
       colors =
