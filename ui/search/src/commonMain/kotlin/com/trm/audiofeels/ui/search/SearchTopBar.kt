@@ -44,7 +44,7 @@ internal fun SearchTopBar(hazeState: HazeState, suggestions: List<String> = empt
   var expanded by remember { mutableStateOf(false) }
   val onExpandedChange: (Boolean) -> Unit = { expanded = it }
 
-  val boxHazeStyle =
+  val hazeStyle =
     HazeStyle(
       backgroundColor = TopAppBarDefaults.topAppBarColors().containerColor,
       tint =
@@ -58,13 +58,11 @@ internal fun SearchTopBar(hazeState: HazeState, suggestions: List<String> = empt
   Box(
     modifier =
       Modifier.fillMaxWidth().hazeEffect(hazeState) {
-        style = boxHazeStyle
+        style = hazeStyle
         blurRadius = 10.dp
       },
     contentAlignment = Alignment.BottomCenter,
   ) {
-    val searchBarHazeStyle =
-      HazeStyle(backgroundColor = SearchBarDefaults.colors().containerColor, tint = null)
     DockedSearchBar(
       modifier =
         Modifier.fillMaxWidth()
@@ -74,16 +72,9 @@ internal fun SearchTopBar(hazeState: HazeState, suggestions: List<String> = empt
                 16.dp,
             start = 16.dp,
             end = 16.dp,
+            bottom = 16.dp,
           )
-          .clip(SearchBarDefaults.dockedShape)
-          .hazeEffect(hazeState) {
-            style = searchBarHazeStyle
-            blurRadius = 10.dp
-          },
-      colors =
-        SearchBarDefaults.colors(
-          containerColor = SearchBarDefaults.colors().containerColor.copy(alpha = .85f)
-        ),
+          .clip(SearchBarDefaults.dockedShape),
       inputField = {
         SearchBarDefaults.InputField(
           query = query,
