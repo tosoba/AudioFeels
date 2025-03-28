@@ -60,6 +60,7 @@ import com.trm.audiofeels.core.ui.compose.PlaylistPlaceholderItemContent
 import com.trm.audiofeels.core.ui.compose.StartEdgeGradient
 import com.trm.audiofeels.core.ui.compose.TopEdgeGradient
 import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
+import com.trm.audiofeels.core.ui.compose.util.topAppBarSpacerHeight
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.carry_on
 import com.trm.audiofeels.core.ui.resources.days_ago
@@ -86,7 +87,6 @@ import org.jetbrains.compose.resources.stringResource
 fun DiscoverPage(
   viewModel: DiscoverViewModel,
   hazeState: HazeState,
-  topSpacerHeight: Dp,
   bottomSpacerHeight: Dp,
   onCarryPlaylistClick: (CarryOnPlaylist) -> Unit,
   onPlaylistClick: (Playlist) -> Unit,
@@ -99,7 +99,7 @@ fun DiscoverPage(
     Column(
       modifier = Modifier.fillMaxSize().hazeSource(hazeState).verticalScroll(rememberScrollState())
     ) {
-      Spacer(modifier = Modifier.height(topSpacerHeight))
+      Spacer(modifier = Modifier.height(topAppBarSpacerHeight()))
 
       DiscoverListHeadline(
         text = stringResource(Res.string.carry_on),
@@ -204,7 +204,7 @@ fun DiscoverPage(
 
     StartEdgeGradient()
     EndEdgeGradient()
-    TopEdgeGradient(topOffset = topSpacerHeight)
+    TopEdgeGradient(topOffset = topAppBarSpacerHeight())
     BottomEdgeGradient()
   }
 }

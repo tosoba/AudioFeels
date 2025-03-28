@@ -28,6 +28,7 @@ import com.trm.audiofeels.core.ui.compose.PlaylistLazyVerticalGridItem
 import com.trm.audiofeels.core.ui.compose.PlaylistPlaceholderItemContent
 import com.trm.audiofeels.core.ui.compose.TopEdgeGradient
 import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
+import com.trm.audiofeels.core.ui.compose.util.topAppBarSpacerHeight
 import com.trm.audiofeels.domain.model.Playlist
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
@@ -36,7 +37,6 @@ import dev.chrisbanes.haze.hazeSource
 fun SearchPage(
   viewModel: SearchViewModel,
   hazeState: HazeState,
-  topSpacerHeight: Dp,
   bottomSpacerHeight: Dp,
   onPlaylistClick: (Playlist) -> Unit,
 ) {
@@ -51,7 +51,7 @@ fun SearchPage(
       verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
       item(span = { GridItemSpan(maxLineSpan) }) {
-        Spacer(modifier = Modifier.height(topSpacerHeight))
+        Spacer(modifier = Modifier.height(topAppBarSpacerHeight()))
       }
 
       when (val playlists = playlistsState) {
@@ -82,7 +82,7 @@ fun SearchPage(
 
     SearchTopBar(hazeState = hazeState)
 
-    TopEdgeGradient(topOffset = topSpacerHeight + 24.dp)
+    TopEdgeGradient(topOffset = topAppBarSpacerHeight() + 24.dp)
     BottomEdgeGradient()
   }
 }

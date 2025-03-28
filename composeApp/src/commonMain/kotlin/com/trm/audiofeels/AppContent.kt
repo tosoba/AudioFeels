@@ -362,9 +362,6 @@ private fun AppBottomSheetScaffold(
             applicationComponent = applicationComponent,
             navController = navController,
             hazeState = hazeState,
-            topSpacerHeight =
-              with(density) { TopAppBarDefaults.windowInsets.getTop(density).toDp() } +
-                TopAppBarDefaults.TopAppBarExpandedHeight,
             bottomSpacerHeight =
               if (
                 supportingPaneValue == PaneAdaptedValue.Expanded ||
@@ -523,7 +520,6 @@ private fun AppNavHost(
   applicationComponent: ApplicationComponent,
   navController: NavHostController,
   hazeState: HazeState,
-  topSpacerHeight: Dp,
   bottomSpacerHeight: Dp,
   onCarryOnPlaylistClick: (CarryOnPlaylist) -> Unit,
   onPlaylistClick: (Playlist) -> Unit,
@@ -537,7 +533,6 @@ private fun AppNavHost(
       DiscoverPage(
         viewModel = viewModel(factory = applicationComponent.discoverViewModelFactory),
         hazeState = hazeState,
-        topSpacerHeight = topSpacerHeight,
         bottomSpacerHeight = bottomSpacerHeight,
         onCarryPlaylistClick = onCarryOnPlaylistClick,
         onPlaylistClick = onPlaylistClick,
@@ -547,7 +542,6 @@ private fun AppNavHost(
       SearchPage(
         viewModel = viewModel(factory = applicationComponent.searchViewModelFactory),
         hazeState = hazeState,
-        topSpacerHeight = topSpacerHeight,
         bottomSpacerHeight = bottomSpacerHeight,
         onPlaylistClick = onPlaylistClick,
       )
