@@ -1,5 +1,6 @@
 package com.trm.audiofeels.ui.search
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,19 +11,19 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,10 +39,18 @@ import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun SearchTopBar(hazeState: HazeState, suggestions: List<String> = emptyList()) {
-  var query by remember { mutableStateOf("") }
-  var expanded by remember { mutableStateOf(false) }
-  val onExpandedChange: (Boolean) -> Unit = { expanded = it }
+internal fun SearchTopBar(
+  hazeState: HazeState,
+  suggestions: List<String>,
+  onQueryChange: (String) -> Unit,
+) {
+  var query by rememberSaveable { mutableStateOf("") }
+  var expanded by rememberSaveable { mutableStateOf(false) }
+
+  fun updateQuery(newQuery: String) {
+    query = newQuery
+    onQueryChange(query)
+  }
 
   val boxHazeStyle =
     HazeStyle(
@@ -85,24 +94,15 @@ internal fun SearchTopBar(hazeState: HazeState, suggestions: List<String> = empt
         ),
       inputField = {
         SearchBarDefaults.InputField(
+          modifier = Modifier.fillMaxWidth(),
           query = query,
-          onQueryChange = { query = it },
+          onQueryChange = ::updateQuery,
           onSearch = { expanded = false },
           expanded = expanded,
-          onExpandedChange = onExpandedChange,
-          modifier = Modifier.fillMaxWidth(),
-          placeholder = { Text(text = stringResource(Res.string.search)) },
+          onExpandedChange = { expanded = it },
+          placeholder = { Text(stringResource(Res.string.search)) },
           leadingIcon = {
-            IconButton(
-              colors =
-                IconButtonDefaults.iconButtonColors().run {
-                  copy(disabledContentColor = contentColor, disabledContainerColor = containerColor)
-                },
-              onClick = {
-                expanded = false
-                query = ""
-              },
-            ) {
+            IconButton(onClick = { expanded = false }) {
               Crossfade(expanded) {
                 if (it) {
                   Icon(
@@ -118,22 +118,23 @@ internal fun SearchTopBar(hazeState: HazeState, suggestions: List<String> = empt
               }
             }
           },
+          trailingIcon = {
+            AnimatedVisibility(query.isNotBlank()) {
+              IconButton(onClick = { updateQuery("") }) {
+                Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear search")
+              }
+            }
+          },
         )
       },
-      expanded = expanded,
-      onExpandedChange = onExpandedChange,
+      expanded = expanded && suggestions.isNotEmpty(),
+      onExpandedChange = {},
       content = {
         LazyColumn(
           modifier = Modifier.fillMaxWidth(),
           contentPadding = PaddingValues(16.dp),
           verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-          if (suggestions.isEmpty()) {
-            item {
-              Text(text = "No previous searches.", modifier = Modifier.fillMaxWidth().animateItem())
-            }
-          }
-
           items(suggestions) { Text(text = it, modifier = Modifier.fillMaxWidth().animateItem()) }
         }
       },

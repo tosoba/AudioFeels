@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -15,9 +16,11 @@ import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -40,7 +43,7 @@ fun SearchPage(
   bottomSpacerHeight: Dp,
   onPlaylistClick: (Playlist) -> Unit,
 ) {
-  val playlistsState by viewModel.playlists.collectAsStateWithLifecycle()
+  val result by viewModel.result.collectAsStateWithLifecycle()
 
   Box {
     LazyVerticalGrid(
@@ -54,23 +57,54 @@ fun SearchPage(
         Spacer(modifier = Modifier.height(topAppBarSpacerHeight()))
       }
 
-      when (val playlists = playlistsState) {
+      when (val searchResult = result) {
         LoadableState.Loading -> {
           items(50) { SearchListPlaceholderItem { PlaylistPlaceholderItemContent() } }
         }
         is LoadableState.Idle -> {
-          items(playlists.value) {
-            PlaylistLazyVerticalGridItem(
-              name = it.name,
-              artworkUrl = it.artworkUrl,
-              modifier = Modifier.animateItem(),
-              onClick = { onPlaylistClick(it) },
-            )
+          when {
+            searchResult.value.query.isEmpty() -> {
+              item(span = { GridItemSpan(maxLineSpan) }) {
+                Text(
+                  text = "Query is empty",
+                  textAlign = TextAlign.Center,
+                  modifier = Modifier.fillMaxWidth().animateItem(),
+                )
+              }
+            }
+            searchResult.value.query.length < 3 -> {
+              item(span = { GridItemSpan(maxLineSpan) }) {
+                Text(
+                  text = "Query is too short",
+                  textAlign = TextAlign.Center,
+                  modifier = Modifier.fillMaxWidth().animateItem(),
+                )
+              }
+            }
+            searchResult.value.playlists.isEmpty() -> {
+              item(span = { GridItemSpan(maxLineSpan) }) {
+                Text(
+                  text = "No playlists found",
+                  textAlign = TextAlign.Center,
+                  modifier = Modifier.fillMaxWidth().animateItem(),
+                )
+              }
+            }
+            else -> {
+              items(searchResult.value.playlists) {
+                PlaylistLazyVerticalGridItem(
+                  name = it.name,
+                  artworkUrl = it.artworkUrl,
+                  modifier = Modifier.animateItem(),
+                  onClick = { onPlaylistClick(it) },
+                )
+              }
+            }
           }
         }
         is LoadableState.Error -> {
           item(span = { GridItemSpan(maxLineSpan) }) {
-            ErrorListItem(modifier = Modifier.animateItem(), onClick = viewModel.playlists::restart)
+            ErrorListItem(modifier = Modifier.animateItem(), onClick = viewModel.result::restart)
           }
         }
       }
@@ -83,7 +117,11 @@ fun SearchPage(
     TopEdgeGradient(topOffset = topAppBarSpacerHeight() + 24.dp)
     BottomEdgeGradient()
 
-    SearchTopBar(hazeState = hazeState)
+    SearchTopBar(
+      hazeState = hazeState,
+      suggestions = emptyList(),
+      onQueryChange = viewModel::onQueryChange,
+    )
   }
 }
 
