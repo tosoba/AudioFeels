@@ -167,7 +167,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
 
     fun navigateToPageDestination(destination: AppPageNavigationDestination) {
       scope.launch { appLayoutState.onNavigateToPageDestination() }
-      navController.navigateToAppRoute(destination.route)
+      navController.navigateToAppRoute(route = destination.route, restoreState = true)
     }
 
     NavigationSuiteScaffoldLayout(
@@ -539,7 +539,9 @@ private fun AppNavHost(
         bottomSpacerHeight = bottomSpacerHeight,
         onCarryPlaylistClick = onCarryOnPlaylistClick,
         onPlaylistClick = onPlaylistClick,
-        onMoodClick = { navController.navigateToAppRoute(AppRoute.MoodPage(it)) },
+        onMoodClick = {
+          navController.navigateToAppRoute(route = AppRoute.MoodPage(it), restoreState = false)
+        },
       )
     }
     composable<AppRoute.SearchPage> {
@@ -565,10 +567,10 @@ private fun AppNavHost(
   }
 }
 
-private fun NavController.navigateToAppRoute(route: AppRoute) {
+private fun NavController.navigateToAppRoute(route: AppRoute, restoreState: Boolean) {
   navigate(route) {
     popUpTo(graph.findStartDestination().id) { saveState = true }
     launchSingleTop = true
-    restoreState = true
+    this.restoreState = restoreState
   }
 }
