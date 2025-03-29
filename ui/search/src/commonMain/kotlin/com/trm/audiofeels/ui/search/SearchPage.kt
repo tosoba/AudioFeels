@@ -122,6 +122,9 @@ fun SearchPage(
       hazeState = hazeState,
       suggestions = suggestions,
       onQueryChange = viewModel::onQueryChange,
+      onSearchBarExpandedChange = {
+        // TODO: get searchBar height and increase top space height if expanded
+      },
     )
   }
 }

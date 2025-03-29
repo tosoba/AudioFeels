@@ -21,6 +21,7 @@ import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -43,6 +44,7 @@ internal fun SearchTopBar(
   hazeState: HazeState,
   suggestions: List<String>,
   onQueryChange: (String) -> Unit,
+  onSearchBarExpandedChange: (Boolean) -> Unit,
 ) {
   var query by rememberSaveable { mutableStateOf("") }
   var expanded by rememberSaveable { mutableStateOf(false) }
@@ -51,6 +53,10 @@ internal fun SearchTopBar(
     query = newQuery
     onQueryChange(query)
   }
+
+  fun isSearchBarExpanded(): Boolean = expanded && suggestions.isNotEmpty()
+
+  LaunchedEffect(query, suggestions) { onSearchBarExpandedChange(isSearchBarExpanded()) }
 
   val boxHazeStyle =
     HazeStyle(
@@ -127,7 +133,7 @@ internal fun SearchTopBar(
           },
         )
       },
-      expanded = expanded && suggestions.isNotEmpty(),
+      expanded = isSearchBarExpanded(),
       onExpandedChange = {},
       content = {
         LazyColumn(
@@ -135,7 +141,9 @@ internal fun SearchTopBar(
           contentPadding = PaddingValues(16.dp),
           verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-          items(suggestions) { Text(text = it, modifier = Modifier.fillMaxWidth().animateItem()) }
+          items(suggestions) {
+            Text(text = it, modifier = Modifier.fillMaxWidth().animateItem()) // TODO: add on clicks
+          }
         }
       },
     )
