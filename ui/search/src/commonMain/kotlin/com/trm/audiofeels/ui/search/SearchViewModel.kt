@@ -10,6 +10,7 @@ import com.trm.audiofeels.domain.repository.PlaylistsRepository
 import com.trm.audiofeels.domain.repository.SuggestionsRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -30,13 +32,15 @@ class SearchViewModel(
   private val queryFlow = MutableSharedFlow<String>()
 
   val result: RestartableStateFlow<LoadableState<SearchResult>> =
-    queryFlow
-      .map(String::trim)
-      .debounce(500L)
-      .distinctUntilChanged()
+    processedQueryFlow()
       .flatMapLatest {
-        if (it.length < 3) flowOf(LoadableState.Idle(SearchResult(it, emptyList())))
-        else loadableStateFlowOf { SearchResult(it, playlistsRepository.searchPlaylists(it)) }
+        if (it.length < 3) {
+          flowOf(LoadableState.Idle(SearchResult(query = it, playlists = emptyList())))
+        } else {
+          loadableStateFlowOf {
+            SearchResult(query = it, playlists = playlistsRepository.searchPlaylists(it))
+          }
+        }
       }
       .onEach {
         it.valueOrNull?.let { (query, playlists) ->
@@ -46,17 +50,25 @@ class SearchViewModel(
       .restartableStateIn(
         scope = viewModelScope,
         started = SharingStarted.Lazily,
-        initialValue = LoadableState.Idle(SearchResult("", emptyList())),
+        initialValue = LoadableState.Idle(SearchResult(query = "", playlists = emptyList())),
       )
 
   val suggestions: StateFlow<List<String>> =
-    suggestionsRepository
-      .getSuggestionsFlow(limit = 10)
+    processedQueryFlow()
+      .onStart { emit("") }
+      .flatMapLatest { query ->
+        suggestionsRepository.getSuggestionsFlow(limit = 10).map { suggestions ->
+          suggestions.filter { it != query }
+        }
+      }
       .stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000L),
         initialValue = emptyList(),
       )
+
+  private fun processedQueryFlow(): Flow<String> =
+    queryFlow.map(String::trim).debounce(500L).distinctUntilChanged()
 
   fun onQueryChange(query: String) {
     viewModelScope.launch { queryFlow.emit(query) }
