@@ -43,6 +43,7 @@ fun SearchPage(
   bottomSpacerHeight: Dp,
   onPlaylistClick: (Playlist) -> Unit,
 ) {
+  val suggestions by viewModel.suggestions.collectAsStateWithLifecycle()
   val result by viewModel.result.collectAsStateWithLifecycle()
 
   Box {
@@ -119,7 +120,7 @@ fun SearchPage(
 
     SearchTopBar(
       hazeState = hazeState,
-      suggestions = emptyList(),
+      suggestions = suggestions,
       onQueryChange = viewModel::onQueryChange,
     )
   }

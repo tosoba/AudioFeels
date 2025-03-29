@@ -43,6 +43,7 @@ include(
   ":core:ui:resources",
   ":data:hosts",
   ":data:playlists",
+  ":data:suggestions",
   ":data:test",
   ":data:visualization",
   ":domain",

@@ -7,20 +7,26 @@ import com.trm.audiofeels.core.base.model.loadableStateFlowOf
 import com.trm.audiofeels.core.base.util.RestartableStateFlow
 import com.trm.audiofeels.core.base.util.restartableStateIn
 import com.trm.audiofeels.domain.repository.PlaylistsRepository
+import com.trm.audiofeels.domain.repository.SuggestionsRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
-class SearchViewModel(private val playlistsRepository: PlaylistsRepository) : ViewModel() {
+class SearchViewModel(
+  private val playlistsRepository: PlaylistsRepository,
+  private val suggestionsRepository: SuggestionsRepository,
+) : ViewModel() {
   private val queryFlow = MutableSharedFlow<String>()
 
   val result: RestartableStateFlow<LoadableState<SearchResult>> =
@@ -34,15 +40,22 @@ class SearchViewModel(private val playlistsRepository: PlaylistsRepository) : Vi
       }
       .onEach {
         it.valueOrNull?.let { (query, playlists) ->
-          if (playlists.isNotEmpty()) {
-            // TODO: save query as suggestion
-          }
+          if (playlists.isNotEmpty()) suggestionsRepository.saveSuggestion(query)
         }
       }
       .restartableStateIn(
         scope = viewModelScope,
         started = SharingStarted.Lazily,
         initialValue = LoadableState.Idle(SearchResult("", emptyList())),
+      )
+
+  val suggestions: StateFlow<List<String>> =
+    suggestionsRepository
+      .getSuggestionsFlow(limit = 10)
+      .stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000L),
+        initialValue = emptyList(),
       )
 
   fun onQueryChange(query: String) {

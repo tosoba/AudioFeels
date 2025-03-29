@@ -5,6 +5,7 @@ import com.trm.audiofeels.core.base.util.PlatformContext
 import com.trm.audiofeels.core.database.ApplicationDatabase
 import com.trm.audiofeels.core.database.createApplicationDatabase
 import com.trm.audiofeels.core.database.dao.PlaylistDao
+import com.trm.audiofeels.core.database.dao.SuggestionDao
 import me.tatarka.inject.annotations.Provides
 
 interface DatabaseCoreComponent {
@@ -16,4 +17,8 @@ interface DatabaseCoreComponent {
   @Provides
   @ApplicationScope
   fun playlistDao(database: ApplicationDatabase): PlaylistDao = database.playlistDao()
+
+  @Provides
+  @ApplicationScope
+  fun suggestionDao(database: ApplicationDatabase): SuggestionDao = database.suggestionDao()
 }
