@@ -80,10 +80,10 @@ fun SearchPage(
       }
     }
 
-    SearchTopBar(hazeState = hazeState)
-
     TopEdgeGradient(topOffset = topAppBarSpacerHeight() + 24.dp)
     BottomEdgeGradient()
+
+    SearchTopBar(hazeState = hazeState)
   }
 }
 
