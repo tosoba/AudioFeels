@@ -1,5 +1,8 @@
-package com.trm.audiofeels.ui.discover
+package com.trm.audiofeels.domain.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 enum class Mood(val symbol: String) {
   Peaceful("🕊️ "),
   Romantic("💘"),

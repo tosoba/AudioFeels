@@ -75,6 +75,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import androidx.window.core.layout.WindowHeightSizeClass
 import coil3.compose.setSingletonImageLoaderFactory
 import com.materialkolor.DynamicMaterialTheme
@@ -88,6 +89,8 @@ import com.trm.audiofeels.di.ApplicationComponent
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.ui.discover.DiscoverPage
+import com.trm.audiofeels.ui.mood.MoodPage
+import com.trm.audiofeels.ui.mood.moodCreationExtras
 import com.trm.audiofeels.ui.player.PlayerViewModel
 import com.trm.audiofeels.ui.player.PlayerViewState
 import com.trm.audiofeels.ui.player.composable.PlayerAudioVisualization
@@ -164,7 +167,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
 
     fun navigateToPageDestination(destination: AppPageNavigationDestination) {
       scope.launch { appLayoutState.onNavigateToPageDestination() }
-      navController.navigateToPageDestination(destination)
+      navController.navigateToAppRoute(destination.route)
     }
 
     NavigationSuiteScaffoldLayout(
@@ -527,18 +530,19 @@ private fun AppNavHost(
   NavHost(
     modifier = Modifier.fillMaxSize(),
     navController = navController,
-    startDestination = AppRoute.Discover,
+    startDestination = AppRoute.DiscoverPage,
   ) {
-    composable<AppRoute.Discover> {
+    composable<AppRoute.DiscoverPage> {
       DiscoverPage(
         viewModel = viewModel(factory = applicationComponent.discoverViewModelFactory),
         hazeState = hazeState,
         bottomSpacerHeight = bottomSpacerHeight,
         onCarryPlaylistClick = onCarryOnPlaylistClick,
         onPlaylistClick = onPlaylistClick,
+        onMoodClick = { navController.navigateToAppRoute(AppRoute.MoodPage(it)) },
       )
     }
-    composable<AppRoute.Search> {
+    composable<AppRoute.SearchPage> {
       SearchPage(
         viewModel = viewModel(factory = applicationComponent.searchViewModelFactory),
         hazeState = hazeState,
@@ -546,11 +550,23 @@ private fun AppNavHost(
         onPlaylistClick = onPlaylistClick,
       )
     }
+    composable<AppRoute.MoodPage> {
+      MoodPage(
+        viewModel =
+          viewModel(
+            factory = applicationComponent.moodViewModelFactory,
+            extras = moodCreationExtras(it.toRoute<AppRoute.MoodPage>().mood),
+          ),
+        bottomSpacerHeight = bottomSpacerHeight,
+        onPlaylistClick = onPlaylistClick,
+        onNavigationIconClick = navController::popBackStack,
+      )
+    }
   }
 }
 
-private fun NavController.navigateToPageDestination(destination: AppPageNavigationDestination) {
-  navigate(destination.route) {
+private fun NavController.navigateToAppRoute(route: AppRoute) {
+  navigate(route) {
     popUpTo(graph.findStartDestination().id) { saveState = true }
     launchSingleTop = true
     restoreState = true

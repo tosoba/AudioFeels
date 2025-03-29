@@ -75,6 +75,7 @@ import com.trm.audiofeels.core.ui.resources.trending
 import com.trm.audiofeels.core.ui.resources.view_all
 import com.trm.audiofeels.core.ui.resources.yesterday
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
+import com.trm.audiofeels.domain.model.Mood
 import com.trm.audiofeels.domain.model.Playlist
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
@@ -90,6 +91,7 @@ fun DiscoverPage(
   bottomSpacerHeight: Dp,
   onCarryPlaylistClick: (CarryOnPlaylist) -> Unit,
   onPlaylistClick: (Playlist) -> Unit,
+  onMoodClick: (Mood) -> Unit,
 ) {
   val carryOnPlaylists by viewModel.carryOnPlaylists.collectAsStateWithLifecycle()
   val favouritePlaylists by viewModel.favouritePlaylists.collectAsStateWithLifecycle()
@@ -150,7 +152,7 @@ fun DiscoverPage(
                 }.dp
             ),
       ) {
-        items(Mood.entries) { item -> MoodItem(item) }
+        items(Mood.entries) { item -> MoodItem(item = item, onClick = { onMoodClick(item) }) }
       }
 
       DiscoverListHeadline(
@@ -210,8 +212,8 @@ fun DiscoverPage(
 }
 
 @Composable
-private fun MoodItem(item: Mood) {
-  ElevatedCard(modifier = Modifier.size(90.dp), shape = CircleShape) {
+private fun MoodItem(item: Mood, onClick: () -> Unit) {
+  ElevatedCard(onClick = onClick, modifier = Modifier.size(90.dp), shape = CircleShape) {
     Column(
       horizontalAlignment = Alignment.CenterHorizontally,
       verticalArrangement = Arrangement.Center,

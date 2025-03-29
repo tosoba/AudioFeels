@@ -1,3 +1,7 @@
 package com.trm.audiofeels.ui.mood.di
 
-interface MoodUiComponent {}
+import com.trm.audiofeels.ui.mood.MoodViewModelFactory
+
+interface MoodUiComponent {
+  val moodViewModelFactory: MoodViewModelFactory
+}
