@@ -50,6 +50,7 @@ include(
   ":player",
   ":ui:favourites",
   ":ui:discover",
+  ":ui:mood",
   ":ui:player",
   ":ui:search",
 )

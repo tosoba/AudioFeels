@@ -47,6 +47,7 @@ kotlin {
       implementation(projects.domain)
       implementation(projects.player)
       implementation(projects.ui.discover)
+      implementation(projects.ui.mood)
       implementation(projects.ui.player)
       implementation(projects.ui.search)
 
