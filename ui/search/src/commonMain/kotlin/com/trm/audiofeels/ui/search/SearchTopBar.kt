@@ -24,7 +24,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalDensity
@@ -44,7 +43,7 @@ internal fun SearchTopBar(hazeState: HazeState, suggestions: List<String> = empt
   var expanded by remember { mutableStateOf(false) }
   val onExpandedChange: (Boolean) -> Unit = { expanded = it }
 
-  val hazeStyle =
+  val boxHazeStyle =
     HazeStyle(
       backgroundColor = TopAppBarDefaults.topAppBarColors().containerColor,
       tint =
@@ -58,11 +57,12 @@ internal fun SearchTopBar(hazeState: HazeState, suggestions: List<String> = empt
   Box(
     modifier =
       Modifier.fillMaxWidth().hazeEffect(hazeState) {
-        style = hazeStyle
+        style = boxHazeStyle
         blurRadius = 10.dp
-      },
-    contentAlignment = Alignment.BottomCenter,
+      }
   ) {
+    val searchBarHazeStyle =
+      HazeStyle(backgroundColor = SearchBarDefaults.colors().containerColor, tint = null)
     DockedSearchBar(
       modifier =
         Modifier.fillMaxWidth()
@@ -74,7 +74,15 @@ internal fun SearchTopBar(hazeState: HazeState, suggestions: List<String> = empt
             end = 16.dp,
             bottom = 16.dp,
           )
-          .clip(SearchBarDefaults.dockedShape),
+          .clip(SearchBarDefaults.dockedShape)
+          .hazeEffect(hazeState) {
+            style = searchBarHazeStyle
+            blurRadius = 10.dp
+          },
+      colors =
+        SearchBarDefaults.colors(
+          containerColor = SearchBarDefaults.colors().containerColor.copy(alpha = .95f)
+        ),
       inputField = {
         SearchBarDefaults.InputField(
           query = query,
