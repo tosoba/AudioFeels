@@ -22,7 +22,7 @@ class MoodViewModel(
   val mood = Mood.valueOf(requireNotNull(savedStateHandle[MOOD_KEY]))
 
   val playlists: RestartableStateFlow<LoadableState<List<Playlist>>> =
-    loadableStateFlowOf { playlistsRepository.getPlaylists(mood = mood.name) }
+    loadableStateFlowOf { playlistsRepository.getPlaylists(mood) }
       .restartableStateIn(
         scope = viewModelScope,
         started = SharingStarted.Lazily,

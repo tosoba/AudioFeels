@@ -1,6 +1,7 @@
 package com.trm.audiofeels.domain.repository
 
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
+import com.trm.audiofeels.domain.model.Mood
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.model.PlaylistPlayback
 import com.trm.audiofeels.domain.model.Track
@@ -19,7 +20,7 @@ interface PlaylistsRepository {
 
   suspend fun toggleCurrentPlaylistFavourite()
 
-  suspend fun getPlaylists(mood: String?): List<Playlist>
+  suspend fun getPlaylists(mood: Mood?): List<Playlist>
 
   suspend fun searchPlaylists(query: String): List<Playlist>
 

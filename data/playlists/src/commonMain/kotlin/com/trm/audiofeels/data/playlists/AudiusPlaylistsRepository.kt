@@ -10,6 +10,7 @@ import com.trm.audiofeels.data.playlists.mapper.toPlaylistPlayback
 import com.trm.audiofeels.data.playlists.util.toPlaylists
 import com.trm.audiofeels.data.playlists.util.toTracks
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
+import com.trm.audiofeels.domain.model.Mood
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.model.PlaylistPlayback
 import com.trm.audiofeels.domain.model.Track
@@ -54,8 +55,8 @@ class AudiusPlaylistsRepository(
   override fun getCurrentPlaylistPlaybackFlow(): Flow<PlaylistPlayback?> =
     playlistDao.selectCurrentPlaylist().map { it?.toPlaylistPlayback() }
 
-  override suspend fun getPlaylists(mood: String?): List<Playlist> =
-    audiusEndpoints.getPlaylists(mood).toPlaylists()
+  override suspend fun getPlaylists(mood: Mood?): List<Playlist> =
+    audiusEndpoints.getPlaylists(mood?.name).toPlaylists()
 
   override suspend fun searchPlaylists(query: String): List<Playlist> =
     audiusEndpoints.searchPlaylists(query).toPlaylists()
