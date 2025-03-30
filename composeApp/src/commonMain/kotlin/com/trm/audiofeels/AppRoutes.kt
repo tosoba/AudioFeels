@@ -6,6 +6,7 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavDestination.Companion.hierarchy
 import com.trm.audiofeels.AppRoute.DiscoverGraph
 import com.trm.audiofeels.AppRoute.SearchPage
 import com.trm.audiofeels.core.ui.resources.Res
@@ -21,7 +22,8 @@ sealed interface AppRoute {
   val icon: ImageVector
   val labelResource: StringResource
 
-  fun isSelected(currentDestination: NavDestination?): Boolean
+  fun isSelected(currentDestination: NavDestination?): Boolean =
+    currentDestination?.hierarchy?.any { it.hasRoute(this::class) } == true
 
   @Serializable
   data object DiscoverGraph : AppRoute {
@@ -30,9 +32,6 @@ sealed interface AppRoute {
 
     override val labelResource: StringResource
       get() = Res.string.discover
-
-    override fun isSelected(currentDestination: NavDestination?): Boolean =
-      currentDestination?.parent?.hasRoute<DiscoverGraph>() == true
   }
 
   @Serializable
@@ -42,9 +41,6 @@ sealed interface AppRoute {
 
     override val labelResource: StringResource
       get() = Res.string.search
-
-    override fun isSelected(currentDestination: NavDestination?): Boolean =
-      currentDestination?.hasRoute<SearchPage>() == true
   }
 }
 
