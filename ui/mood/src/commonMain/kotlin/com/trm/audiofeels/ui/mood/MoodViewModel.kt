@@ -1,5 +1,6 @@
 package com.trm.audiofeels.ui.mood
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.trm.audiofeels.core.base.model.LoadableState
@@ -11,8 +12,12 @@ import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.repository.PlaylistsRepository
 import kotlinx.coroutines.flow.SharingStarted
 
-class MoodViewModel(internal val mood: Mood, private val playlistsRepository: PlaylistsRepository) :
-  ViewModel() {
+class MoodViewModel(
+  savedStateHandle: SavedStateHandle,
+  private val playlistsRepository: PlaylistsRepository,
+) : ViewModel() {
+  val mood = Mood.valueOf(requireNotNull(savedStateHandle[MOOD_KEY]))
+
   val playlists: RestartableStateFlow<LoadableState<List<Playlist>>> =
     loadableStateFlowOf { playlistsRepository.getPlaylists(mood = mood.name) }
       .restartableStateIn(
