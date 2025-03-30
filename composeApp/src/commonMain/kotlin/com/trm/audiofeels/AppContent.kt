@@ -65,7 +65,6 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
@@ -90,7 +89,6 @@ import com.trm.audiofeels.di.ApplicationComponent
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.ui.discover.DiscoverPage
-import com.trm.audiofeels.ui.mood.MOOD_KEY
 import com.trm.audiofeels.ui.mood.MoodPage
 import com.trm.audiofeels.ui.mood.MoodViewModel
 import com.trm.audiofeels.ui.player.PlayerViewModel
@@ -557,14 +555,10 @@ private fun AppNavHost(
     composable<AppRoute.MoodPage> {
       MoodPage(
         viewModel =
-          viewModel {
-            MoodViewModel(
-              createSavedStateHandle().apply {
-                set(MOOD_KEY, it.toRoute<AppRoute.MoodPage>().mood.name)
-              },
-              playlistsRepository = applicationComponent.playlistsRepository,
-            )
-          },
+          MoodViewModel(
+            mood = it.toRoute<AppRoute.MoodPage>().mood,
+            playlistsRepository = applicationComponent.playlistsRepository,
+          ),
         bottomSpacerHeight = bottomSpacerHeight,
         onPlaylistClick = onPlaylistClick,
         onNavigationIconClick = navController::popBackStack,

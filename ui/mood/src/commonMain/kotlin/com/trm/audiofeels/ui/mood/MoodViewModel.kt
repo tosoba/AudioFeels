@@ -1,8 +1,11 @@
 package com.trm.audiofeels.ui.mood
 
+import androidx.compose.runtime.Composable
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.trm.audiofeels.core.base.model.LoadableState
 import com.trm.audiofeels.core.base.model.loadableStateFlowOf
 import com.trm.audiofeels.core.base.util.RestartableStateFlow
@@ -25,4 +28,17 @@ class MoodViewModel(
         started = SharingStarted.Lazily,
         initialValue = LoadableState.Loading,
       )
+
+  companion object {
+    @Composable
+    operator fun invoke(mood: Mood, playlistsRepository: PlaylistsRepository): MoodViewModel =
+      viewModel {
+        MoodViewModel(
+          savedStateHandle = createSavedStateHandle().apply { set(MOOD_KEY, mood.name) },
+          playlistsRepository = playlistsRepository,
+        )
+      }
+
+    private const val MOOD_KEY = "Mood"
+  }
 }
