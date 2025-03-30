@@ -89,9 +89,13 @@ fun DiscoverPage(
   viewModel: DiscoverViewModel,
   hazeState: HazeState,
   bottomSpacerHeight: Dp,
-  onCarryPlaylistClick: (CarryOnPlaylist) -> Unit,
+  onCarryOnPlaylistClick: (CarryOnPlaylist) -> Unit,
   onPlaylistClick: (Playlist) -> Unit,
   onMoodClick: (Mood) -> Unit,
+  onViewAllCarryOnPlaylistsClick: (List<CarryOnPlaylist>) -> Unit,
+  onViewAllFavouritePlaylistsClick: (List<Playlist>) -> Unit,
+  onViewAllTrendingPlaylistsClick: (List<Playlist>) -> Unit,
+  onViewAllMoodsClick: () -> Unit,
 ) {
   val carryOnPlaylists by viewModel.carryOnPlaylists.collectAsStateWithLifecycle()
   val favouritePlaylists by viewModel.favouritePlaylists.collectAsStateWithLifecycle()
@@ -106,6 +110,7 @@ fun DiscoverPage(
       DiscoverListHeadline(
         text = stringResource(Res.string.carry_on),
         list = carryOnPlaylists,
+        onViewAllClick = onViewAllCarryOnPlaylistsClick,
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
       )
 
@@ -120,7 +125,7 @@ fun DiscoverPage(
             Modifier.width(150.dp)
               .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = lastIndex))
               .animateItem(),
-          onClick = onCarryPlaylistClick,
+          onClick = onCarryOnPlaylistClick,
         )
       }
 
@@ -132,7 +137,7 @@ fun DiscoverPage(
 
         Spacer(modifier = Modifier.weight(1f).padding(horizontal = 4.dp))
 
-        TextButton(onClick = {}, modifier = Modifier.alignByBaseline()) {
+        TextButton(onClick = onViewAllMoodsClick, modifier = Modifier.alignByBaseline()) {
           Text(stringResource(Res.string.view_all))
         }
       }
@@ -158,6 +163,7 @@ fun DiscoverPage(
       DiscoverListHeadline(
         text = stringResource(Res.string.favourites),
         list = favouritePlaylists,
+        onViewAllClick = onViewAllFavouritePlaylistsClick,
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
       )
 
@@ -180,6 +186,7 @@ fun DiscoverPage(
       DiscoverListHeadline(
         text = stringResource(Res.string.trending),
         list = trendingPlaylists,
+        onViewAllClick = onViewAllTrendingPlaylistsClick,
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
       )
 
@@ -247,6 +254,7 @@ private fun ColumnScope.CarryOnPlaylistPlaceholderItemContent() {
 private fun <T : Any> DiscoverListHeadline(
   text: String,
   list: LoadableState<List<T>>,
+  onViewAllClick: (List<T>) -> Unit,
   modifier: Modifier = Modifier,
   shimmerShape: Shape = RoundedCornerShape(6.dp),
 ) {
@@ -283,7 +291,10 @@ private fun <T : Any> DiscoverListHeadline(
 
             Spacer(modifier = Modifier.weight(1f).padding(horizontal = 8.dp))
 
-            TextButton(onClick = {}, modifier = Modifier.alignByBaseline()) {
+            TextButton(
+              onClick = { onViewAllClick(it.value) },
+              modifier = Modifier.alignByBaseline(),
+            ) {
               Text(stringResource(Res.string.view_all))
             }
           }

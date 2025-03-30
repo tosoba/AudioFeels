@@ -85,6 +85,8 @@ import com.trm.audiofeels.core.ui.compose.util.NavigationContentPosition
 import com.trm.audiofeels.core.ui.compose.util.NavigationType
 import com.trm.audiofeels.core.ui.compose.util.calculateWindowSize
 import com.trm.audiofeels.core.ui.compose.util.loadImageBitmapOrNull
+import com.trm.audiofeels.core.ui.resources.Res
+import com.trm.audiofeels.core.ui.resources.trending
 import com.trm.audiofeels.di.ApplicationComponent
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import com.trm.audiofeels.domain.model.Playlist
@@ -99,6 +101,8 @@ import com.trm.audiofeels.ui.player.composable.PlayerExpandedContent
 import com.trm.audiofeels.ui.player.composable.PlayerRecordAudioPermissionObserver
 import com.trm.audiofeels.ui.player.composable.PlayerRecordAudioPermissionRequest
 import com.trm.audiofeels.ui.player.composable.PlayerSheetContent
+import com.trm.audiofeels.ui.playlists.CarryOnPlaylistsPage
+import com.trm.audiofeels.ui.playlists.PlaylistsPage
 import com.trm.audiofeels.ui.search.SearchPage
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
@@ -533,14 +537,24 @@ private fun AppNavHost(
     startDestination = AppRoute.DiscoverPage,
   ) {
     composable<AppRoute.DiscoverPage> {
+      val trendingTitle = stringResource(Res.string.trending)
       DiscoverPage(
         viewModel = viewModel(factory = applicationComponent.discoverViewModelFactory),
         hazeState = hazeState,
         bottomSpacerHeight = bottomSpacerHeight,
-        onCarryPlaylistClick = onCarryOnPlaylistClick,
+        onCarryOnPlaylistClick = onCarryOnPlaylistClick,
         onPlaylistClick = onPlaylistClick,
         onMoodClick = {
           navController.navigateToAppRoute(route = AppRoute.MoodPage(it), restoreState = false)
+        },
+        onViewAllCarryOnPlaylistsClick = {},
+        onViewAllMoodsClick = {},
+        onViewAllFavouritePlaylistsClick = {},
+        onViewAllTrendingPlaylistsClick = {
+          navController.navigateToAppRoute(
+            route = AppRoute.PlaylistsPage(title = trendingTitle, playlists = it),
+            restoreState = false,
+          )
         },
       )
     }
@@ -561,6 +575,24 @@ private fun AppNavHost(
           ),
         bottomSpacerHeight = bottomSpacerHeight,
         onPlaylistClick = onPlaylistClick,
+        onNavigationIconClick = navController::popBackStack,
+      )
+    }
+    composable<AppRoute.PlaylistsPage> {
+      val (title, playlists) = it.toRoute<AppRoute.PlaylistsPage>()
+      PlaylistsPage(
+        title = title,
+        playlists = playlists,
+        bottomSpacerHeight = bottomSpacerHeight,
+        onPlaylistClick = onPlaylistClick,
+        onNavigationIconClick = navController::popBackStack,
+      )
+    }
+    composable<AppRoute.CarryOnPlaylistsPage> {
+      CarryOnPlaylistsPage(
+        playlists = it.toRoute<AppRoute.CarryOnPlaylistsPage>().playlists,
+        bottomSpacerHeight = bottomSpacerHeight,
+        onPlaylistClick = onCarryOnPlaylistClick,
         onNavigationIconClick = navController::popBackStack,
       )
     }
