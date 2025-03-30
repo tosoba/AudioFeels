@@ -32,7 +32,7 @@ sealed interface AppRoute {
       get() = Res.string.discover
 
     override fun isSelected(currentDestination: NavDestination?): Boolean =
-      currentDestination?.hasRoute<SearchPage>() == false
+      currentDestination?.parent?.hasRoute<DiscoverGraph>() == true
   }
 
   @Serializable
