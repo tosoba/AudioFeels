@@ -537,8 +537,8 @@ private fun AppNavHost(
         )
 
       composable<DiscoverGraphRoute.DiscoverPage> {
-        fun NavController.navigateToDiscoverGraphRoute(route: DiscoverGraphRoute) {
-          navigate(route) { launchSingleTop = true }
+        fun navigateToDiscoverGraphRoute(route: DiscoverGraphRoute) {
+          navController.navigate(route) { launchSingleTop = true }
         }
 
         DiscoverPage(
@@ -547,20 +547,16 @@ private fun AppNavHost(
           bottomSpacerHeight = bottomSpacerHeight,
           onCarryOnPlaylistClick = onCarryOnPlaylistClick,
           onPlaylistClick = onPlaylistClick,
-          onMoodClick = {
-            navController.navigateToDiscoverGraphRoute(DiscoverGraphRoute.MoodPage(it))
-          },
+          onMoodClick = { navigateToDiscoverGraphRoute(DiscoverGraphRoute.MoodPage(it)) },
           onViewAllCarryOnPlaylistsClick = {
-            navController.navigateToDiscoverGraphRoute(DiscoverGraphRoute.CarryOnPlaylistsPage)
+            navigateToDiscoverGraphRoute(DiscoverGraphRoute.CarryOnPlaylistsPage)
           },
-          onViewAllMoodsClick = {
-            navController.navigateToDiscoverGraphRoute(DiscoverGraphRoute.MoodsPage)
-          },
+          onViewAllMoodsClick = { navigateToDiscoverGraphRoute(DiscoverGraphRoute.MoodsPage) },
           onViewAllFavouritePlaylistsClick = {
-            navController.navigateToDiscoverGraphRoute(DiscoverGraphRoute.FavouritePlaylistsPage)
+            navigateToDiscoverGraphRoute(DiscoverGraphRoute.FavouritePlaylistsPage)
           },
           onViewAllTrendingPlaylistsClick = {
-            navController.navigateToDiscoverGraphRoute(DiscoverGraphRoute.TrendingPlaylistsPage)
+            navigateToDiscoverGraphRoute(DiscoverGraphRoute.TrendingPlaylistsPage)
           },
         )
       }
