@@ -10,7 +10,7 @@ import com.trm.audiofeels.core.ui.resources.search
 import org.jetbrains.compose.resources.StringResource
 
 data class AppPageNavigationDestination(
-  val route: AppRoute,
+  val route: AppGraphRoute,
   val icon: ImageVector,
   val labelResource: StringResource,
 )
@@ -18,12 +18,12 @@ data class AppPageNavigationDestination(
 val PAGE_NAVIGATION_DESTINATIONS =
   listOf(
     AppPageNavigationDestination(
-      route = AppRoute.DiscoverPage,
+      route = AppGraphRoute.DiscoverGraph,
       icon = Icons.Outlined.Explore,
       labelResource = Res.string.discover,
     ),
     AppPageNavigationDestination(
-      route = AppRoute.SearchPage,
+      route = AppGraphRoute.SearchPage,
       icon = Icons.Outlined.Search,
       labelResource = Res.string.search,
     ),

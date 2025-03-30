@@ -92,9 +92,9 @@ fun DiscoverPage(
   onCarryOnPlaylistClick: (CarryOnPlaylist) -> Unit,
   onPlaylistClick: (Playlist) -> Unit,
   onMoodClick: (Mood) -> Unit,
-  onViewAllCarryOnPlaylistsClick: (List<CarryOnPlaylist>) -> Unit,
-  onViewAllFavouritePlaylistsClick: (List<Playlist>) -> Unit,
-  onViewAllTrendingPlaylistsClick: (List<Playlist>) -> Unit,
+  onViewAllCarryOnPlaylistsClick: () -> Unit,
+  onViewAllFavouritePlaylistsClick: () -> Unit,
+  onViewAllTrendingPlaylistsClick: () -> Unit,
   onViewAllMoodsClick: () -> Unit,
 ) {
   val carryOnPlaylists by viewModel.carryOnPlaylists.collectAsStateWithLifecycle()
@@ -254,7 +254,7 @@ private fun ColumnScope.CarryOnPlaylistPlaceholderItemContent() {
 private fun <T : Any> DiscoverListHeadline(
   text: String,
   list: LoadableState<List<T>>,
-  onViewAllClick: (List<T>) -> Unit,
+  onViewAllClick: () -> Unit,
   modifier: Modifier = Modifier,
   shimmerShape: Shape = RoundedCornerShape(6.dp),
 ) {
@@ -291,10 +291,7 @@ private fun <T : Any> DiscoverListHeadline(
 
             Spacer(modifier = Modifier.weight(1f).padding(horizontal = 8.dp))
 
-            TextButton(
-              onClick = { onViewAllClick(it.value) },
-              modifier = Modifier.alignByBaseline(),
-            ) {
+            TextButton(onClick = onViewAllClick, modifier = Modifier.alignByBaseline()) {
               Text(stringResource(Res.string.view_all))
             }
           }

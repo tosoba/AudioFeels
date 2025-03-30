@@ -75,6 +75,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import androidx.window.core.layout.WindowHeightSizeClass
 import coil3.compose.setSingletonImageLoaderFactory
@@ -86,11 +87,13 @@ import com.trm.audiofeels.core.ui.compose.util.NavigationType
 import com.trm.audiofeels.core.ui.compose.util.calculateWindowSize
 import com.trm.audiofeels.core.ui.compose.util.loadImageBitmapOrNull
 import com.trm.audiofeels.core.ui.resources.Res
+import com.trm.audiofeels.core.ui.resources.favourites
 import com.trm.audiofeels.core.ui.resources.trending
 import com.trm.audiofeels.di.ApplicationComponent
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.ui.discover.DiscoverPage
+import com.trm.audiofeels.ui.discover.DiscoverViewModel
 import com.trm.audiofeels.ui.mood.MoodPage
 import com.trm.audiofeels.ui.mood.MoodViewModel
 import com.trm.audiofeels.ui.player.PlayerViewModel
@@ -171,7 +174,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
 
     fun navigateToPageDestination(destination: AppPageNavigationDestination) {
       scope.launch { appLayoutState.onNavigateToPageDestination() }
-      navController.navigateToAppRoute(route = destination.route, restoreState = true)
+      navController.navigateToAppGraphRoute(destination.route)
     }
 
     NavigationSuiteScaffoldLayout(
@@ -534,31 +537,98 @@ private fun AppNavHost(
   NavHost(
     modifier = Modifier.fillMaxSize(),
     navController = navController,
-    startDestination = AppRoute.DiscoverPage,
+    startDestination = AppGraphRoute.DiscoverGraph,
   ) {
-    composable<AppRoute.DiscoverPage> {
-      val trendingTitle = stringResource(Res.string.trending)
-      DiscoverPage(
-        viewModel = viewModel(factory = applicationComponent.discoverViewModelFactory),
-        hazeState = hazeState,
-        bottomSpacerHeight = bottomSpacerHeight,
-        onCarryOnPlaylistClick = onCarryOnPlaylistClick,
-        onPlaylistClick = onPlaylistClick,
-        onMoodClick = {
-          navController.navigateToAppRoute(route = AppRoute.MoodPage(it), restoreState = false)
-        },
-        onViewAllCarryOnPlaylistsClick = {},
-        onViewAllMoodsClick = {},
-        onViewAllFavouritePlaylistsClick = {},
-        onViewAllTrendingPlaylistsClick = {
-          navController.navigateToAppRoute(
-            route = AppRoute.PlaylistsPage(title = trendingTitle, playlists = it),
-            restoreState = false,
-          )
-        },
-      )
+    navigation<AppGraphRoute.DiscoverGraph>(startDestination = DiscoverGraphRoute.DiscoverPage) {
+      @Composable
+      fun discoverViewModel(): DiscoverViewModel =
+        viewModel(
+          factory = applicationComponent.discoverViewModelFactory,
+          viewModelStoreOwner = navController.getBackStackEntry<AppGraphRoute.DiscoverGraph>(),
+        )
+
+      composable<DiscoverGraphRoute.DiscoverPage> {
+        fun NavController.navigateToDiscoverGraphRoute(route: DiscoverGraphRoute) {
+          navigate(route) { launchSingleTop = true }
+        }
+
+        DiscoverPage(
+          viewModel = discoverViewModel(),
+          hazeState = hazeState,
+          bottomSpacerHeight = bottomSpacerHeight,
+          onCarryOnPlaylistClick = onCarryOnPlaylistClick,
+          onPlaylistClick = onPlaylistClick,
+          onMoodClick = {
+            navController.navigateToDiscoverGraphRoute(DiscoverGraphRoute.MoodPage(it))
+          },
+          onViewAllCarryOnPlaylistsClick = {
+            navController.navigateToDiscoverGraphRoute(DiscoverGraphRoute.CarryOnPlaylistsPage)
+          },
+          onViewAllMoodsClick = {
+            navController.navigateToDiscoverGraphRoute(DiscoverGraphRoute.MoodsPage)
+          },
+          onViewAllFavouritePlaylistsClick = {
+            navController.navigateToDiscoverGraphRoute(DiscoverGraphRoute.FavouritePlaylistsPage)
+          },
+          onViewAllTrendingPlaylistsClick = {
+            navController.navigateToDiscoverGraphRoute(DiscoverGraphRoute.TrendingPlaylistsPage)
+          },
+        )
+      }
+
+      composable<DiscoverGraphRoute.CarryOnPlaylistsPage> {
+        val playlists by discoverViewModel().carryOnPlaylists.collectAsStateWithLifecycle()
+        CarryOnPlaylistsPage(
+          playlists = playlists.valueOrNull.orEmpty(),
+          bottomSpacerHeight = bottomSpacerHeight,
+          onPlaylistClick = onCarryOnPlaylistClick,
+          onNavigationIconClick = navController::popBackStack,
+        )
+      }
+
+      composable<DiscoverGraphRoute.MoodPage> {
+        MoodPage(
+          viewModel =
+            MoodViewModel(
+              mood = it.toRoute<DiscoverGraphRoute.MoodPage>().mood,
+              playlistsRepository = applicationComponent.playlistsRepository,
+            ),
+          bottomSpacerHeight = bottomSpacerHeight,
+          onPlaylistClick = onPlaylistClick,
+          onNavigationIconClick = navController::popBackStack,
+        )
+      }
+
+      composable<DiscoverGraphRoute.MoodsPage> {
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+          Text("Moods")
+        }
+      }
+
+      composable<DiscoverGraphRoute.FavouritePlaylistsPage> {
+        val playlists by discoverViewModel().favouritePlaylists.collectAsStateWithLifecycle()
+        PlaylistsPage(
+          title = stringResource(Res.string.favourites),
+          playlists = playlists.valueOrNull.orEmpty(),
+          bottomSpacerHeight = bottomSpacerHeight,
+          onPlaylistClick = onPlaylistClick,
+          onNavigationIconClick = navController::popBackStack,
+        )
+      }
+
+      composable<DiscoverGraphRoute.TrendingPlaylistsPage> {
+        val playlists by discoverViewModel().trendingPlaylists.collectAsStateWithLifecycle()
+        PlaylistsPage(
+          title = stringResource(Res.string.trending),
+          playlists = playlists.valueOrNull.orEmpty(),
+          bottomSpacerHeight = bottomSpacerHeight,
+          onPlaylistClick = onPlaylistClick,
+          onNavigationIconClick = navController::popBackStack,
+        )
+      }
     }
-    composable<AppRoute.SearchPage> {
+
+    composable<AppGraphRoute.SearchPage> {
       SearchPage(
         viewModel = viewModel(factory = applicationComponent.searchViewModelFactory),
         hazeState = hazeState,
@@ -566,43 +636,13 @@ private fun AppNavHost(
         onPlaylistClick = onPlaylistClick,
       )
     }
-    composable<AppRoute.MoodPage> {
-      MoodPage(
-        viewModel =
-          MoodViewModel(
-            mood = it.toRoute<AppRoute.MoodPage>().mood,
-            playlistsRepository = applicationComponent.playlistsRepository,
-          ),
-        bottomSpacerHeight = bottomSpacerHeight,
-        onPlaylistClick = onPlaylistClick,
-        onNavigationIconClick = navController::popBackStack,
-      )
-    }
-    composable<AppRoute.PlaylistsPage> {
-      val (title, playlists) = it.toRoute<AppRoute.PlaylistsPage>()
-      PlaylistsPage(
-        title = title,
-        playlists = playlists,
-        bottomSpacerHeight = bottomSpacerHeight,
-        onPlaylistClick = onPlaylistClick,
-        onNavigationIconClick = navController::popBackStack,
-      )
-    }
-    composable<AppRoute.CarryOnPlaylistsPage> {
-      CarryOnPlaylistsPage(
-        playlists = it.toRoute<AppRoute.CarryOnPlaylistsPage>().playlists,
-        bottomSpacerHeight = bottomSpacerHeight,
-        onPlaylistClick = onCarryOnPlaylistClick,
-        onNavigationIconClick = navController::popBackStack,
-      )
-    }
   }
 }
 
-private fun NavController.navigateToAppRoute(route: AppRoute, restoreState: Boolean) {
+private fun NavController.navigateToAppGraphRoute(route: AppGraphRoute) {
   navigate(route) {
     popUpTo(graph.findStartDestination().id) { saveState = true }
     launchSingleTop = true
-    this.restoreState = restoreState
+    restoreState = true
   }
 }
