@@ -52,5 +52,6 @@ include(
   ":ui:discover",
   ":ui:mood",
   ":ui:player",
+  ":ui:playlists",
   ":ui:search",
 )

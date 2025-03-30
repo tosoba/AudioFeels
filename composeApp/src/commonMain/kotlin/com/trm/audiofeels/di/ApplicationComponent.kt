@@ -16,6 +16,7 @@ import com.trm.audiofeels.data.visualization.di.VisualizationDataComponent
 import com.trm.audiofeels.ui.discover.di.DiscoverUiComponent
 import com.trm.audiofeels.ui.mood.di.MoodUiComponent
 import com.trm.audiofeels.ui.player.di.PlayerUiComponent
+import com.trm.audiofeels.ui.playlists.di.PlaylistsUiComponent
 import com.trm.audiofeels.ui.search.di.SearchUiComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,6 +38,7 @@ interface ApplicationComponent :
   DiscoverUiComponent,
   MoodUiComponent,
   PlayerUiComponent,
+  PlaylistsUiComponent,
   SearchUiComponent {
   @ApplicationScope
   @Provides
