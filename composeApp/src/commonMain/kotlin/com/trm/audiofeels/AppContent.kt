@@ -68,7 +68,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
-import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -169,12 +168,11 @@ fun AppContent(applicationComponent: ApplicationComponent) {
       )
 
     val navController = rememberNavController()
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentDestination = navBackStackEntry?.destination
+    val currentDestination = navController.currentBackStackEntryAsState().value?.destination
 
-    fun navigateToPageDestination(destination: AppPageNavigationDestination) {
+    fun navigateToAppGraphRoute(route: AppRoute) {
       scope.launch { appLayoutState.onNavigateToPageDestination() }
-      navController.navigateToAppGraphRoute(destination.route)
+      navController.navigateToAppRoute(route)
     }
 
     NavigationSuiteScaffoldLayout(
@@ -184,21 +182,21 @@ fun AppContent(applicationComponent: ApplicationComponent) {
           NavigationType.NAVIGATION_BAR -> {
             AppBottomNavigationBar(
               currentDestination = currentDestination,
-              navigatePageDestination = ::navigateToPageDestination,
+              onNavigateToRoute = ::navigateToAppGraphRoute,
             )
           }
           NavigationType.NAVIGATION_RAIL -> {
             AppNavigationRail(
               currentDestination = currentDestination,
               navigationContentPosition = navigationContentPosition,
-              navigatePageDestination = ::navigateToPageDestination,
+              onNavigateToRoute = ::navigateToAppGraphRoute,
             )
           }
           NavigationType.PERMANENT_NAVIGATION_DRAWER -> {
             AppPermanentNavigationDrawer(
               currentDestination = currentDestination,
               navigationContentPosition = navigationContentPosition,
-              navigatePageDestination = ::navigateToPageDestination,
+              onNavigateToRoute = ::navigateToAppGraphRoute,
             )
           }
         }
@@ -412,20 +410,17 @@ private fun AppBottomSheetScaffold(
 @Composable
 private fun AppBottomNavigationBar(
   currentDestination: NavDestination?,
-  navigatePageDestination: (AppPageNavigationDestination) -> Unit,
+  onNavigateToRoute: (AppRoute) -> Unit,
 ) {
   NavigationBar(modifier = Modifier.fillMaxWidth()) {
-    PAGE_NAVIGATION_DESTINATIONS.forEach { destination ->
+    APP_ROUTES.forEach { route ->
       NavigationBarItem(
-        selected = currentDestination?.hasRoute(destination.route::class) == true,
-        onClick = { navigatePageDestination(destination) },
+        selected = route.isSelected(currentDestination),
+        onClick = { onNavigateToRoute(route) },
         icon = {
-          Icon(
-            imageVector = destination.icon,
-            contentDescription = stringResource(destination.labelResource),
-          )
+          Icon(imageVector = route.icon, contentDescription = stringResource(route.labelResource))
         },
-        label = { Text(stringResource(destination.labelResource)) },
+        label = { Text(stringResource(route.labelResource)) },
       )
     }
   }
@@ -435,7 +430,7 @@ private fun AppBottomNavigationBar(
 private fun AppNavigationRail(
   currentDestination: NavDestination?,
   navigationContentPosition: NavigationContentPosition,
-  navigatePageDestination: (AppPageNavigationDestination) -> Unit,
+  onNavigateToRoute: (AppRoute) -> Unit,
 ) {
   NavigationRail(modifier = Modifier.fillMaxHeight()) {
     val paddingValues = WindowInsets.safeDrawing.asPaddingValues()
@@ -453,17 +448,14 @@ private fun AppNavigationRail(
         Spacer(modifier = Modifier.weight(1f))
       }
 
-      PAGE_NAVIGATION_DESTINATIONS.forEach { destination ->
+      APP_ROUTES.forEach { route ->
         NavigationRailItem(
-          selected = currentDestination?.hasRoute(destination.route::class) == true,
-          onClick = { navigatePageDestination(destination) },
+          selected = route.isSelected(currentDestination),
+          onClick = { onNavigateToRoute(route) },
           icon = {
-            Icon(
-              imageVector = destination.icon,
-              contentDescription = stringResource(destination.labelResource),
-            )
+            Icon(imageVector = route.icon, contentDescription = stringResource(route.labelResource))
           },
-          label = { Text(stringResource(destination.labelResource)) },
+          label = { Text(stringResource(route.labelResource)) },
         )
       }
 
@@ -478,7 +470,7 @@ private fun AppNavigationRail(
 private fun AppPermanentNavigationDrawer(
   currentDestination: NavDestination?,
   navigationContentPosition: NavigationContentPosition,
-  navigatePageDestination: (AppPageNavigationDestination) -> Unit,
+  onNavigateToRoute: (AppRoute) -> Unit,
 ) {
   PermanentDrawerSheet(modifier = Modifier.sizeIn(minWidth = 200.dp, maxWidth = 300.dp)) {
     val paddingValues = WindowInsets.safeDrawing.asPaddingValues()
@@ -497,24 +489,21 @@ private fun AppPermanentNavigationDrawer(
         Spacer(modifier = Modifier.weight(1f))
       }
 
-      PAGE_NAVIGATION_DESTINATIONS.forEach { destination ->
+      APP_ROUTES.forEach { route ->
         NavigationDrawerItem(
-          selected = currentDestination?.hasRoute(destination.route::class) == true,
+          selected = route.isSelected(currentDestination),
           label = {
             Text(
-              text = stringResource(destination.labelResource),
+              text = stringResource(route.labelResource),
               modifier = Modifier.padding(horizontal = 16.dp),
             )
           },
           icon = {
-            Icon(
-              imageVector = destination.icon,
-              contentDescription = stringResource(destination.labelResource),
-            )
+            Icon(imageVector = route.icon, contentDescription = stringResource(route.labelResource))
           },
           colors =
             NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
-          onClick = { navigatePageDestination(destination) },
+          onClick = { onNavigateToRoute(route) },
         )
       }
 
@@ -537,14 +526,14 @@ private fun AppNavHost(
   NavHost(
     modifier = Modifier.fillMaxSize(),
     navController = navController,
-    startDestination = AppGraphRoute.DiscoverGraph,
+    startDestination = AppRoute.DiscoverGraph,
   ) {
-    navigation<AppGraphRoute.DiscoverGraph>(startDestination = DiscoverGraphRoute.DiscoverPage) {
+    navigation<AppRoute.DiscoverGraph>(startDestination = DiscoverGraphRoute.DiscoverPage) {
       @Composable
       fun discoverViewModel(): DiscoverViewModel =
         viewModel(
           factory = applicationComponent.discoverViewModelFactory,
-          viewModelStoreOwner = navController.getBackStackEntry<AppGraphRoute.DiscoverGraph>(),
+          viewModelStoreOwner = navController.getBackStackEntry<AppRoute.DiscoverGraph>(),
         )
 
       composable<DiscoverGraphRoute.DiscoverPage> {
@@ -628,7 +617,7 @@ private fun AppNavHost(
       }
     }
 
-    composable<AppGraphRoute.SearchPage> {
+    composable<AppRoute.SearchPage> {
       SearchPage(
         viewModel = viewModel(factory = applicationComponent.searchViewModelFactory),
         hazeState = hazeState,
@@ -639,7 +628,7 @@ private fun AppNavHost(
   }
 }
 
-private fun NavController.navigateToAppGraphRoute(route: AppGraphRoute) {
+private fun NavController.navigateToAppRoute(route: AppRoute) {
   navigate(route) {
     popUpTo(graph.findStartDestination().id) { saveState = true }
     launchSingleTop = true
