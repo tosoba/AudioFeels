@@ -35,8 +35,9 @@ fun SearchPage(
   bottomSpacerHeight: Dp,
   onPlaylistClick: (Playlist) -> Unit,
 ) {
+  val query by viewModel.query.collectAsStateWithLifecycle()
   val suggestions by viewModel.suggestions.collectAsStateWithLifecycle()
-  val result by viewModel.result.collectAsStateWithLifecycle()
+  val playlistsState by viewModel.playlists.collectAsStateWithLifecycle()
 
   Box {
     PlaylistsLazyVerticalGrid(modifier = Modifier.fillMaxSize().hazeSource(hazeState)) {
@@ -44,54 +45,58 @@ fun SearchPage(
         Spacer(modifier = Modifier.height(topAppBarSpacerHeight()))
       }
 
-      when (val searchResult = result) {
-        LoadableState.Loading -> {
-          items(50) { LazyGridPlaylistPlaceholderItem { PlaylistPlaceholderItemContent() } }
-        }
-        is LoadableState.Idle -> {
-          when {
-            searchResult.value.query.isEmpty() -> {
-              item(span = { GridItemSpan(maxLineSpan) }) {
-                Text(
-                  text = "Query is empty",
-                  textAlign = TextAlign.Center,
-                  modifier = Modifier.fillMaxWidth().animateItem(),
-                )
-              }
-            }
-            searchResult.value.query.length < 3 -> {
-              item(span = { GridItemSpan(maxLineSpan) }) {
-                Text(
-                  text = "Query is too short",
-                  textAlign = TextAlign.Center,
-                  modifier = Modifier.fillMaxWidth().animateItem(),
-                )
-              }
-            }
-            searchResult.value.playlists.isEmpty() -> {
-              item(span = { GridItemSpan(maxLineSpan) }) {
-                Text(
-                  text = "No playlists found",
-                  textAlign = TextAlign.Center,
-                  modifier = Modifier.fillMaxWidth().animateItem(),
-                )
-              }
-            }
-            else -> {
-              items(searchResult.value.playlists) {
-                PlaylistLazyVerticalGridItem(
-                  name = it.name,
-                  artworkUrl = it.artworkUrl,
-                  modifier = Modifier.animateItem(),
-                  onClick = { onPlaylistClick(it) },
-                )
-              }
-            }
+      when {
+        query.isEmpty() -> {
+          item(span = { GridItemSpan(maxLineSpan) }) {
+            Text(
+              text = "Query is empty",
+              textAlign = TextAlign.Center,
+              modifier = Modifier.fillMaxWidth().animateItem(),
+            )
           }
         }
-        is LoadableState.Error -> {
+        query.length < 3 -> {
           item(span = { GridItemSpan(maxLineSpan) }) {
-            ErrorListItem(modifier = Modifier.animateItem(), onClick = viewModel.result::restart)
+            Text(
+              text = "Query is too short",
+              textAlign = TextAlign.Center,
+              modifier = Modifier.fillMaxWidth().animateItem(),
+            )
+          }
+        }
+        else -> {
+          when (val playlists = playlistsState) {
+            LoadableState.Loading -> {
+              items(50) { LazyGridPlaylistPlaceholderItem { PlaylistPlaceholderItemContent() } }
+            }
+            is LoadableState.Idle -> {
+              if (playlists.value.isEmpty()) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                  Text(
+                    text = "No playlists found",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth().animateItem(),
+                  )
+                }
+              } else {
+                items(playlists.value) {
+                  PlaylistLazyVerticalGridItem(
+                    name = it.name,
+                    artworkUrl = it.artworkUrl,
+                    modifier = Modifier.animateItem(),
+                    onClick = { onPlaylistClick(it) },
+                  )
+                }
+              }
+            }
+            is LoadableState.Error -> {
+              item(span = { GridItemSpan(maxLineSpan) }) {
+                ErrorListItem(
+                  modifier = Modifier.animateItem(),
+                  onClick = viewModel.playlists::restart,
+                )
+              }
+            }
           }
         }
       }
