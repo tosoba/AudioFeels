@@ -1,6 +1,7 @@
 package com.trm.audiofeels.core.ui.compose
 
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -8,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
@@ -96,4 +99,15 @@ fun ColumnScope.PlaylistPlaceholderItemContent() {
   Spacer(modifier = Modifier.height(158.dp))
   Text(text = "", style = MaterialTheme.typography.labelLarge)
   Spacer(modifier = Modifier.height(8.dp))
+}
+
+@Composable
+fun LazyGridItemScope.LazyGridPlaylistPlaceholderItem(content: @Composable ColumnScope.() -> Unit) {
+  Column(
+    modifier =
+      Modifier.width(150.dp)
+        .shimmerBackground(enabled = true, shape = RoundedCornerShape(16.dp))
+        .animateItem(),
+    content = content,
+  )
 }

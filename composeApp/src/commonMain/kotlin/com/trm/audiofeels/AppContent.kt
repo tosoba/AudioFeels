@@ -87,6 +87,7 @@ import com.trm.audiofeels.core.ui.compose.util.calculateWindowSize
 import com.trm.audiofeels.core.ui.compose.util.loadImageBitmapOrNull
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.favourites
+import com.trm.audiofeels.core.ui.resources.mood
 import com.trm.audiofeels.core.ui.resources.trending
 import com.trm.audiofeels.di.ApplicationComponent
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
@@ -562,9 +563,8 @@ private fun AppNavHost(
       }
 
       composable<DiscoverGraphRoute.CarryOnPlaylistsPage> {
-        val playlists by discoverViewModel().carryOnPlaylists.collectAsStateWithLifecycle()
         CarryOnPlaylistsPage(
-          playlists = playlists.valueOrNull.orEmpty(),
+          playlists = discoverViewModel().carryOnPlaylists.collectAsStateWithLifecycle().value,
           bottomSpacerHeight = bottomSpacerHeight,
           onPlaylistClick = onCarryOnPlaylistClick,
           onNavigationIconClick = navController::popBackStack,
@@ -586,29 +586,30 @@ private fun AppNavHost(
 
       composable<DiscoverGraphRoute.MoodsPage> {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-          Text("Moods")
+          Text(stringResource(Res.string.mood))
         }
       }
 
       composable<DiscoverGraphRoute.FavouritePlaylistsPage> {
-        val playlists by discoverViewModel().favouritePlaylists.collectAsStateWithLifecycle()
         PlaylistsPage(
+          playlists = discoverViewModel().favouritePlaylists.collectAsStateWithLifecycle().value,
           title = stringResource(Res.string.favourites),
-          playlists = playlists.valueOrNull.orEmpty(),
           bottomSpacerHeight = bottomSpacerHeight,
           onPlaylistClick = onPlaylistClick,
           onNavigationIconClick = navController::popBackStack,
+          onRetryClick = {},
         )
       }
 
       composable<DiscoverGraphRoute.TrendingPlaylistsPage> {
-        val playlists by discoverViewModel().trendingPlaylists.collectAsStateWithLifecycle()
+        val discoverViewModel = discoverViewModel()
         PlaylistsPage(
+          playlists = discoverViewModel.trendingPlaylists.collectAsStateWithLifecycle().value,
           title = stringResource(Res.string.trending),
-          playlists = playlists.valueOrNull.orEmpty(),
           bottomSpacerHeight = bottomSpacerHeight,
           onPlaylistClick = onPlaylistClick,
           onNavigationIconClick = navController::popBackStack,
+          onRetryClick = discoverViewModel.trendingPlaylists::restart,
         )
       }
     }
