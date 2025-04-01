@@ -51,6 +51,7 @@ include(
   ":ui:favourites",
   ":ui:discover",
   ":ui:mood",
+  ":ui:moods",
   ":ui:player",
   ":ui:playlists",
   ":ui:search",

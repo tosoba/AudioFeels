@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyRow
@@ -26,18 +25,15 @@ import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -52,6 +48,7 @@ import com.trm.audiofeels.core.base.model.LoadableState
 import com.trm.audiofeels.core.ui.compose.BottomEdgeGradient
 import com.trm.audiofeels.core.ui.compose.EndEdgeGradient
 import com.trm.audiofeels.core.ui.compose.ErrorListItem
+import com.trm.audiofeels.core.ui.compose.MoodItem
 import com.trm.audiofeels.core.ui.compose.PlaylistArtworkImage
 import com.trm.audiofeels.core.ui.compose.PlaylistLazyRowItem
 import com.trm.audiofeels.core.ui.compose.PlaylistLazyRowItemArtworkImageModifier
@@ -157,7 +154,9 @@ fun DiscoverPage(
                 }.dp
             ),
       ) {
-        items(Mood.entries) { item -> MoodItem(item = item, onClick = { onMoodClick(item) }) }
+        items(Mood.entries) { item ->
+          MoodItem(name = item.name, symbol = item.symbol, onClick = { onMoodClick(item) })
+        }
       }
 
       DiscoverListHeadline(
@@ -215,30 +214,6 @@ fun DiscoverPage(
     EndEdgeGradient()
     TopEdgeGradient(topOffset = topAppBarSpacerHeight())
     BottomEdgeGradient()
-  }
-}
-
-@Composable
-private fun MoodItem(item: Mood, onClick: () -> Unit) {
-  ElevatedCard(onClick = onClick, modifier = Modifier.size(90.dp), shape = CircleShape) {
-    Column(
-      horizontalAlignment = Alignment.CenterHorizontally,
-      verticalArrangement = Arrangement.Center,
-      modifier = Modifier.fillMaxWidth(),
-    ) {
-      Spacer(modifier = Modifier.height(8.dp))
-
-      Text(item.symbol, style = MaterialTheme.typography.headlineLarge)
-
-      Text(
-        text = item.name,
-        style = MaterialTheme.typography.labelLarge,
-        maxLines = 1,
-        modifier = Modifier.padding(horizontal = 8.dp).basicMarquee(),
-      )
-
-      Spacer(modifier = Modifier.height(8.dp))
-    }
   }
 }
 

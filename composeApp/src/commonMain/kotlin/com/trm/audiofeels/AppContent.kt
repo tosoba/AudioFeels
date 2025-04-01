@@ -87,7 +87,6 @@ import com.trm.audiofeels.core.ui.compose.util.calculateWindowSize
 import com.trm.audiofeels.core.ui.compose.util.loadImageBitmapOrNull
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.favourites
-import com.trm.audiofeels.core.ui.resources.mood
 import com.trm.audiofeels.core.ui.resources.trending
 import com.trm.audiofeels.di.ApplicationComponent
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
@@ -96,6 +95,7 @@ import com.trm.audiofeels.ui.discover.DiscoverPage
 import com.trm.audiofeels.ui.discover.DiscoverViewModel
 import com.trm.audiofeels.ui.mood.MoodPage
 import com.trm.audiofeels.ui.mood.MoodViewModel
+import com.trm.audiofeels.ui.moods.MoodsPage
 import com.trm.audiofeels.ui.player.PlayerViewModel
 import com.trm.audiofeels.ui.player.PlayerViewState
 import com.trm.audiofeels.ui.player.composable.PlayerAudioVisualization
@@ -537,11 +537,11 @@ private fun AppNavHost(
           viewModelStoreOwner = navController.getBackStackEntry<AppRoute.DiscoverGraph>(),
         )
 
-      composable<DiscoverGraphRoute.DiscoverPage> {
-        fun navigateToDiscoverGraphRoute(route: DiscoverGraphRoute) {
-          navController.navigate(route) { launchSingleTop = true }
-        }
+      fun navigateToDiscoverGraphRoute(route: DiscoverGraphRoute) {
+        navController.navigate(route) { launchSingleTop = true }
+      }
 
+      composable<DiscoverGraphRoute.DiscoverPage> {
         DiscoverPage(
           viewModel = discoverViewModel(),
           hazeState = hazeState,
@@ -585,9 +585,11 @@ private fun AppNavHost(
       }
 
       composable<DiscoverGraphRoute.MoodsPage> {
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-          Text(stringResource(Res.string.mood))
-        }
+        MoodsPage(
+          bottomSpacerHeight = bottomSpacerHeight,
+          onMoodClick = { navigateToDiscoverGraphRoute(DiscoverGraphRoute.MoodPage(it)) },
+          onNavigationIconClick = navController::popBackStack,
+        )
       }
 
       composable<DiscoverGraphRoute.FavouritePlaylistsPage> {

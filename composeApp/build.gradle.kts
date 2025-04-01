@@ -48,6 +48,7 @@ kotlin {
       implementation(projects.player)
       implementation(projects.ui.discover)
       implementation(projects.ui.mood)
+      implementation(projects.ui.moods)
       implementation(projects.ui.player)
       implementation(projects.ui.playlists)
       implementation(projects.ui.search)
