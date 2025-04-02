@@ -1,5 +1,7 @@
 package com.trm.audiofeels.ui.moods
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -20,9 +22,12 @@ import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.hazeEffect
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
-internal fun MoodsTopBar(hazeState: HazeState, onNavigationIconClick: () -> Unit) {
+internal fun SharedTransitionScope.MoodsTopBar(
+  hazeState: HazeState,
+  onNavigationIconClick: () -> Unit,
+) {
   val hazeStyle = HazeStyle(backgroundColor = MaterialTheme.colorScheme.background, tint = null)
   TopAppBar(
     title = {
@@ -41,7 +46,7 @@ internal fun MoodsTopBar(hazeState: HazeState, onNavigationIconClick: () -> Unit
         copy(containerColor = containerColor.copy(alpha = .85f))
       },
     modifier =
-      Modifier.hazeEffect(hazeState) {
+      Modifier.renderInSharedTransitionScopeOverlay().hazeEffect(hazeState) {
         style = hazeStyle
         blurRadius = 10.dp
       },

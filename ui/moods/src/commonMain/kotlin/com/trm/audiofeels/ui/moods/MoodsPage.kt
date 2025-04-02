@@ -1,11 +1,15 @@
 package com.trm.audiofeels.ui.moods
 
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -23,8 +27,10 @@ import com.trm.audiofeels.domain.model.Mood
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun MoodsPage(
+fun SharedTransitionScope.MoodsPage(
+  animatedContentScope: AnimatedContentScope,
   hazeState: HazeState,
   bottomSpacerHeight: Dp,
   onMoodClick: (Mood) -> Unit,
@@ -44,7 +50,17 @@ fun MoodsPage(
 
       items(Mood.entries) { item ->
         Box(contentAlignment = Alignment.Center) {
-          MoodItem(name = item.name, symbol = item.symbol, onClick = { onMoodClick(item) })
+          MoodItem(
+            name = item.name,
+            symbol = item.symbol,
+            modifier =
+              Modifier.sharedElement(
+                  state = rememberSharedContentState(key = item.name),
+                  animatedVisibilityScope = animatedContentScope,
+                )
+                .size(90.dp),
+            onClick = { onMoodClick(item) },
+          )
         }
       }
 

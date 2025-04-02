@@ -1,5 +1,8 @@
 package com.trm.audiofeels.ui.playlists
 
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,12 +25,15 @@ import com.trm.audiofeels.domain.model.Playlist
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun PlaylistsPage(
+fun SharedTransitionScope.PlaylistsPage(
   playlists: LoadableState<List<Playlist>>,
   title: String,
+  animatedContentScope: AnimatedContentScope,
   hazeState: HazeState,
   bottomSpacerHeight: Dp,
+  sharedElementKeyPrefix: String,
   onPlaylistClick: (Playlist) -> Unit,
   onNavigationIconClick: () -> Unit,
   onRetryClick: () -> Unit,
@@ -47,7 +53,12 @@ fun PlaylistsPage(
             PlaylistLazyVerticalGridItem(
               name = it.name,
               artworkUrl = it.artworkUrl,
-              modifier = Modifier.animateItem(),
+              modifier =
+                Modifier.sharedElement(
+                    state = rememberSharedContentState(key = "$sharedElementKeyPrefix-${it.id}"),
+                    animatedVisibilityScope = animatedContentScope,
+                  )
+                  .animateItem(),
               onClick = { onPlaylistClick(it) },
             )
           }

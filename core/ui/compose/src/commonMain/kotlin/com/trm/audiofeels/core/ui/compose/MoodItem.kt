@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
@@ -18,8 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun MoodItem(symbol: String, name: String, onClick: () -> Unit) {
-  ElevatedCard(onClick = onClick, modifier = Modifier.size(90.dp), shape = CircleShape) {
+fun MoodItem(symbol: String, name: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
+  ElevatedCard(onClick = onClick, modifier = modifier, shape = CircleShape) {
     Column(
       horizontalAlignment = Alignment.CenterHorizontally,
       verticalArrangement = Arrangement.Center,

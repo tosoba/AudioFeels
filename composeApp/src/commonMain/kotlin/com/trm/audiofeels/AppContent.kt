@@ -1,6 +1,8 @@
 package com.trm.audiofeels
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -86,7 +88,7 @@ import com.trm.audiofeels.core.ui.compose.util.NavigationType
 import com.trm.audiofeels.core.ui.compose.util.calculateWindowSize
 import com.trm.audiofeels.core.ui.compose.util.loadImageBitmapOrNull
 import com.trm.audiofeels.core.ui.resources.Res
-import com.trm.audiofeels.core.ui.resources.favourites
+import com.trm.audiofeels.core.ui.resources.favourite
 import com.trm.audiofeels.core.ui.resources.trending
 import com.trm.audiofeels.di.ApplicationComponent
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
@@ -515,6 +517,7 @@ private fun AppPermanentNavigationDrawer(
   }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun AppNavHost(
   applicationComponent: ApplicationComponent,
@@ -524,110 +527,118 @@ private fun AppNavHost(
   onCarryOnPlaylistClick: (CarryOnPlaylist) -> Unit,
   onPlaylistClick: (Playlist) -> Unit,
 ) {
-  NavHost(
-    modifier = Modifier.fillMaxSize(),
-    navController = navController,
-    startDestination = AppRoute.DiscoverGraph,
-  ) {
-    navigation<AppRoute.DiscoverGraph>(startDestination = DiscoverGraphRoute.DiscoverPage) {
-      @Composable
-      fun discoverViewModel(): DiscoverViewModel =
-        viewModel(
-          factory = applicationComponent.discoverViewModelFactory,
-          viewModelStoreOwner = navController.getBackStackEntry<AppRoute.DiscoverGraph>(),
-        )
+  SharedTransitionLayout {
+    NavHost(
+      modifier = Modifier.fillMaxSize(),
+      navController = navController,
+      startDestination = AppRoute.DiscoverGraph,
+    ) {
+      navigation<AppRoute.DiscoverGraph>(startDestination = DiscoverGraphRoute.DiscoverPage) {
+        @Composable
+        fun discoverViewModel(): DiscoverViewModel =
+          viewModel(
+            factory = applicationComponent.discoverViewModelFactory,
+            viewModelStoreOwner = navController.getBackStackEntry<AppRoute.DiscoverGraph>(),
+          )
 
-      fun navigateToDiscoverGraphRoute(route: DiscoverGraphRoute) {
-        navController.navigate(route) { launchSingleTop = true }
+        fun navigateToDiscoverGraphRoute(route: DiscoverGraphRoute) {
+          navController.navigate(route) { launchSingleTop = true }
+        }
+
+        composable<DiscoverGraphRoute.DiscoverPage> {
+          DiscoverPage(
+            viewModel = discoverViewModel(),
+            animatedContentScope = this@composable,
+            hazeState = hazeState,
+            bottomSpacerHeight = bottomSpacerHeight,
+            onCarryOnPlaylistClick = onCarryOnPlaylistClick,
+            onPlaylistClick = onPlaylistClick,
+            onMoodClick = { navigateToDiscoverGraphRoute(DiscoverGraphRoute.MoodPage(it)) },
+            onViewAllCarryOnPlaylistsClick = {
+              navigateToDiscoverGraphRoute(DiscoverGraphRoute.CarryOnPlaylistsPage)
+            },
+            onViewAllMoodsClick = { navigateToDiscoverGraphRoute(DiscoverGraphRoute.MoodsPage) },
+            onViewAllFavouritePlaylistsClick = {
+              navigateToDiscoverGraphRoute(DiscoverGraphRoute.FavouritePlaylistsPage)
+            },
+            onViewAllTrendingPlaylistsClick = {
+              navigateToDiscoverGraphRoute(DiscoverGraphRoute.TrendingPlaylistsPage)
+            },
+          )
+        }
+
+        composable<DiscoverGraphRoute.CarryOnPlaylistsPage> {
+          CarryOnPlaylistsPage(
+            playlists = discoverViewModel().carryOnPlaylists.collectAsStateWithLifecycle().value,
+            hazeState = hazeState,
+            bottomSpacerHeight = bottomSpacerHeight,
+            onPlaylistClick = onCarryOnPlaylistClick,
+            onNavigationIconClick = navController::popBackStack,
+          )
+        }
+
+        composable<DiscoverGraphRoute.MoodPage> {
+          MoodPage(
+            viewModel =
+              MoodViewModel(
+                mood = it.toRoute<DiscoverGraphRoute.MoodPage>().mood,
+                playlistsRepository = applicationComponent.playlistsRepository,
+              ),
+            hazeState = hazeState,
+            bottomSpacerHeight = bottomSpacerHeight,
+            onPlaylistClick = onPlaylistClick,
+            onNavigationIconClick = navController::popBackStack,
+          )
+        }
+
+        composable<DiscoverGraphRoute.MoodsPage> {
+          MoodsPage(
+            animatedContentScope = this@composable,
+            hazeState = hazeState,
+            bottomSpacerHeight = bottomSpacerHeight,
+            onMoodClick = { navigateToDiscoverGraphRoute(DiscoverGraphRoute.MoodPage(it)) },
+            onNavigationIconClick = navController::popBackStack,
+          )
+        }
+
+        composable<DiscoverGraphRoute.FavouritePlaylistsPage> {
+          PlaylistsPage(
+            playlists = discoverViewModel().favouritePlaylists.collectAsStateWithLifecycle().value,
+            title = stringResource(Res.string.favourite),
+            animatedContentScope = this@composable,
+            hazeState = hazeState,
+            bottomSpacerHeight = bottomSpacerHeight,
+            sharedElementKeyPrefix = stringResource(Res.string.favourite),
+            onPlaylistClick = onPlaylistClick,
+            onNavigationIconClick = navController::popBackStack,
+            onRetryClick = {},
+          )
+        }
+
+        composable<DiscoverGraphRoute.TrendingPlaylistsPage> {
+          val discoverViewModel = discoverViewModel()
+          PlaylistsPage(
+            playlists = discoverViewModel.trendingPlaylists.collectAsStateWithLifecycle().value,
+            title = stringResource(Res.string.trending),
+            animatedContentScope = this@composable,
+            hazeState = hazeState,
+            bottomSpacerHeight = bottomSpacerHeight,
+            sharedElementKeyPrefix = stringResource(Res.string.trending),
+            onPlaylistClick = onPlaylistClick,
+            onNavigationIconClick = navController::popBackStack,
+            onRetryClick = discoverViewModel.trendingPlaylists::restart,
+          )
+        }
       }
 
-      composable<DiscoverGraphRoute.DiscoverPage> {
-        DiscoverPage(
-          viewModel = discoverViewModel(),
+      composable<AppRoute.SearchPage> {
+        SearchPage(
+          viewModel = viewModel(factory = applicationComponent.searchViewModelFactory),
           hazeState = hazeState,
           bottomSpacerHeight = bottomSpacerHeight,
-          onCarryOnPlaylistClick = onCarryOnPlaylistClick,
           onPlaylistClick = onPlaylistClick,
-          onMoodClick = { navigateToDiscoverGraphRoute(DiscoverGraphRoute.MoodPage(it)) },
-          onViewAllCarryOnPlaylistsClick = {
-            navigateToDiscoverGraphRoute(DiscoverGraphRoute.CarryOnPlaylistsPage)
-          },
-          onViewAllMoodsClick = { navigateToDiscoverGraphRoute(DiscoverGraphRoute.MoodsPage) },
-          onViewAllFavouritePlaylistsClick = {
-            navigateToDiscoverGraphRoute(DiscoverGraphRoute.FavouritePlaylistsPage)
-          },
-          onViewAllTrendingPlaylistsClick = {
-            navigateToDiscoverGraphRoute(DiscoverGraphRoute.TrendingPlaylistsPage)
-          },
         )
       }
-
-      composable<DiscoverGraphRoute.CarryOnPlaylistsPage> {
-        CarryOnPlaylistsPage(
-          playlists = discoverViewModel().carryOnPlaylists.collectAsStateWithLifecycle().value,
-          hazeState = hazeState,
-          bottomSpacerHeight = bottomSpacerHeight,
-          onPlaylistClick = onCarryOnPlaylistClick,
-          onNavigationIconClick = navController::popBackStack,
-        )
-      }
-
-      composable<DiscoverGraphRoute.MoodPage> {
-        MoodPage(
-          viewModel =
-            MoodViewModel(
-              mood = it.toRoute<DiscoverGraphRoute.MoodPage>().mood,
-              playlistsRepository = applicationComponent.playlistsRepository,
-            ),
-          hazeState = hazeState,
-          bottomSpacerHeight = bottomSpacerHeight,
-          onPlaylistClick = onPlaylistClick,
-          onNavigationIconClick = navController::popBackStack,
-        )
-      }
-
-      composable<DiscoverGraphRoute.MoodsPage> {
-        MoodsPage(
-          hazeState = hazeState,
-          bottomSpacerHeight = bottomSpacerHeight,
-          onMoodClick = { navigateToDiscoverGraphRoute(DiscoverGraphRoute.MoodPage(it)) },
-          onNavigationIconClick = navController::popBackStack,
-        )
-      }
-
-      composable<DiscoverGraphRoute.FavouritePlaylistsPage> {
-        PlaylistsPage(
-          playlists = discoverViewModel().favouritePlaylists.collectAsStateWithLifecycle().value,
-          title = stringResource(Res.string.favourites),
-          hazeState = hazeState,
-          bottomSpacerHeight = bottomSpacerHeight,
-          onPlaylistClick = onPlaylistClick,
-          onNavigationIconClick = navController::popBackStack,
-          onRetryClick = {},
-        )
-      }
-
-      composable<DiscoverGraphRoute.TrendingPlaylistsPage> {
-        val discoverViewModel = discoverViewModel()
-        PlaylistsPage(
-          playlists = discoverViewModel.trendingPlaylists.collectAsStateWithLifecycle().value,
-          title = stringResource(Res.string.trending),
-          hazeState = hazeState,
-          bottomSpacerHeight = bottomSpacerHeight,
-          onPlaylistClick = onPlaylistClick,
-          onNavigationIconClick = navController::popBackStack,
-          onRetryClick = discoverViewModel.trendingPlaylists::restart,
-        )
-      }
-    }
-
-    composable<AppRoute.SearchPage> {
-      SearchPage(
-        viewModel = viewModel(factory = applicationComponent.searchViewModelFactory),
-        hazeState = hazeState,
-        bottomSpacerHeight = bottomSpacerHeight,
-        onPlaylistClick = onPlaylistClick,
-      )
     }
   }
 }

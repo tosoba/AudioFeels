@@ -1,7 +1,10 @@
 package com.trm.audiofeels.ui.discover
 
+import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyRow
@@ -61,7 +65,7 @@ import com.trm.audiofeels.core.ui.compose.util.topAppBarSpacerHeight
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.carry_on
 import com.trm.audiofeels.core.ui.resources.days_ago
-import com.trm.audiofeels.core.ui.resources.favourites
+import com.trm.audiofeels.core.ui.resources.favourite
 import com.trm.audiofeels.core.ui.resources.hours_ago
 import com.trm.audiofeels.core.ui.resources.minutes_ago
 import com.trm.audiofeels.core.ui.resources.moments_ago
@@ -81,9 +85,11 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.jetbrains.compose.resources.stringResource
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun DiscoverPage(
+fun SharedTransitionScope.DiscoverPage(
   viewModel: DiscoverViewModel,
+  animatedContentScope: AnimatedContentScope,
   hazeState: HazeState,
   bottomSpacerHeight: Dp,
   onCarryOnPlaylistClick: (CarryOnPlaylist) -> Unit,
@@ -155,12 +161,22 @@ fun DiscoverPage(
             ),
       ) {
         items(Mood.entries) { item ->
-          MoodItem(name = item.name, symbol = item.symbol, onClick = { onMoodClick(item) })
+          MoodItem(
+            name = item.name,
+            symbol = item.symbol,
+            modifier =
+              Modifier.sharedElement(
+                  state = rememberSharedContentState(key = item.name),
+                  animatedVisibilityScope = animatedContentScope,
+                )
+                .size(90.dp),
+            onClick = { onMoodClick(item) },
+          )
         }
       }
 
       DiscoverListHeadline(
-        text = stringResource(Res.string.favourites),
+        text = stringResource(Res.string.favourite),
         list = favouritePlaylists,
         onViewAllClick = onViewAllFavouritePlaylistsClick,
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
@@ -175,7 +191,14 @@ fun DiscoverPage(
           name = playlist.name,
           artworkUrl = playlist.artworkUrl,
           modifier =
-            Modifier.width(150.dp)
+            Modifier.sharedElement(
+                state =
+                  rememberSharedContentState(
+                    key = "${stringResource(Res.string.favourite)}-${playlist.id}"
+                  ),
+                animatedVisibilityScope = animatedContentScope,
+              )
+              .width(150.dp)
               .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = lastIndex))
               .animateItem(),
           onClick = { onPlaylistClick(playlist) },
@@ -198,7 +221,14 @@ fun DiscoverPage(
           name = playlist.name,
           artworkUrl = playlist.artworkUrl,
           modifier =
-            Modifier.width(150.dp)
+            Modifier.sharedElement(
+                state =
+                  rememberSharedContentState(
+                    key = "${stringResource(Res.string.trending)}-${playlist.id}"
+                  ),
+                animatedVisibilityScope = animatedContentScope,
+              )
+              .width(150.dp)
               .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = lastIndex))
               .animateItem(),
           onClick = { onPlaylistClick(playlist) },

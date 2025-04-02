@@ -1,5 +1,7 @@
 package com.trm.audiofeels.ui.playlists
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -17,9 +19,9 @@ import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.hazeEffect
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
-internal fun PlaylistsTopBar(
+internal fun SharedTransitionScope.PlaylistsTopBar(
   title: String,
   hazeState: HazeState,
   onNavigationIconClick: () -> Unit,
@@ -42,7 +44,7 @@ internal fun PlaylistsTopBar(
         copy(containerColor = containerColor.copy(alpha = .85f))
       },
     modifier =
-      Modifier.hazeEffect(hazeState) {
+      Modifier.renderInSharedTransitionScopeOverlay().hazeEffect(hazeState) {
         style = hazeStyle
         blurRadius = 10.dp
       },
