@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import com.trm.audiofeels.core.base.model.LoadableState
@@ -27,13 +26,12 @@ import dev.chrisbanes.haze.hazeSource
 fun PlaylistsPage(
   playlists: LoadableState<List<Playlist>>,
   title: String,
+  hazeState: HazeState,
   bottomSpacerHeight: Dp,
   onPlaylistClick: (Playlist) -> Unit,
   onNavigationIconClick: () -> Unit,
   onRetryClick: () -> Unit,
 ) {
-  val hazeState = remember(::HazeState)
-
   Box {
     PlaylistsLazyVerticalGrid(modifier = Modifier.fillMaxSize().hazeSource(hazeState)) {
       item(span = { GridItemSpan(maxLineSpan) }) {

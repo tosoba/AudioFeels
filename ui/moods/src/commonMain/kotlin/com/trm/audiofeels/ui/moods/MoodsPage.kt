@@ -11,7 +11,6 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
@@ -26,13 +25,12 @@ import dev.chrisbanes.haze.hazeSource
 
 @Composable
 fun MoodsPage(
+  hazeState: HazeState,
   bottomSpacerHeight: Dp,
   onMoodClick: (Mood) -> Unit,
   onNavigationIconClick: () -> Unit,
 ) {
   Box {
-    val hazeState = remember(::HazeState)
-
     LazyVerticalGrid(
       columns = GridCells.Adaptive(90.dp),
       contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),

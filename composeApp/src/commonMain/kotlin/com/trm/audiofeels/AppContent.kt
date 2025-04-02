@@ -565,6 +565,7 @@ private fun AppNavHost(
       composable<DiscoverGraphRoute.CarryOnPlaylistsPage> {
         CarryOnPlaylistsPage(
           playlists = discoverViewModel().carryOnPlaylists.collectAsStateWithLifecycle().value,
+          hazeState = hazeState,
           bottomSpacerHeight = bottomSpacerHeight,
           onPlaylistClick = onCarryOnPlaylistClick,
           onNavigationIconClick = navController::popBackStack,
@@ -578,6 +579,7 @@ private fun AppNavHost(
               mood = it.toRoute<DiscoverGraphRoute.MoodPage>().mood,
               playlistsRepository = applicationComponent.playlistsRepository,
             ),
+          hazeState = hazeState,
           bottomSpacerHeight = bottomSpacerHeight,
           onPlaylistClick = onPlaylistClick,
           onNavigationIconClick = navController::popBackStack,
@@ -586,6 +588,7 @@ private fun AppNavHost(
 
       composable<DiscoverGraphRoute.MoodsPage> {
         MoodsPage(
+          hazeState = hazeState,
           bottomSpacerHeight = bottomSpacerHeight,
           onMoodClick = { navigateToDiscoverGraphRoute(DiscoverGraphRoute.MoodPage(it)) },
           onNavigationIconClick = navController::popBackStack,
@@ -596,6 +599,7 @@ private fun AppNavHost(
         PlaylistsPage(
           playlists = discoverViewModel().favouritePlaylists.collectAsStateWithLifecycle().value,
           title = stringResource(Res.string.favourites),
+          hazeState = hazeState,
           bottomSpacerHeight = bottomSpacerHeight,
           onPlaylistClick = onPlaylistClick,
           onNavigationIconClick = navController::popBackStack,
@@ -608,6 +612,7 @@ private fun AppNavHost(
         PlaylistsPage(
           playlists = discoverViewModel.trendingPlaylists.collectAsStateWithLifecycle().value,
           title = stringResource(Res.string.trending),
+          hazeState = hazeState,
           bottomSpacerHeight = bottomSpacerHeight,
           onPlaylistClick = onPlaylistClick,
           onNavigationIconClick = navController::popBackStack,
