@@ -20,6 +20,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
+import com.trm.audiofeels.core.ui.resources.Res
+import com.trm.audiofeels.core.ui.resources.days_ago
+import com.trm.audiofeels.core.ui.resources.hours_ago
+import com.trm.audiofeels.core.ui.resources.minutes_ago
+import com.trm.audiofeels.core.ui.resources.moments_ago
+import com.trm.audiofeels.core.ui.resources.one_hour_ago
+import com.trm.audiofeels.core.ui.resources.one_minute_ago
+import com.trm.audiofeels.core.ui.resources.yesterday
+import kotlin.time.Duration
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun PlaylistLazyRowItem(
@@ -109,5 +121,96 @@ fun LazyGridItemScope.LazyGridPlaylistPlaceholderItem(content: @Composable Colum
         .shimmerBackground(enabled = true, shape = RoundedCornerShape(16.dp))
         .animateItem(),
     content = content,
+  )
+}
+
+@Composable
+fun ColumnScope.CarryOnPlaylistPlaceholderItemContent() {
+  Spacer(modifier = Modifier.height(158.dp))
+  Text(text = "", style = MaterialTheme.typography.labelLarge)
+  Text(text = "", style = MaterialTheme.typography.labelSmall)
+  Spacer(modifier = Modifier.height(8.dp))
+}
+
+@Composable
+fun CarryOnPlaylistLazyRowItem(
+  name: String,
+  artworkUrl: String?,
+  lastPlayed: Instant,
+  now: Instant = Clock.System.now(),
+  modifier: Modifier = Modifier,
+  onClick: () -> Unit,
+) {
+  Card(onClick = onClick, modifier = modifier) {
+    PlaylistArtworkImage(
+      name = name,
+      artworkUrl = artworkUrl,
+      modifier = { PlaylistLazyRowItemArtworkImageModifier(it) },
+    )
+    CarryOnPlaylistBody(name = name, lastPlayed = lastPlayed, now = now)
+  }
+}
+
+@Composable
+fun CarryOnPlaylistLazyVerticalGridItem(
+  name: String,
+  artworkUrl: String?,
+  lastPlayed: Instant,
+  now: Instant = Clock.System.now(),
+  modifier: Modifier = Modifier,
+  onClick: () -> Unit,
+) {
+  Card(onClick = onClick, modifier = modifier) {
+    PlaylistArtworkImage(
+      name = name,
+      artworkUrl = artworkUrl,
+      modifier = { PlaylistLazyVerticalGridItemArtworkImageModifier(it) },
+    )
+    CarryOnPlaylistBody(name = name, lastPlayed = lastPlayed, now = now)
+  }
+}
+
+@Composable
+private fun ColumnScope.CarryOnPlaylistBody(
+  name: String,
+  lastPlayed: Instant,
+  now: Instant = Clock.System.now(),
+) {
+  Spacer(modifier = Modifier.height(8.dp))
+  PlaylistNameText(name = name)
+  PlaylistLastPlayedAgoText(duration = now - lastPlayed)
+  Spacer(modifier = Modifier.height(8.dp))
+}
+
+@Composable
+private fun PlaylistLastPlayedAgoText(duration: Duration) {
+  Text(
+    text =
+      when {
+        duration.inWholeDays > 1L -> {
+          stringResource(Res.string.days_ago, duration.inWholeDays)
+        }
+        duration.inWholeDays == 1L -> {
+          stringResource(Res.string.yesterday)
+        }
+        duration.inWholeHours > 1L -> {
+          stringResource(Res.string.hours_ago, duration.inWholeHours)
+        }
+        duration.inWholeHours == 1L -> {
+          stringResource(Res.string.one_hour_ago)
+        }
+        duration.inWholeMinutes > 1L -> {
+          stringResource(Res.string.minutes_ago, duration.inWholeMinutes)
+        }
+        duration.inWholeMinutes == 1L -> {
+          stringResource(Res.string.one_minute_ago)
+        }
+        else -> {
+          stringResource(Res.string.moments_ago)
+        }
+      },
+    style = MaterialTheme.typography.labelSmall,
+    maxLines = 1,
+    modifier = Modifier.padding(horizontal = 8.dp).basicMarquee(),
   )
 }

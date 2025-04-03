@@ -31,7 +31,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -50,13 +49,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowHeightSizeClass
 import com.trm.audiofeels.core.base.model.LoadableState
 import com.trm.audiofeels.core.ui.compose.BottomEdgeGradient
+import com.trm.audiofeels.core.ui.compose.CarryOnPlaylistLazyRowItem
+import com.trm.audiofeels.core.ui.compose.CarryOnPlaylistPlaceholderItemContent
 import com.trm.audiofeels.core.ui.compose.EndEdgeGradient
 import com.trm.audiofeels.core.ui.compose.ErrorListItem
 import com.trm.audiofeels.core.ui.compose.MoodItem
-import com.trm.audiofeels.core.ui.compose.PlaylistArtworkImage
 import com.trm.audiofeels.core.ui.compose.PlaylistLazyRowItem
-import com.trm.audiofeels.core.ui.compose.PlaylistLazyRowItemArtworkImageModifier
-import com.trm.audiofeels.core.ui.compose.PlaylistNameText
 import com.trm.audiofeels.core.ui.compose.PlaylistPlaceholderItemContent
 import com.trm.audiofeels.core.ui.compose.StartEdgeGradient
 import com.trm.audiofeels.core.ui.compose.TopEdgeGradient
@@ -64,25 +62,15 @@ import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
 import com.trm.audiofeels.core.ui.compose.util.topAppBarSpacerHeight
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.carry_on
-import com.trm.audiofeels.core.ui.resources.days_ago
 import com.trm.audiofeels.core.ui.resources.favourite
-import com.trm.audiofeels.core.ui.resources.hours_ago
-import com.trm.audiofeels.core.ui.resources.minutes_ago
-import com.trm.audiofeels.core.ui.resources.moments_ago
 import com.trm.audiofeels.core.ui.resources.mood
-import com.trm.audiofeels.core.ui.resources.one_hour_ago
-import com.trm.audiofeels.core.ui.resources.one_minute_ago
 import com.trm.audiofeels.core.ui.resources.trending
 import com.trm.audiofeels.core.ui.resources.view_all
-import com.trm.audiofeels.core.ui.resources.yesterday
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import com.trm.audiofeels.domain.model.Mood
 import com.trm.audiofeels.domain.model.Playlist
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
-import kotlin.time.Duration
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -122,13 +110,22 @@ fun SharedTransitionScope.DiscoverPage(
         onRetryClick = {},
         placeholderItemContent = { CarryOnPlaylistPlaceholderItemContent() },
       ) { index, lastIndex, carryOn ->
-        CarryOnPlaylistItem(
-          carryOn = carryOn,
+        CarryOnPlaylistLazyRowItem(
+          name = carryOn.playlist.name,
+          artworkUrl = carryOn.playlist.artworkUrl,
+          lastPlayed = carryOn.lastPlayed,
           modifier =
-            Modifier.width(150.dp)
+            Modifier.sharedElement(
+                state =
+                  rememberSharedContentState(
+                    key = "${stringResource(Res.string.carry_on)}-${carryOn.playlist.id}"
+                  ),
+                animatedVisibilityScope = animatedContentScope,
+              )
+              .width(150.dp)
               .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = lastIndex))
               .animateItem(),
-          onClick = onCarryOnPlaylistClick,
+          onClick = { onCarryOnPlaylistClick(carryOn) },
         )
       }
 
@@ -245,14 +242,6 @@ fun SharedTransitionScope.DiscoverPage(
     TopEdgeGradient(topOffset = topAppBarSpacerHeight())
     BottomEdgeGradient()
   }
-}
-
-@Composable
-private fun ColumnScope.CarryOnPlaylistPlaceholderItemContent() {
-  Spacer(modifier = Modifier.height(158.dp))
-  Text(text = "", style = MaterialTheme.typography.labelLarge)
-  Text(text = "", style = MaterialTheme.typography.labelSmall)
-  Spacer(modifier = Modifier.height(8.dp))
 }
 
 @Composable
@@ -386,59 +375,6 @@ private fun LazyItemScope.DiscoverListPlaceholderItem(
 
 private fun <T : Any> LoadableState<List<T>>.discoverListVisible(): Boolean =
   this !is LoadableState.Idle || !valueOrNull.isNullOrEmpty()
-
-@Composable
-private fun CarryOnPlaylistItem(
-  carryOn: CarryOnPlaylist,
-  now: Instant = Clock.System.now(),
-  modifier: Modifier = Modifier,
-  onClick: (CarryOnPlaylist) -> Unit,
-) {
-  Card(onClick = { onClick(carryOn) }, modifier = modifier) {
-    PlaylistArtworkImage(
-      name = carryOn.playlist.name,
-      artworkUrl = carryOn.playlist.artworkUrl,
-      modifier = { PlaylistLazyRowItemArtworkImageModifier(it) },
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    PlaylistNameText(name = carryOn.playlist.name)
-    PlaylistLastPlayedAgoText(duration = now - carryOn.lastPlayed)
-    Spacer(modifier = Modifier.height(8.dp))
-  }
-}
-
-@Composable
-private fun PlaylistLastPlayedAgoText(duration: Duration) {
-  Text(
-    text =
-      when {
-        duration.inWholeDays > 1L -> {
-          stringResource(Res.string.days_ago, duration.inWholeDays)
-        }
-        duration.inWholeDays == 1L -> {
-          stringResource(Res.string.yesterday)
-        }
-        duration.inWholeHours > 1L -> {
-          stringResource(Res.string.hours_ago, duration.inWholeHours)
-        }
-        duration.inWholeHours == 1L -> {
-          stringResource(Res.string.one_hour_ago)
-        }
-        duration.inWholeMinutes > 1L -> {
-          stringResource(Res.string.minutes_ago, duration.inWholeMinutes)
-        }
-        duration.inWholeMinutes == 1L -> {
-          stringResource(Res.string.one_minute_ago)
-        }
-        else -> {
-          stringResource(Res.string.moments_ago)
-        }
-      },
-    style = MaterialTheme.typography.labelSmall,
-    maxLines = 1,
-    modifier = Modifier.padding(horizontal = 8.dp).basicMarquee(),
-  )
-}
 
 private fun playlistItemPaddingValues(itemIndex: Int, lastIndex: Int): PaddingValues =
   PaddingValues(

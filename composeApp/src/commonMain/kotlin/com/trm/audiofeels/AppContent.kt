@@ -570,6 +570,7 @@ private fun AppNavHost(
         composable<DiscoverGraphRoute.CarryOnPlaylistsPage> {
           CarryOnPlaylistsPage(
             playlists = discoverViewModel().carryOnPlaylists.collectAsStateWithLifecycle().value,
+            animatedContentScope = this@composable,
             hazeState = hazeState,
             bottomSpacerHeight = bottomSpacerHeight,
             onPlaylistClick = onCarryOnPlaylistClick,
