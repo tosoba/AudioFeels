@@ -23,9 +23,12 @@ import com.trm.audiofeels.core.ui.compose.PlaylistPlaceholderItemContent
 import com.trm.audiofeels.core.ui.compose.PlaylistsLazyVerticalGrid
 import com.trm.audiofeels.core.ui.compose.TopEdgeGradient
 import com.trm.audiofeels.core.ui.compose.util.topAppBarSpacerHeight
+import com.trm.audiofeels.core.ui.resources.Res
+import com.trm.audiofeels.core.ui.resources.no_playlists_found
 import com.trm.audiofeels.domain.model.Playlist
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun MoodPage(
@@ -47,12 +50,12 @@ fun MoodPage(
         LoadableState.Loading -> {
           items(50) { LazyGridPlaylistPlaceholderItem { PlaylistPlaceholderItemContent() } }
         }
-        is LoadableState.Idle<*> -> {
+        is LoadableState.Idle -> {
           val items = playlists.valueOrNull
           if (items.isNullOrEmpty()) {
             item(span = { GridItemSpan(maxLineSpan) }) {
               Text(
-                text = "No playlists found",
+                text = stringResource(Res.string.no_playlists_found),
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth().animateItem(),
               )
@@ -68,10 +71,11 @@ fun MoodPage(
             }
           }
         }
-        is LoadableState.Error ->
+        is LoadableState.Error -> {
           item(span = { GridItemSpan(maxLineSpan) }) {
             ErrorListItem(modifier = Modifier.animateItem(), onClick = viewModel.playlists::restart)
           }
+        }
       }
 
       item(span = { GridItemSpan(maxLineSpan) }) {

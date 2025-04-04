@@ -14,7 +14,7 @@ fun PlaylistsLazyVerticalGrid(modifier: Modifier = Modifier, content: LazyGridSc
   LazyVerticalGrid(
     modifier = modifier,
     columns = GridCells.Adaptive(150.dp),
-    contentPadding = PaddingValues(16.dp),
+    contentPadding = PaddingValues(horizontal = 16.dp),
     horizontalArrangement = Arrangement.spacedBy(16.dp),
     verticalArrangement = Arrangement.spacedBy(16.dp),
     content = content,
