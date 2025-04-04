@@ -41,7 +41,7 @@ class SearchViewModel(
     processedQuery
       .flatMapLatest {
         if (it.length < 3) {
-          flowOf(LoadableState.Idle(SearchResult(query = it, playlists = emptyList())))
+          flowOf(LoadableState.Loading)
         } else {
           loadableStateFlowOf {
             SearchResult(query = it, playlists = playlistsRepository.searchPlaylists(it))
@@ -56,7 +56,7 @@ class SearchViewModel(
       .map { it.map { (_, playlists) -> playlists } }
       .restartableStateIn(
         scope = viewModelScope,
-        started = SharingStarted.Eagerly,
+        started = SharingStarted.Lazily,
         initialValue = LoadableState.Loading,
       )
 
