@@ -84,10 +84,10 @@ internal fun SearchTopBar(
           .padding(
             top =
               with(LocalDensity.current) { TopAppBarDefaults.windowInsets.getTop(this).toDp() } +
-                16.dp,
+                8.dp,
             start = 16.dp,
             end = 16.dp,
-            bottom = 16.dp,
+            bottom = 8.dp,
           )
           .clip(SearchBarDefaults.dockedShape)
           .hazeEffect(hazeState) {

@@ -10,13 +10,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun PlaylistsLazyVerticalGrid(modifier: Modifier = Modifier, content: LazyGridScope.() -> Unit) {
+fun PlaylistsLazyVerticalGrid(
+  modifier: Modifier = Modifier,
+  singleItem: Boolean = false,
+  content: LazyGridScope.() -> Unit,
+) {
   LazyVerticalGrid(
     modifier = modifier,
     columns = GridCells.Adaptive(150.dp),
     contentPadding = PaddingValues(horizontal = 16.dp),
     horizontalArrangement = Arrangement.spacedBy(16.dp),
-    verticalArrangement = Arrangement.spacedBy(16.dp),
+    verticalArrangement = if (singleItem) Arrangement.Center else Arrangement.spacedBy(16.dp),
     content = content,
   )
 }

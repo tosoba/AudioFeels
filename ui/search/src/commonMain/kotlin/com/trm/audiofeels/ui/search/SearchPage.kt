@@ -24,9 +24,12 @@ import com.trm.audiofeels.core.ui.compose.PlaylistPlaceholderItemContent
 import com.trm.audiofeels.core.ui.compose.PlaylistsLazyVerticalGrid
 import com.trm.audiofeels.core.ui.compose.TopEdgeGradient
 import com.trm.audiofeels.core.ui.compose.util.topAppBarSpacerHeight
+import com.trm.audiofeels.core.ui.resources.Res
+import com.trm.audiofeels.core.ui.resources.no_playlists_found
 import com.trm.audiofeels.domain.model.Playlist
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun SearchPage(
@@ -40,7 +43,12 @@ fun SearchPage(
   val playlistsState by viewModel.playlists.collectAsStateWithLifecycle()
 
   Box {
-    PlaylistsLazyVerticalGrid(modifier = Modifier.fillMaxSize().hazeSource(hazeState)) {
+    PlaylistsLazyVerticalGrid(
+      modifier = Modifier.fillMaxSize().hazeSource(hazeState),
+      singleItem =
+        query.length < 3 ||
+          (playlistsState is LoadableState.Idle && playlistsState.valueOrNull.isNullOrEmpty()),
+    ) {
       item(span = { GridItemSpan(maxLineSpan) }) {
         Spacer(modifier = Modifier.height(topAppBarSpacerHeight()))
       }
@@ -51,7 +59,7 @@ fun SearchPage(
             Text(
               text = "Query is empty",
               textAlign = TextAlign.Center,
-              modifier = Modifier.fillMaxWidth().animateItem(),
+              modifier = Modifier.fillMaxWidth(),
             )
           }
         }
@@ -60,7 +68,7 @@ fun SearchPage(
             Text(
               text = "Query is too short",
               textAlign = TextAlign.Center,
-              modifier = Modifier.fillMaxWidth().animateItem(),
+              modifier = Modifier.fillMaxWidth(),
             )
           }
         }
@@ -73,9 +81,9 @@ fun SearchPage(
               if (playlists.value.isEmpty()) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                   Text(
-                    text = "No playlists found",
+                    text = stringResource(Res.string.no_playlists_found),
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth().animateItem(),
+                    modifier = Modifier.fillMaxWidth(),
                   )
                 }
               } else {
@@ -91,10 +99,7 @@ fun SearchPage(
             }
             is LoadableState.Error -> {
               item(span = { GridItemSpan(maxLineSpan) }) {
-                ErrorListItem(
-                  modifier = Modifier.animateItem(),
-                  onClick = viewModel.playlists::restart,
-                )
+                ErrorListItem(onClick = viewModel.playlists::restart)
               }
             }
           }
@@ -106,7 +111,7 @@ fun SearchPage(
       }
     }
 
-    TopEdgeGradient(topOffset = topAppBarSpacerHeight() + 24.dp)
+    TopEdgeGradient(topOffset = topAppBarSpacerHeight() + 8.dp)
     BottomEdgeGradient()
 
     SearchTopBar(
