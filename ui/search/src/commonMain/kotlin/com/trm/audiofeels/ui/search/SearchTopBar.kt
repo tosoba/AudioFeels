@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -56,7 +57,7 @@ internal fun SearchTopBar(
 
   fun isSearchBarExpanded(): Boolean = expanded && suggestions.isNotEmpty()
 
-  LaunchedEffect(query, suggestions) { onSearchBarExpandedChange(isSearchBarExpanded()) }
+  LaunchedEffect(expanded, suggestions) { onSearchBarExpandedChange(isSearchBarExpanded()) }
 
   val boxHazeStyle =
     HazeStyle(
@@ -137,15 +138,17 @@ internal fun SearchTopBar(
       onExpandedChange = {},
       content = {
         LazyColumn(
-          modifier = Modifier.fillMaxWidth(),
+          modifier = Modifier.fillMaxWidth().height(SEARCH_TOP_BAR_CONTENT_HEIGHT),
           contentPadding = PaddingValues(16.dp),
           verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
           items(suggestions) {
-            Text(text = it, modifier = Modifier.fillMaxWidth().animateItem()) // TODO: add on clicks
+            Text(text = it, modifier = Modifier.fillMaxWidth()) // TODO: add on clicks
           }
         }
       },
     )
   }
 }
+
+internal val SEARCH_TOP_BAR_CONTENT_HEIGHT = 240.dp

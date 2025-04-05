@@ -10,6 +10,9 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -42,6 +45,8 @@ fun SearchPage(
   val suggestions by viewModel.suggestions.collectAsStateWithLifecycle()
   val playlistsState by viewModel.playlists.collectAsStateWithLifecycle()
 
+  var showSearchBarContentSpacerItem by remember { mutableStateOf(false) }
+
   Box {
     PlaylistsLazyVerticalGrid(
       modifier = Modifier.fillMaxSize().hazeSource(hazeState),
@@ -51,6 +56,12 @@ fun SearchPage(
     ) {
       item(span = { GridItemSpan(maxLineSpan) }) {
         Spacer(modifier = Modifier.height(topAppBarSpacerHeight()))
+      }
+
+      if (showSearchBarContentSpacerItem) {
+        item(span = { GridItemSpan(maxLineSpan) }) {
+          Spacer(modifier = Modifier.height(SEARCH_TOP_BAR_CONTENT_HEIGHT - 16.dp).animateItem())
+        }
       }
 
       when {
@@ -118,9 +129,7 @@ fun SearchPage(
       hazeState = hazeState,
       suggestions = suggestions,
       onQueryChange = viewModel::onQueryChange,
-      onSearchBarExpandedChange = {
-        // TODO: get searchBar height and increase top space height if expanded
-      },
+      onSearchBarExpandedChange = { showSearchBarContentSpacerItem = it },
     )
   }
 }
