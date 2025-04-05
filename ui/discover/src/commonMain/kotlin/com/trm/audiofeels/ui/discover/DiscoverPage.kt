@@ -78,6 +78,7 @@ import com.trm.audiofeels.domain.model.Mood
 import com.trm.audiofeels.domain.model.Playlist
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
+import kotlin.random.Random
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -253,13 +254,28 @@ fun SharedTransitionScope.DiscoverPage(
     DiscoverTopBar(hazeState = hazeState)
 
     AnimatedVisibility(
-      visible = showPlayRandomFAB,
+      visible =
+        showPlayRandomFAB &&
+          (!carryOnPlaylists.valueOrNull.isNullOrEmpty() ||
+            !favouritePlaylists.valueOrNull.isNullOrEmpty() ||
+            !trendingPlaylists.valueOrNull.isNullOrEmpty()),
       modifier =
         Modifier.align(Alignment.BottomEnd).padding(16.dp).onSizeChanged {
           playRandomFABHeightPx = it.height
         },
     ) {
-      PlayRandomFloatingActionButton(onClick = {})
+      PlayRandomFloatingActionButton(
+        onClick = {
+          val allDistinctPlaylists =
+            (carryOnPlaylists.valueOrNull.orEmpty().map(CarryOnPlaylist::playlist) +
+                favouritePlaylists.valueOrNull.orEmpty() +
+                trendingPlaylists.valueOrNull.orEmpty())
+              .distinct()
+          if (allDistinctPlaylists.isNotEmpty()) {
+            onPlaylistClick(allDistinctPlaylists[Random.nextInt(0, allDistinctPlaylists.size)])
+          }
+        }
+      )
     }
 
     StartEdgeGradient()
