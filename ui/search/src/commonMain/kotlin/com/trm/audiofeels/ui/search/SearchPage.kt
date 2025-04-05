@@ -3,18 +3,15 @@ package com.trm.audiofeels.ui.search
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -26,13 +23,18 @@ import com.trm.audiofeels.core.ui.compose.PlaylistLazyVerticalGridItem
 import com.trm.audiofeels.core.ui.compose.PlaylistPlaceholderItemContent
 import com.trm.audiofeels.core.ui.compose.PlaylistsLazyVerticalGrid
 import com.trm.audiofeels.core.ui.compose.TopEdgeGradient
+import com.trm.audiofeels.core.ui.compose.emptyListTextItem
 import com.trm.audiofeels.core.ui.compose.util.topAppBarSpacerHeight
 import com.trm.audiofeels.core.ui.resources.Res
-import com.trm.audiofeels.core.ui.resources.no_playlists_found
+import com.trm.audiofeels.core.ui.resources.no_playlists_found_primary_text
+import com.trm.audiofeels.core.ui.resources.no_playlists_found_search_secondary_text
+import com.trm.audiofeels.core.ui.resources.query_is_empty_primary_text
+import com.trm.audiofeels.core.ui.resources.query_is_empty_secondary_text
+import com.trm.audiofeels.core.ui.resources.query_is_too_short_primary_text
+import com.trm.audiofeels.core.ui.resources.query_is_too_short_secondary_text
 import com.trm.audiofeels.domain.model.Playlist
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
-import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun SearchPage(
@@ -66,22 +68,16 @@ fun SearchPage(
 
       when {
         query.isEmpty() -> {
-          item(span = { GridItemSpan(maxLineSpan) }) {
-            Text(
-              text = "Query is empty",
-              textAlign = TextAlign.Center,
-              modifier = Modifier.fillMaxWidth(),
-            )
-          }
+          emptyListTextItem(
+            primaryText = Res.string.query_is_empty_primary_text,
+            secondaryText = Res.string.query_is_empty_secondary_text,
+          )
         }
         query.length < 3 -> {
-          item(span = { GridItemSpan(maxLineSpan) }) {
-            Text(
-              text = "Query is too short",
-              textAlign = TextAlign.Center,
-              modifier = Modifier.fillMaxWidth(),
-            )
-          }
+          emptyListTextItem(
+            primaryText = Res.string.query_is_too_short_primary_text,
+            secondaryText = Res.string.query_is_too_short_secondary_text,
+          )
         }
         else -> {
           when (val playlists = playlistsState) {
@@ -90,13 +86,10 @@ fun SearchPage(
             }
             is LoadableState.Idle -> {
               if (playlists.value.isEmpty()) {
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                  Text(
-                    text = stringResource(Res.string.no_playlists_found),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth(),
-                  )
-                }
+                emptyListTextItem(
+                  primaryText = Res.string.no_playlists_found_primary_text,
+                  secondaryText = Res.string.no_playlists_found_search_secondary_text,
+                )
               } else {
                 items(playlists.value) {
                   PlaylistLazyVerticalGridItem(

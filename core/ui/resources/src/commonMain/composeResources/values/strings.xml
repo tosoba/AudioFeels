@@ -24,7 +24,14 @@
     <string name="turn_on_shuffle">Turn on shuffle playlist</string>
     <string name="turn_off_shuffle">Turn off shuffle playlist</string>
     <string name="view_all">View all</string>
-    <string name="no_playlists_found">No playlists found.</string>
+
+    <string name="query_is_empty_primary_text">Query is empty</string>
+    <string name="query_is_empty_secondary_text">Type your search query in the Search Bar at the top.</string>
+    <string name="query_is_too_short_primary_text">Query is too short</string>
+    <string name="query_is_too_short_secondary_text">A valid search query must be at least 3 characters long.</string>
+    <string name="no_playlists_found_primary_text">No playlists found.</string>
+    <string name="no_playlists_found_search_secondary_text">Try a different search query.</string>
+    <string name="no_playlists_found_mood_secondary_text">Go back to Discover and try a different mood.</string>
 
     <string name="days_ago">%1$d days ago</string>
     <string name="yesterday">yesterday</string>
