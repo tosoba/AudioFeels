@@ -42,6 +42,7 @@ import com.trm.audiofeels.core.ui.resources.query_is_too_short_secondary_text
 import com.trm.audiofeels.domain.model.Playlist
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
+import kotlin.random.Random
 
 @Composable
 fun SearchPage(
@@ -131,13 +132,20 @@ fun SearchPage(
     BottomEdgeGradient()
 
     AnimatedVisibility(
-      visible = showFABs,
+      visible = showFABs && !playlistsState.valueOrNull.isNullOrEmpty(),
       modifier =
         Modifier.align(Alignment.BottomEnd).padding(16.dp).onSizeChanged {
           fabsHeightPx = it.height
         },
     ) {
-      ShufflePlayRandomButtonsColumn(onShuffleClick = {}, onRandomClick = {})
+      ShufflePlayRandomButtonsColumn(
+        onShuffleClick = viewModel::onShuffleClick,
+        onRandomClick = {
+          playlistsState.valueOrNull?.let {
+            onPlaylistClick(it[Random.nextInt(from = 0, until = it.size)])
+          }
+        },
+      )
     }
 
     SearchTopBar(
