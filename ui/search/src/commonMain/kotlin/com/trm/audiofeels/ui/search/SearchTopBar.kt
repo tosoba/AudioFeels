@@ -2,9 +2,8 @@ package com.trm.audiofeels.ui.search
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -137,13 +136,15 @@ internal fun SearchTopBar(
       expanded = isSearchBarExpanded(),
       onExpandedChange = {},
       content = {
-        LazyColumn(
-          modifier = Modifier.fillMaxWidth().height(SEARCH_TOP_BAR_CONTENT_HEIGHT),
-          contentPadding = PaddingValues(16.dp),
-          verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
+        LazyColumn(modifier = Modifier.fillMaxWidth().height(SEARCH_TOP_BAR_CONTENT_HEIGHT)) {
           items(suggestions) {
-            Text(text = it, modifier = Modifier.fillMaxWidth()) // TODO: add on clicks
+            Text(
+              text = it,
+              modifier =
+                Modifier.fillMaxWidth()
+                  .clickable { updateQuery(it) }
+                  .padding(horizontal = 16.dp, vertical = 8.dp),
+            )
           }
         }
       },
