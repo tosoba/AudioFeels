@@ -37,9 +37,15 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -54,6 +60,7 @@ import com.trm.audiofeels.core.ui.compose.CarryOnPlaylistPlaceholderItemContent
 import com.trm.audiofeels.core.ui.compose.EndEdgeGradient
 import com.trm.audiofeels.core.ui.compose.ErrorListItem
 import com.trm.audiofeels.core.ui.compose.MoodItem
+import com.trm.audiofeels.core.ui.compose.PlayRandomFloatingActionButton
 import com.trm.audiofeels.core.ui.compose.PlaylistLazyRowItem
 import com.trm.audiofeels.core.ui.compose.PlaylistPlaceholderItemContent
 import com.trm.audiofeels.core.ui.compose.StartEdgeGradient
@@ -80,6 +87,7 @@ fun SharedTransitionScope.DiscoverPage(
   animatedContentScope: AnimatedContentScope,
   hazeState: HazeState,
   bottomSpacerHeight: Dp,
+  showPlayRandomFAB: Boolean,
   onCarryOnPlaylistClick: (CarryOnPlaylist) -> Unit,
   onPlaylistClick: (Playlist) -> Unit,
   onMoodClick: (Mood) -> Unit,
@@ -91,6 +99,8 @@ fun SharedTransitionScope.DiscoverPage(
   val carryOnPlaylists by viewModel.carryOnPlaylists.collectAsStateWithLifecycle()
   val favouritePlaylists by viewModel.favouritePlaylists.collectAsStateWithLifecycle()
   val trendingPlaylists by viewModel.trendingPlaylists.collectAsStateWithLifecycle()
+
+  var playRandomFABHeightPx by rememberSaveable { mutableStateOf(0) }
 
   Box {
     Column(
@@ -232,10 +242,25 @@ fun SharedTransitionScope.DiscoverPage(
         )
       }
 
-      Spacer(modifier = Modifier.height(bottomSpacerHeight))
+      Spacer(
+        modifier =
+          Modifier.height(
+            bottomSpacerHeight + with(LocalDensity.current) { playRandomFABHeightPx.toDp() }
+          )
+      )
     }
 
     DiscoverTopBar(hazeState = hazeState)
+
+    AnimatedVisibility(
+      visible = showPlayRandomFAB,
+      modifier =
+        Modifier.align(Alignment.BottomEnd).padding(16.dp).onSizeChanged {
+          playRandomFABHeightPx = it.height
+        },
+    ) {
+      PlayRandomFloatingActionButton(onClick = {})
+    }
 
     StartEdgeGradient()
     EndEdgeGradient()

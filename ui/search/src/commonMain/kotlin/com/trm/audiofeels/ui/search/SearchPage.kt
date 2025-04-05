@@ -1,17 +1,23 @@
 package com.trm.audiofeels.ui.search
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -22,6 +28,7 @@ import com.trm.audiofeels.core.ui.compose.LazyGridPlaylistPlaceholderItem
 import com.trm.audiofeels.core.ui.compose.PlaylistLazyVerticalGridItem
 import com.trm.audiofeels.core.ui.compose.PlaylistPlaceholderItemContent
 import com.trm.audiofeels.core.ui.compose.PlaylistsLazyVerticalGrid
+import com.trm.audiofeels.core.ui.compose.ShufflePlayRandomButtonsColumn
 import com.trm.audiofeels.core.ui.compose.TopEdgeGradient
 import com.trm.audiofeels.core.ui.compose.emptyListTextItem
 import com.trm.audiofeels.core.ui.compose.util.topAppBarSpacerHeight
@@ -41,6 +48,7 @@ fun SearchPage(
   viewModel: SearchViewModel,
   hazeState: HazeState,
   bottomSpacerHeight: Dp,
+  showFABs: Boolean,
   onPlaylistClick: (Playlist) -> Unit,
 ) {
   val query by viewModel.query.collectAsStateWithLifecycle()
@@ -48,6 +56,7 @@ fun SearchPage(
   val playlistsState by viewModel.playlists.collectAsStateWithLifecycle()
 
   var showSearchBarContentSpacerItem by remember { mutableStateOf(false) }
+  var fabsHeightPx by rememberSaveable { mutableStateOf(0) }
 
   Box {
     PlaylistsLazyVerticalGrid(
@@ -111,12 +120,25 @@ fun SearchPage(
       }
 
       item(span = { GridItemSpan(maxLineSpan) }) {
-        Spacer(modifier = Modifier.height(bottomSpacerHeight))
+        Spacer(
+          modifier =
+            Modifier.height(bottomSpacerHeight + with(LocalDensity.current) { fabsHeightPx.toDp() })
+        )
       }
     }
 
     TopEdgeGradient(topOffset = topAppBarSpacerHeight() + 8.dp)
     BottomEdgeGradient()
+
+    AnimatedVisibility(
+      visible = showFABs,
+      modifier =
+        Modifier.align(Alignment.BottomEnd).padding(16.dp).onSizeChanged {
+          fabsHeightPx = it.height
+        },
+    ) {
+      ShufflePlayRandomButtonsColumn(onShuffleClick = {}, onRandomClick = {})
+    }
 
     SearchTopBar(
       hazeState = hazeState,

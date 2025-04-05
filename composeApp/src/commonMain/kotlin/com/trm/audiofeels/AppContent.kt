@@ -382,6 +382,7 @@ private fun AppBottomSheetScaffold(
               } else {
                 sheetPeekHeight
               },
+            showFABs = !playerViewState.playerVisible,
             onCarryOnPlaylistClick = playerViewState.startCarryOnPlaylistPlayback,
             onPlaylistClick = playerViewState.startPlaylistPlayback,
           )
@@ -524,6 +525,7 @@ private fun AppNavHost(
   navController: NavHostController,
   hazeState: HazeState,
   bottomSpacerHeight: Dp,
+  showFABs: Boolean,
   onCarryOnPlaylistClick: (CarryOnPlaylist) -> Unit,
   onPlaylistClick: (Playlist) -> Unit,
 ) {
@@ -551,6 +553,7 @@ private fun AppNavHost(
             animatedContentScope = this@composable,
             hazeState = hazeState,
             bottomSpacerHeight = bottomSpacerHeight,
+            showPlayRandomFAB = showFABs,
             onCarryOnPlaylistClick = onCarryOnPlaylistClick,
             onPlaylistClick = onPlaylistClick,
             onMoodClick = { navigateToDiscoverGraphRoute(DiscoverGraphRoute.MoodPage(it)) },
@@ -637,6 +640,7 @@ private fun AppNavHost(
           viewModel = viewModel(factory = applicationComponent.searchViewModelFactory),
           hazeState = hazeState,
           bottomSpacerHeight = bottomSpacerHeight,
+          showFABs = showFABs,
           onPlaylistClick = onPlaylistClick,
         )
       }
