@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -57,7 +58,7 @@ fun SearchPage(
   val playlistsState by viewModel.playlists.collectAsStateWithLifecycle()
 
   var showSearchBarContentSpacerItem by remember { mutableStateOf(false) }
-  var fabsHeightPx by rememberSaveable { mutableStateOf(0) }
+  var fabsHeightPx by rememberSaveable { mutableIntStateOf(0) }
 
   Box {
     PlaylistsLazyVerticalGrid(

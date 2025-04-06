@@ -37,7 +37,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -101,7 +101,7 @@ fun SharedTransitionScope.DiscoverPage(
   val favouritePlaylists by viewModel.favouritePlaylists.collectAsStateWithLifecycle()
   val trendingPlaylists by viewModel.trendingPlaylists.collectAsStateWithLifecycle()
 
-  var playRandomFABHeightPx by rememberSaveable { mutableStateOf(0) }
+  var playRandomFABHeightPx by rememberSaveable { mutableIntStateOf(0) }
 
   Box {
     Column(

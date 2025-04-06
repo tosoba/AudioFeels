@@ -51,7 +51,7 @@ import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -290,7 +290,7 @@ private fun AppBottomSheetScaffold(
 
   val sheetOffset = appLayoutState.playerLayoutState.currentSheetOffset
   val sheetPeekHeight = 128.dp
-  var sheetHeightPx by remember { mutableStateOf(0f) }
+  var sheetHeightPx by remember { mutableFloatStateOf(0f) }
 
   val transitionProgress =
     remember(sheetOffset, sheetHeightPx) {
