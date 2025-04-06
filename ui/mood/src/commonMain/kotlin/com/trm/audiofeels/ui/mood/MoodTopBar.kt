@@ -14,10 +14,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.trm.audiofeels.core.ui.resources.Res
+import com.trm.audiofeels.core.ui.resources.go_back
 import com.trm.audiofeels.domain.model.Mood
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.hazeEffect
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,7 +35,10 @@ internal fun MoodTopBar(mood: Mood, hazeState: HazeState, onNavigationIconClick:
     },
     navigationIcon = {
       IconButton(onClick = onNavigationIconClick) {
-        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Go back")
+        Icon(
+          imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+          contentDescription = stringResource(Res.string.go_back),
+        )
       }
     },
     actions = {

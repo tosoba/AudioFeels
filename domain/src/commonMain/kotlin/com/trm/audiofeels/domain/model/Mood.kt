@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 enum class Mood(val symbol: String) {
-  Peaceful("🕊️ "),
+  Peaceful("🕊️"),
   Romantic("💘"),
   Sentimental("😢"),
   Tender("😌"),
@@ -14,7 +14,7 @@ enum class Mood(val symbol: String) {
   Sensual("😘"),
   Cool("😎"),
   Gritty("🙎"),
-  Melancholy("🌧️ "),
+  Melancholy("🌧️"),
   Serious("😐"),
   Brooding("🤔"),
   Fiery("🔥"),

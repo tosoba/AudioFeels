@@ -31,6 +31,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.trm.audiofeels.core.ui.resources.Res
+import com.trm.audiofeels.core.ui.resources.clear_search
+import com.trm.audiofeels.core.ui.resources.collapse_search
 import com.trm.audiofeels.core.ui.resources.search
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
@@ -113,7 +115,7 @@ internal fun SearchTopBar(
                 if (it) {
                   Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Collapse search",
+                    contentDescription = stringResource(Res.string.collapse_search),
                   )
                 } else {
                   Icon(
@@ -127,7 +129,10 @@ internal fun SearchTopBar(
           trailingIcon = {
             AnimatedVisibility(query.isNotBlank()) {
               IconButton(onClick = { updateQuery("") }) {
-                Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear search")
+                Icon(
+                  imageVector = Icons.Default.Clear,
+                  contentDescription = stringResource(Res.string.clear_search),
+                )
               }
             }
           },

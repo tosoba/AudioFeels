@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.trm.audiofeels.core.ui.resources.Res
+import com.trm.audiofeels.core.ui.resources.go_back
 import com.trm.audiofeels.core.ui.resources.mood
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
@@ -38,7 +39,10 @@ internal fun SharedTransitionScope.MoodsTopBar(
     },
     navigationIcon = {
       IconButton(onClick = onNavigationIconClick) {
-        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Go back")
+        Icon(
+          imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+          contentDescription = stringResource(Res.string.go_back),
+        )
       }
     },
     colors =

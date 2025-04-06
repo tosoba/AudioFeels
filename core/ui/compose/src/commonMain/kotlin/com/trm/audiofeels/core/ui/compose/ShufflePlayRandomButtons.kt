@@ -16,6 +16,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.trm.audiofeels.core.ui.resources.Res
+import com.trm.audiofeels.core.ui.resources.play_random
+import com.trm.audiofeels.core.ui.resources.play_random_playlist
+import com.trm.audiofeels.core.ui.resources.shuffle_playlists
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ShufflePlayRandomButtonsColumn(
@@ -25,7 +30,10 @@ fun ShufflePlayRandomButtonsColumn(
 ) {
   Column(horizontalAlignment = Alignment.End, modifier = modifier) {
     SmallFloatingActionButton(onClick = onShuffleClick) {
-      Icon(imageVector = Icons.Outlined.Shuffle, contentDescription = "Shuffle items")
+      Icon(
+        imageVector = Icons.Outlined.Shuffle,
+        contentDescription = stringResource(Res.string.shuffle_playlists),
+      )
     }
 
     Spacer(modifier = Modifier.height(16.dp))
@@ -39,11 +47,13 @@ fun PlayRandomFloatingActionButton(modifier: Modifier = Modifier, onClick: () ->
   ExtendedFloatingActionButton(
     onClick = onClick,
     containerColor = MaterialTheme.colorScheme.inversePrimary,
-    text = { Text("Play random", style = MaterialTheme.typography.titleMedium) },
+    text = {
+      Text(stringResource(Res.string.play_random), style = MaterialTheme.typography.titleMedium)
+    },
     icon = {
       Icon(
         imageVector = Icons.Filled.PlayArrow,
-        contentDescription = "Play a random playlist",
+        contentDescription = stringResource(Res.string.play_random_playlist),
         modifier = Modifier.size(32.dp),
       )
     },
