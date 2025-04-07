@@ -142,9 +142,7 @@ fun SearchPage(
       ShufflePlayRandomButtonsColumn(
         onShuffleClick = viewModel::onShuffleClick,
         onRandomClick = {
-          playlistsState.valueOrNull?.let {
-            onPlaylistClick(it[Random.nextInt(from = 0, until = it.size)])
-          }
+          playlistsState.valueOrNull?.let { onPlaylistClick(it[Random.nextInt(until = it.size)]) }
         },
       )
     }

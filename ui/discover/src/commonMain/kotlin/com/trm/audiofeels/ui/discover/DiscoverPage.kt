@@ -272,7 +272,7 @@ fun SharedTransitionScope.DiscoverPage(
                 trendingPlaylists.valueOrNull.orEmpty())
               .distinct()
           if (allDistinctPlaylists.isNotEmpty()) {
-            onPlaylistClick(allDistinctPlaylists[Random.nextInt(0, allDistinctPlaylists.size)])
+            onPlaylistClick(allDistinctPlaylists[Random.nextInt(until = allDistinctPlaylists.size)])
           }
         }
       )
