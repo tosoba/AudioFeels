@@ -590,6 +590,7 @@ private fun AppNavHost(
               ),
             hazeState = hazeState,
             bottomSpacerHeight = bottomSpacerHeight,
+            showFABs = showFABs,
             onPlaylistClick = onPlaylistClick,
             onNavigationIconClick = navController::popBackStack,
           )
