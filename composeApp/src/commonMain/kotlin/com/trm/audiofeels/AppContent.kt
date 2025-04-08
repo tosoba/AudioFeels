@@ -576,6 +576,7 @@ private fun AppNavHost(
             animatedContentScope = this@composable,
             hazeState = hazeState,
             bottomSpacerHeight = bottomSpacerHeight,
+            showFABs = showFABs,
             onPlaylistClick = onCarryOnPlaylistClick,
             onNavigationIconClick = navController::popBackStack,
           )
@@ -614,6 +615,7 @@ private fun AppNavHost(
             hazeState = hazeState,
             bottomSpacerHeight = bottomSpacerHeight,
             sharedElementKeyPrefix = stringResource(Res.string.favourite),
+            showFABs = showFABs,
             onPlaylistClick = onPlaylistClick,
             onNavigationIconClick = navController::popBackStack,
             onRetryClick = {},
@@ -629,6 +631,7 @@ private fun AppNavHost(
             hazeState = hazeState,
             bottomSpacerHeight = bottomSpacerHeight,
             sharedElementKeyPrefix = stringResource(Res.string.trending),
+            showFABs = showFABs,
             onPlaylistClick = onPlaylistClick,
             onNavigationIconClick = navController::popBackStack,
             onRetryClick = discoverViewModel.trendingPlaylists::restart,
