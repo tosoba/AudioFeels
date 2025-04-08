@@ -69,7 +69,7 @@ fun MoodPage(
               secondaryText = Res.string.no_playlists_found_mood_secondary_text,
             )
           } else {
-            items(items) {
+            items(items, key = Playlist::id) {
               PlaylistLazyVerticalGridItem(
                 name = it.name,
                 artworkUrl = it.artworkUrl,

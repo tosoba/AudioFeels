@@ -120,7 +120,9 @@ fun SharedTransitionScope.DiscoverPage(
         list = carryOnPlaylists,
         onRetryClick = {},
         placeholderItemContent = { CarryOnPlaylistPlaceholderItemContent() },
-      ) { index, lastIndex, carryOn ->
+        key = { it.playlist.id },
+      ) { items, index ->
+        val carryOn = items[index]
         CarryOnPlaylistLazyRowItem(
           name = carryOn.playlist.name,
           artworkUrl = carryOn.playlist.artworkUrl,
@@ -134,7 +136,7 @@ fun SharedTransitionScope.DiscoverPage(
                 animatedVisibilityScope = animatedContentScope,
               )
               .width(150.dp)
-              .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = lastIndex))
+              .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = items.lastIndex))
               .animateItem(),
           onClick = { onCarryOnPlaylistClick(carryOn) },
         )
@@ -168,7 +170,7 @@ fun SharedTransitionScope.DiscoverPage(
                 }.dp
             ),
       ) {
-        items(Mood.entries) { item ->
+        items(Mood.entries, key = Mood::name) { item ->
           MoodItem(
             name = item.name,
             symbol = item.symbol,
@@ -194,7 +196,9 @@ fun SharedTransitionScope.DiscoverPage(
         list = favouritePlaylists,
         onRetryClick = {},
         placeholderItemContent = { PlaylistPlaceholderItemContent() },
-      ) { index, lastIndex, playlist ->
+        key = Playlist::id,
+      ) { items, index ->
+        val playlist = items[index]
         PlaylistLazyRowItem(
           name = playlist.name,
           artworkUrl = playlist.artworkUrl,
@@ -207,7 +211,7 @@ fun SharedTransitionScope.DiscoverPage(
                 animatedVisibilityScope = animatedContentScope,
               )
               .width(150.dp)
-              .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = lastIndex))
+              .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = items.lastIndex))
               .animateItem(),
           onClick = { onPlaylistClick(playlist) },
         )
@@ -224,7 +228,9 @@ fun SharedTransitionScope.DiscoverPage(
         list = trendingPlaylists,
         onRetryClick = viewModel.trendingPlaylists::restart,
         placeholderItemContent = { PlaylistPlaceholderItemContent() },
-      ) { index, lastIndex, playlist ->
+        key = Playlist::id,
+      ) { items, index ->
+        val playlist = items[index]
         PlaylistLazyRowItem(
           name = playlist.name,
           artworkUrl = playlist.artworkUrl,
@@ -237,7 +243,7 @@ fun SharedTransitionScope.DiscoverPage(
                 animatedVisibilityScope = animatedContentScope,
               )
               .width(150.dp)
-              .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = lastIndex))
+              .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = items.lastIndex))
               .animateItem(),
           onClick = { onPlaylistClick(playlist) },
         )
@@ -357,7 +363,8 @@ private fun <T : Any> DiscoverListLazyRow(
   list: LoadableState<List<T>>,
   onRetryClick: () -> Unit,
   placeholderItemContent: @Composable ColumnScope.() -> Unit,
-  item: @Composable LazyItemScope.(Int, Int, T) -> Unit,
+  key: (T) -> Any,
+  item: @Composable LazyItemScope.(items: List<T>, index: Int) -> Unit,
 ) {
   AnimatedVisibility(visible = list.discoverListVisible()) {
     LazyRow(
@@ -377,7 +384,9 @@ private fun <T : Any> DiscoverListLazyRow(
           }
         }
         is LoadableState.Idle -> {
-          itemsIndexed(list.value) { index, carryOn -> item(index, list.value.lastIndex, carryOn) }
+          itemsIndexed(list.value, key = { _, item -> key(item) }) { index, _ ->
+            item(list.value, index)
+          }
         }
         is LoadableState.Error -> {
           item {

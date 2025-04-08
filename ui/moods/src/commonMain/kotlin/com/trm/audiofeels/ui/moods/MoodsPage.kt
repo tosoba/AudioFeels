@@ -48,7 +48,7 @@ fun SharedTransitionScope.MoodsPage(
         Spacer(modifier = Modifier.height(topAppBarSpacerHeight()))
       }
 
-      items(Mood.entries) { item ->
+      items(Mood.entries, key = Mood::name) { item ->
         Box(contentAlignment = Alignment.Center) {
           MoodItem(
             name = item.name,

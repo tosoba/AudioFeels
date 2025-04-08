@@ -102,7 +102,7 @@ fun SearchPage(
                   secondaryText = Res.string.no_playlists_found_search_secondary_text,
                 )
               } else {
-                items(playlists.value) {
+                items(playlists.value, key = Playlist::id) {
                   PlaylistLazyVerticalGridItem(
                     name = it.name,
                     artworkUrl = it.artworkUrl,
