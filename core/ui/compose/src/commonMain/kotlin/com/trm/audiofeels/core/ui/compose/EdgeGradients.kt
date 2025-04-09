@@ -16,8 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import com.trm.audiofeels.core.ui.compose.theme.GRADIENT_BASE_ALPHA
+import com.trm.audiofeels.core.ui.compose.theme.Spacing
 
 @Composable
 fun BoxScope.StartEdgeGradient() {
@@ -54,7 +54,7 @@ fun BoxScope.BottomEdgeGradient() {
 
 @Composable
 fun TopEdgeGradient(topOffset: Dp) {
-  Column(modifier = Modifier.fillMaxWidth().height(topOffset + 8.dp)) {
+  Column(modifier = Modifier.fillMaxWidth().height(topOffset + Spacing.small8dp)) {
     Spacer(modifier = Modifier.weight(1f))
     Box(
       modifier =
@@ -86,4 +86,4 @@ private fun transparentToFullyOpaqueColors(): List<Color> =
     MaterialTheme.colorScheme.background,
   )
 
-private val GRADIENT_SIZE = 8.dp
+private val GRADIENT_SIZE = Spacing.small8dp

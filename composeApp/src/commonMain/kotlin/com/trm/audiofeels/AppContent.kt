@@ -83,6 +83,7 @@ import coil3.compose.setSingletonImageLoaderFactory
 import com.materialkolor.DynamicMaterialTheme
 import com.materialkolor.ktx.rememberThemeColor
 import com.trm.audiofeels.core.ui.compose.theme.GRADIENT_BASE_ALPHA
+import com.trm.audiofeels.core.ui.compose.theme.Spacing
 import com.trm.audiofeels.core.ui.compose.theme.UpdateEdgeToEdge
 import com.trm.audiofeels.core.ui.compose.util.NavigationContentPosition
 import com.trm.audiofeels.core.ui.compose.util.NavigationType
@@ -358,7 +359,7 @@ private fun AppBottomSheetScaffold(
             modifier =
               Modifier.align(Alignment.CenterEnd)
                 .alpha(partiallyExpandedAlpha)
-                .padding(end = 16.dp),
+                .padding(end = Spacing.medium16dp),
             enabled = partiallyExpandedAlpha == 1f,
             onClick = playerViewState.cancelPlayback,
           )
@@ -382,7 +383,7 @@ private fun AppBottomSheetScaffold(
                 supportingPaneValue == PaneAdaptedValue.Expanded ||
                   appLayoutState.playerLayoutState.currentSheetValue == SheetValue.Hidden
               ) {
-                16.dp
+                Spacing.medium16dp
               } else {
                 sheetPeekHeight
               },
@@ -405,8 +406,9 @@ private fun AppBottomSheetScaffold(
               Modifier.fillMaxSize()
                 .padding(
                   top =
-                    with(density) { TopAppBarDefaults.windowInsets.getTop(density).toDp() } + 16.dp,
-                  bottom = 16.dp,
+                    with(density) { TopAppBarDefaults.windowInsets.getTop(density).toDp() } +
+                      Spacing.medium16dp,
+                  bottom = Spacing.medium16dp,
                 ),
           )
         }
@@ -450,7 +452,7 @@ private fun AppNavigationRail(
           start = paddingValues.calculateStartPadding(LocalLayoutDirection.current),
         ),
       horizontalAlignment = Alignment.CenterHorizontally,
-      verticalArrangement = Arrangement.spacedBy(4.dp),
+      verticalArrangement = Arrangement.spacedBy(Spacing.extraSmall4dp),
     ) {
       if (navigationContentPosition == NavigationContentPosition.CENTER) {
         Spacer(modifier = Modifier.weight(1f))
@@ -486,10 +488,12 @@ private fun AppPermanentNavigationDrawer(
       modifier =
         Modifier.verticalScroll(rememberScrollState())
           .padding(
-            top = paddingValues.calculateTopPadding() + 16.dp,
-            bottom = paddingValues.calculateBottomPadding() + 16.dp,
-            start = paddingValues.calculateStartPadding(LocalLayoutDirection.current) + 16.dp,
-            end = 16.dp,
+            top = paddingValues.calculateTopPadding() + Spacing.medium16dp,
+            bottom = paddingValues.calculateBottomPadding() + Spacing.medium16dp,
+            start =
+              paddingValues.calculateStartPadding(LocalLayoutDirection.current) +
+                Spacing.medium16dp,
+            end = Spacing.medium16dp,
           ),
       horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -503,7 +507,7 @@ private fun AppPermanentNavigationDrawer(
           label = {
             Text(
               text = stringResource(route.labelResource),
-              modifier = Modifier.padding(horizontal = 16.dp),
+              modifier = Modifier.padding(horizontal = Spacing.medium16dp),
             )
           },
           icon = {

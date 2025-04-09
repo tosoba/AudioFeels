@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.trm.audiofeels.core.ui.compose.theme.Spacing
 import com.trm.audiofeels.core.ui.compose.theme.topAppBarColorsWithGradient
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.go_back
@@ -45,7 +46,7 @@ internal fun MoodTopBar(mood: Mood, hazeState: HazeState, onNavigationIconClick:
       Text(
         text = mood.symbol,
         style = MaterialTheme.typography.headlineSmall,
-        modifier = Modifier.padding(end = 16.dp),
+        modifier = Modifier.padding(end = Spacing.medium16dp),
       )
     },
     colors = topAppBarColorsWithGradient(),

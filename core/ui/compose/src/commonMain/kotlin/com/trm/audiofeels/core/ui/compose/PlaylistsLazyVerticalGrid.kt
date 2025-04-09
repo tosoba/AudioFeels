@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.trm.audiofeels.core.ui.compose.theme.Spacing
 
 @Composable
 fun PlaylistsLazyVerticalGrid(
@@ -18,9 +19,10 @@ fun PlaylistsLazyVerticalGrid(
   LazyVerticalGrid(
     modifier = modifier,
     columns = GridCells.Adaptive(150.dp),
-    contentPadding = PaddingValues(horizontal = 16.dp),
-    horizontalArrangement = Arrangement.spacedBy(16.dp),
-    verticalArrangement = if (singleItem) Arrangement.Center else Arrangement.spacedBy(16.dp),
+    contentPadding = PaddingValues(horizontal = Spacing.medium16dp),
+    horizontalArrangement = Arrangement.spacedBy(Spacing.medium16dp),
+    verticalArrangement =
+      if (singleItem) Arrangement.Center else Arrangement.spacedBy(Spacing.medium16dp),
     content = content,
   )
 }

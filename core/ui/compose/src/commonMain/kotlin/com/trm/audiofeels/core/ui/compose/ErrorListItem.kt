@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.trm.audiofeels.core.ui.compose.theme.Spacing
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.error_occurred
 import com.trm.audiofeels.core.ui.resources.refresh
@@ -36,21 +37,21 @@ fun ErrorListItem(modifier: Modifier = Modifier, onClick: () -> Unit) {
         contentDescription = null,
         modifier =
           Modifier.size(150.dp)
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(Spacing.medium16dp))
             .background(MaterialTheme.colorScheme.errorContainer),
       )
 
-      Spacer(modifier = Modifier.height(8.dp))
+      Spacer(modifier = Modifier.height(Spacing.small8dp))
 
       Text(
         text = stringResource(Res.string.error_occurred),
         style = MaterialTheme.typography.labelLarge,
         maxLines = 1,
         textAlign = TextAlign.Center,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp).basicMarquee(),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = Spacing.small8dp).basicMarquee(),
       )
 
-      Spacer(modifier = Modifier.height(8.dp))
+      Spacer(modifier = Modifier.height(Spacing.small8dp))
     }
   }
 }

@@ -34,12 +34,12 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.util.lerp
 import com.trm.audiofeels.core.ui.compose.AsyncShimmerImage
 import com.trm.audiofeels.core.ui.compose.EndEdgeGradient
 import com.trm.audiofeels.core.ui.compose.StartEdgeGradient
+import com.trm.audiofeels.core.ui.compose.theme.Spacing
 import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.artwork_placeholder
@@ -93,7 +93,7 @@ fun PlayerExpandedContent(
               (viewState as? PlayerViewState.Playback)?.seekToProgress?.invoke(sliderValue)
             },
             enabled = viewState is PlayerViewState.Playback,
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(Spacing.medium16dp),
           )
         }
       }
@@ -144,7 +144,7 @@ private fun PlayerTrackPlaceholdersPager(modifier: Modifier = Modifier) {
       Text(
         text = "",
         style = MaterialTheme.typography.labelLarge,
-        modifier = Modifier.fillMaxWidth().padding(12.dp),
+        modifier = Modifier.fillMaxWidth().padding(Spacing.mediumSmall12dp),
       )
     }
   }
@@ -169,7 +169,7 @@ private fun PlayerErrorPager(modifier: Modifier = Modifier) {
         text = stringResource(Res.string.error_occurred),
         style = MaterialTheme.typography.labelLarge,
         textAlign = TextAlign.Center,
-        modifier = Modifier.fillMaxWidth().padding(12.dp),
+        modifier = Modifier.fillMaxWidth().padding(Spacing.mediumSmall12dp),
       )
     }
   }
@@ -218,12 +218,13 @@ private fun PlayerTracksPager(viewState: PlayerViewState.Playback, modifier: Mod
         style = MaterialTheme.typography.labelLarge,
         textAlign = TextAlign.Center,
         maxLines = 1,
-        modifier = Modifier.fillMaxWidth().padding(8.dp).basicMarquee(),
+        modifier = Modifier.fillMaxWidth().padding(Spacing.small8dp).basicMarquee(),
       )
     }
   }
 }
 
-private val playerTracksPagerContentPadding = PaddingValues(horizontal = 64.dp, vertical = 16.dp)
+private val playerTracksPagerContentPadding =
+  PaddingValues(horizontal = Spacing.extraLarge64dp, vertical = Spacing.medium16dp)
 private const val playerTracksPagerItemMinScale = .85f
 private const val playerTracksPagerItemMinAlpha = .5f

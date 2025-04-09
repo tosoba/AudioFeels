@@ -18,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trm.audiofeels.core.base.model.LoadableState
 import com.trm.audiofeels.core.ui.compose.BottomEdgeGradient
@@ -30,6 +29,7 @@ import com.trm.audiofeels.core.ui.compose.PlaylistsLazyVerticalGrid
 import com.trm.audiofeels.core.ui.compose.ShufflePlayRandomButtonsColumn
 import com.trm.audiofeels.core.ui.compose.TopEdgeGradient
 import com.trm.audiofeels.core.ui.compose.emptyListTextItem
+import com.trm.audiofeels.core.ui.compose.theme.Spacing
 import com.trm.audiofeels.core.ui.compose.util.topAppBarSpacerHeight
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.no_playlists_found_mood_secondary_text
@@ -97,7 +97,7 @@ fun MoodPage(
     AnimatedVisibility(
       visible = showFABs && !playlists.valueOrNull.isNullOrEmpty(),
       modifier =
-        Modifier.align(Alignment.BottomEnd).padding(16.dp).onSizeChanged {
+        Modifier.align(Alignment.BottomEnd).padding(Spacing.medium16dp).onSizeChanged {
           fabsHeightPx = it.height
         },
     ) {

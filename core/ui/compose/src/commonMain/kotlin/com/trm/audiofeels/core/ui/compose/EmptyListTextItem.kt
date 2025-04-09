@@ -13,7 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import com.trm.audiofeels.core.ui.compose.theme.Spacing
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -28,7 +28,10 @@ fun LazyGridScope.emptyListTextItem(primaryText: StringResource, secondaryText: 
 
 @Composable
 private fun EmptyListText(primaryText: String, secondaryText: String) {
-  Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(16.dp)) {
+  Column(
+    horizontalAlignment = Alignment.CenterHorizontally,
+    modifier = Modifier.padding(Spacing.medium16dp),
+  ) {
     Text(
       text = primaryText,
       textAlign = TextAlign.Center,
@@ -36,7 +39,7 @@ private fun EmptyListText(primaryText: String, secondaryText: String) {
       modifier = Modifier.fillMaxWidth(),
     )
 
-    Spacer(modifier = Modifier.height(4.dp))
+    Spacer(modifier = Modifier.height(Spacing.extraSmall4dp))
 
     Text(
       text = secondaryText,

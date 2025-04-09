@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.trm.audiofeels.core.ui.compose.AsyncShimmerImage
+import com.trm.audiofeels.core.ui.compose.theme.Spacing
 import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.artwork_placeholder
@@ -77,7 +78,12 @@ internal fun PlayerCollapsedContent(
           Row(
             modifier =
               Modifier.fillMaxSize()
-                .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 12.dp),
+                .padding(
+                  start = Spacing.medium16dp,
+                  end = Spacing.medium16dp,
+                  top = Spacing.small8dp,
+                  bottom = Spacing.mediumSmall12dp,
+                ),
             verticalAlignment = Alignment.CenterVertically,
           ) {
             AnimatedVisibility(
@@ -106,7 +112,13 @@ internal fun PlayerCollapsedContent(
       Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier =
-          Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 12.dp),
+          Modifier.fillMaxWidth()
+            .padding(
+              start = Spacing.medium16dp,
+              end = Spacing.medium16dp,
+              top = Spacing.small8dp,
+              bottom = Spacing.mediumSmall12dp,
+            ),
       ) {
         when (viewState) {
           is PlayerViewState.Invisible,
@@ -114,8 +126,11 @@ internal fun PlayerCollapsedContent(
             Box(
               modifier =
                 Modifier.size(60.dp)
-                  .clip(RoundedCornerShape(12.dp))
-                  .shimmerBackground(enabled = true, shape = RoundedCornerShape(12.dp))
+                  .clip(RoundedCornerShape(Spacing.mediumSmall12dp))
+                  .shimmerBackground(
+                    enabled = true,
+                    shape = RoundedCornerShape(Spacing.mediumSmall12dp),
+                  )
             )
           }
           is PlayerViewState.Error -> {
@@ -124,7 +139,7 @@ internal fun PlayerCollapsedContent(
               contentDescription = null,
               modifier =
                 Modifier.size(60.dp)
-                  .clip(RoundedCornerShape(12.dp))
+                  .clip(RoundedCornerShape(Spacing.mediumSmall12dp))
                   .background(MaterialTheme.colorScheme.errorContainer),
             )
           }
@@ -134,8 +149,11 @@ internal fun PlayerCollapsedContent(
               contentDescription = null,
               modifier = { enabled ->
                 Modifier.size(60.dp)
-                  .clip(RoundedCornerShape(12.dp))
-                  .shimmerBackground(enabled = enabled, shape = RoundedCornerShape(12.dp))
+                  .clip(RoundedCornerShape(Spacing.mediumSmall12dp))
+                  .shimmerBackground(
+                    enabled = enabled,
+                    shape = RoundedCornerShape(Spacing.mediumSmall12dp),
+                  )
               },
             )
           }
@@ -143,7 +161,7 @@ internal fun PlayerCollapsedContent(
 
         Column(
           verticalArrangement = Arrangement.Center,
-          modifier = Modifier.weight(1f).padding(horizontal = 16.dp),
+          modifier = Modifier.weight(1f).padding(horizontal = Spacing.medium16dp),
         ) {
           when (viewState) {
             is PlayerViewState.Invisible -> {
@@ -170,7 +188,7 @@ internal fun PlayerCollapsedContent(
           },
         )
 
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(Spacing.small8dp))
 
         PlayerPrimaryControl(controlState = viewState.primaryControlState)
       }

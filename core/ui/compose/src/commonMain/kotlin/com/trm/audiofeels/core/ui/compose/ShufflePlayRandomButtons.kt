@@ -15,7 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import com.trm.audiofeels.core.ui.compose.theme.Spacing
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.play_random
 import com.trm.audiofeels.core.ui.resources.play_random_playlist
@@ -36,7 +36,7 @@ fun ShufflePlayRandomButtonsColumn(
       )
     }
 
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(Spacing.medium16dp))
 
     PlayRandomFloatingActionButton(onClick = onRandomClick)
   }
@@ -54,7 +54,7 @@ fun PlayRandomFloatingActionButton(modifier: Modifier = Modifier, onClick: () ->
       Icon(
         imageVector = Icons.Filled.PlayArrow,
         contentDescription = stringResource(Res.string.play_random_playlist),
-        modifier = Modifier.size(32.dp),
+        modifier = Modifier.size(Spacing.large32dp),
       )
     },
     modifier = modifier,

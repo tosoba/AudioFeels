@@ -31,6 +31,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.trm.audiofeels.core.ui.compose.theme.GRADIENT_MAX_ALPHA
+import com.trm.audiofeels.core.ui.compose.theme.Spacing
 import com.trm.audiofeels.core.ui.compose.theme.topAppBarColorsWithGradient
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.clear_search
@@ -83,10 +84,10 @@ internal fun SearchTopBar(
           .padding(
             top =
               with(LocalDensity.current) { TopAppBarDefaults.windowInsets.getTop(this).toDp() } +
-                8.dp,
-            start = 16.dp,
-            end = 16.dp,
-            bottom = 8.dp,
+                Spacing.small8dp,
+            start = Spacing.medium16dp,
+            end = Spacing.medium16dp,
+            bottom = Spacing.small8dp,
           )
           .clip(SearchBarDefaults.dockedShape)
           .hazeEffect(hazeState) {
@@ -146,7 +147,7 @@ internal fun SearchTopBar(
               modifier =
                 Modifier.fillMaxWidth()
                   .clickable { updateQuery(it) }
-                  .padding(horizontal = 16.dp, vertical = 8.dp),
+                  .padding(horizontal = Spacing.medium16dp, vertical = Spacing.small8dp),
             )
           }
         }

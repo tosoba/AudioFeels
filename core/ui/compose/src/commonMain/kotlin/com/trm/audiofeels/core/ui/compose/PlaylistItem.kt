@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import com.trm.audiofeels.core.ui.compose.theme.Spacing
 import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.days_ago
@@ -69,9 +70,9 @@ fun PlaylistLazyVerticalGridItem(
 
 @Composable
 private fun ColumnScope.PlaylistNameSpacedText(name: String) {
-  Spacer(modifier = Modifier.height(8.dp))
+  Spacer(modifier = Modifier.height(Spacing.small8dp))
   PlaylistNameText(name)
-  Spacer(modifier = Modifier.height(8.dp))
+  Spacer(modifier = Modifier.height(Spacing.small8dp))
 }
 
 @Composable
@@ -86,15 +87,15 @@ fun PlaylistArtworkImage(
 @Composable
 fun PlaylistLazyRowItemArtworkImageModifier(shimmerEnabled: Boolean): Modifier =
   Modifier.size(150.dp)
-    .clip(RoundedCornerShape(16.dp))
-    .shimmerBackground(enabled = shimmerEnabled, shape = RoundedCornerShape(16.dp))
+    .clip(RoundedCornerShape(Spacing.medium16dp))
+    .shimmerBackground(enabled = shimmerEnabled, shape = RoundedCornerShape(Spacing.medium16dp))
 
 @Composable
 fun PlaylistLazyVerticalGridItemArtworkImageModifier(shimmerEnabled: Boolean): Modifier =
   Modifier.fillMaxWidth()
     .aspectRatio(1f)
-    .clip(RoundedCornerShape(16.dp))
-    .shimmerBackground(enabled = shimmerEnabled, shape = RoundedCornerShape(16.dp))
+    .clip(RoundedCornerShape(Spacing.medium16dp))
+    .shimmerBackground(enabled = shimmerEnabled, shape = RoundedCornerShape(Spacing.medium16dp))
 
 @Composable
 fun PlaylistNameText(name: String) {
@@ -102,7 +103,7 @@ fun PlaylistNameText(name: String) {
     text = name,
     style = MaterialTheme.typography.labelLarge,
     maxLines = 1,
-    modifier = Modifier.padding(horizontal = 8.dp).basicMarquee(),
+    modifier = Modifier.padding(horizontal = Spacing.small8dp).basicMarquee(),
   )
 }
 
@@ -110,7 +111,7 @@ fun PlaylistNameText(name: String) {
 fun ColumnScope.PlaylistPlaceholderItemContent() {
   Spacer(modifier = Modifier.height(158.dp))
   Text(text = "", style = MaterialTheme.typography.labelLarge)
-  Spacer(modifier = Modifier.height(8.dp))
+  Spacer(modifier = Modifier.height(Spacing.small8dp))
 }
 
 @Composable
@@ -118,7 +119,7 @@ fun LazyGridItemScope.LazyGridPlaylistPlaceholderItem(content: @Composable Colum
   Column(
     modifier =
       Modifier.width(150.dp)
-        .shimmerBackground(enabled = true, shape = RoundedCornerShape(16.dp))
+        .shimmerBackground(enabled = true, shape = RoundedCornerShape(Spacing.medium16dp))
         .animateItem(),
     content = content,
   )
@@ -129,7 +130,7 @@ fun ColumnScope.CarryOnPlaylistPlaceholderItemContent() {
   Spacer(modifier = Modifier.height(158.dp))
   Text(text = "", style = MaterialTheme.typography.labelLarge)
   Text(text = "", style = MaterialTheme.typography.labelSmall)
-  Spacer(modifier = Modifier.height(8.dp))
+  Spacer(modifier = Modifier.height(Spacing.small8dp))
 }
 
 @Composable
@@ -176,10 +177,10 @@ private fun ColumnScope.CarryOnPlaylistBody(
   lastPlayed: Instant,
   now: Instant = Clock.System.now(),
 ) {
-  Spacer(modifier = Modifier.height(8.dp))
+  Spacer(modifier = Modifier.height(Spacing.small8dp))
   PlaylistNameText(name = name)
   PlaylistLastPlayedAgoText(duration = now - lastPlayed)
-  Spacer(modifier = Modifier.height(8.dp))
+  Spacer(modifier = Modifier.height(Spacing.small8dp))
 }
 
 @Composable
@@ -211,6 +212,6 @@ private fun PlaylistLastPlayedAgoText(duration: Duration) {
       },
     style = MaterialTheme.typography.labelSmall,
     maxLines = 1,
-    modifier = Modifier.padding(horizontal = 8.dp).basicMarquee(),
+    modifier = Modifier.padding(horizontal = Spacing.small8dp).basicMarquee(),
   )
 }

@@ -20,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trm.audiofeels.core.base.model.LoadableState
 import com.trm.audiofeels.core.ui.compose.BottomEdgeGradient
@@ -32,6 +31,7 @@ import com.trm.audiofeels.core.ui.compose.PlaylistsLazyVerticalGrid
 import com.trm.audiofeels.core.ui.compose.ShufflePlayRandomButtonsColumn
 import com.trm.audiofeels.core.ui.compose.TopEdgeGradient
 import com.trm.audiofeels.core.ui.compose.emptyListTextItem
+import com.trm.audiofeels.core.ui.compose.theme.Spacing
 import com.trm.audiofeels.core.ui.compose.util.topAppBarSpacerHeight
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.no_playlists_found_primary_text
@@ -73,7 +73,10 @@ fun SearchPage(
 
       if (showSearchBarContentSpacerItem) {
         item(span = { GridItemSpan(maxLineSpan) }) {
-          Spacer(modifier = Modifier.height(SEARCH_TOP_BAR_CONTENT_HEIGHT - 16.dp).animateItem())
+          Spacer(
+            modifier =
+              Modifier.height(SEARCH_TOP_BAR_CONTENT_HEIGHT - Spacing.medium16dp).animateItem()
+          )
         }
       }
 
@@ -129,13 +132,13 @@ fun SearchPage(
       }
     }
 
-    TopEdgeGradient(topOffset = topAppBarSpacerHeight() + 8.dp)
+    TopEdgeGradient(topOffset = topAppBarSpacerHeight() + Spacing.small8dp)
     BottomEdgeGradient()
 
     AnimatedVisibility(
       visible = showFABs && !playlistsState.valueOrNull.isNullOrEmpty(),
       modifier =
-        Modifier.align(Alignment.BottomEnd).padding(16.dp).onSizeChanged {
+        Modifier.align(Alignment.BottomEnd).padding(Spacing.medium16dp).onSizeChanged {
           fabsHeightPx = it.height
         },
     ) {

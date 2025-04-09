@@ -14,7 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import com.trm.audiofeels.core.ui.compose.theme.Spacing
 
 @Composable
 fun MoodItem(symbol: String, name: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
@@ -24,7 +24,7 @@ fun MoodItem(symbol: String, name: String, modifier: Modifier = Modifier, onClic
       verticalArrangement = Arrangement.Center,
       modifier = Modifier.fillMaxWidth(),
     ) {
-      Spacer(modifier = Modifier.height(8.dp))
+      Spacer(modifier = Modifier.height(Spacing.small8dp))
 
       Text(text = symbol, style = MaterialTheme.typography.headlineLarge)
 
@@ -32,10 +32,10 @@ fun MoodItem(symbol: String, name: String, modifier: Modifier = Modifier, onClic
         text = name,
         style = MaterialTheme.typography.labelLarge,
         maxLines = 1,
-        modifier = Modifier.padding(horizontal = 8.dp).basicMarquee(),
+        modifier = Modifier.padding(horizontal = Spacing.small8dp).basicMarquee(),
       )
 
-      Spacer(modifier = Modifier.height(8.dp))
+      Spacer(modifier = Modifier.height(Spacing.small8dp))
     }
   }
 }

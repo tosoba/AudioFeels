@@ -65,6 +65,7 @@ import com.trm.audiofeels.core.ui.compose.PlaylistLazyRowItem
 import com.trm.audiofeels.core.ui.compose.PlaylistPlaceholderItemContent
 import com.trm.audiofeels.core.ui.compose.StartEdgeGradient
 import com.trm.audiofeels.core.ui.compose.TopEdgeGradient
+import com.trm.audiofeels.core.ui.compose.theme.Spacing
 import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
 import com.trm.audiofeels.core.ui.compose.util.topAppBarSpacerHeight
 import com.trm.audiofeels.core.ui.resources.Res
@@ -113,7 +114,7 @@ fun SharedTransitionScope.DiscoverPage(
         text = stringResource(Res.string.carry_on),
         list = carryOnPlaylists,
         onViewAllClick = onViewAllCarryOnPlaylistsClick,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = Spacing.medium16dp),
       )
 
       DiscoverListLazyRow(
@@ -142,13 +143,13 @@ fun SharedTransitionScope.DiscoverPage(
         )
       }
 
-      Row(modifier = Modifier.padding(horizontal = 16.dp)) {
+      Row(modifier = Modifier.padding(horizontal = Spacing.medium16dp)) {
         DiscoverListHeadlineText(
           text = stringResource(Res.string.mood),
           modifier = Modifier.alignByBaseline().basicMarquee(),
         )
 
-        Spacer(modifier = Modifier.weight(1f).padding(horizontal = 4.dp))
+        Spacer(modifier = Modifier.weight(1f).padding(horizontal = Spacing.extraSmall4dp))
 
         TextButton(onClick = onViewAllMoodsClick, modifier = Modifier.alignByBaseline()) {
           Text(stringResource(Res.string.view_all))
@@ -157,9 +158,14 @@ fun SharedTransitionScope.DiscoverPage(
 
       LazyHorizontalGrid(
         rows = GridCells.FixedSize(90.dp),
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding =
+          PaddingValues(
+            start = Spacing.medium16dp,
+            end = Spacing.medium16dp,
+            bottom = Spacing.medium16dp,
+          ),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.medium16dp),
+        verticalArrangement = Arrangement.spacedBy(Spacing.medium16dp),
         modifier =
           Modifier.fillMaxWidth()
             .heightIn(
@@ -189,7 +195,7 @@ fun SharedTransitionScope.DiscoverPage(
         text = stringResource(Res.string.favourite),
         list = favouritePlaylists,
         onViewAllClick = onViewAllFavouritePlaylistsClick,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = Spacing.medium16dp),
       )
 
       DiscoverListLazyRow(
@@ -221,7 +227,7 @@ fun SharedTransitionScope.DiscoverPage(
         text = stringResource(Res.string.trending),
         list = trendingPlaylists,
         onViewAllClick = onViewAllTrendingPlaylistsClick,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = Spacing.medium16dp),
       )
 
       DiscoverListLazyRow(
@@ -266,7 +272,7 @@ fun SharedTransitionScope.DiscoverPage(
             !favouritePlaylists.valueOrNull.isNullOrEmpty() ||
             !trendingPlaylists.valueOrNull.isNullOrEmpty()),
       modifier =
-        Modifier.align(Alignment.BottomEnd).padding(16.dp).onSizeChanged {
+        Modifier.align(Alignment.BottomEnd).padding(Spacing.medium16dp).onSizeChanged {
           playRandomFABHeightPx = it.height
         },
     ) {
@@ -312,7 +318,7 @@ private fun <T : Any> DiscoverListHeadline(
                 .basicMarquee(),
           )
 
-          Spacer(modifier = Modifier.weight(1f).padding(horizontal = 8.dp))
+          Spacer(modifier = Modifier.weight(1f).padding(horizontal = Spacing.small8dp))
 
           Text(
             text = stringResource(Res.string.view_all),
@@ -330,7 +336,7 @@ private fun <T : Any> DiscoverListHeadline(
               modifier = Modifier.alignByBaseline().basicMarquee(),
             )
 
-            Spacer(modifier = Modifier.weight(1f).padding(horizontal = 8.dp))
+            Spacer(modifier = Modifier.weight(1f).padding(horizontal = Spacing.small8dp))
 
             TextButton(onClick = onViewAllClick, modifier = Modifier.alignByBaseline()) {
               Text(stringResource(Res.string.view_all))
@@ -369,7 +375,12 @@ private fun <T : Any> DiscoverListLazyRow(
   AnimatedVisibility(visible = list.discoverListVisible()) {
     LazyRow(
       modifier = Modifier.fillMaxWidth(),
-      contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
+      contentPadding =
+        PaddingValues(
+          start = Spacing.medium16dp,
+          end = Spacing.medium16dp,
+          bottom = Spacing.medium16dp,
+        ),
       userScrollEnabled = list !is LoadableState.Error,
     ) {
       when (list) {
@@ -412,12 +423,12 @@ private fun LazyItemScope.DiscoverListPlaceholderItem(
     modifier =
       Modifier.width(150.dp)
         .padding(
-          top = 16.dp,
+          top = Spacing.medium16dp,
           start = horizontalPaddingValues.calculateStartPadding(LocalLayoutDirection.current),
           end = horizontalPaddingValues.calculateEndPadding(LocalLayoutDirection.current),
-          bottom = 16.dp,
+          bottom = Spacing.medium16dp,
         )
-        .shimmerBackground(enabled = true, shape = RoundedCornerShape(16.dp))
+        .shimmerBackground(enabled = true, shape = RoundedCornerShape(Spacing.medium16dp))
         .animateItem(),
     content = content,
   )
@@ -428,6 +439,6 @@ private fun <T : Any> LoadableState<List<T>>.discoverListVisible(): Boolean =
 
 private fun playlistItemPaddingValues(itemIndex: Int, lastIndex: Int): PaddingValues =
   PaddingValues(
-    start = if (itemIndex > 0) 8.dp else 0.dp,
-    end = if (itemIndex < lastIndex) 8.dp else 0.dp,
+    start = if (itemIndex > 0) Spacing.small8dp else Spacing.none0dp,
+    end = if (itemIndex < lastIndex) Spacing.small8dp else Spacing.none0dp,
   )

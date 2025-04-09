@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.trm.audiofeels.core.ui.compose.BottomEdgeGradient
 import com.trm.audiofeels.core.ui.compose.MoodItem
 import com.trm.audiofeels.core.ui.compose.TopEdgeGradient
+import com.trm.audiofeels.core.ui.compose.theme.Spacing
 import com.trm.audiofeels.core.ui.compose.util.topAppBarSpacerHeight
 import com.trm.audiofeels.domain.model.Mood
 import dev.chrisbanes.haze.HazeState
@@ -39,9 +40,14 @@ fun SharedTransitionScope.MoodsPage(
   Box {
     LazyVerticalGrid(
       columns = GridCells.Adaptive(90.dp),
-      contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
-      horizontalArrangement = Arrangement.spacedBy(16.dp),
-      verticalArrangement = Arrangement.spacedBy(16.dp),
+      contentPadding =
+        PaddingValues(
+          start = Spacing.medium16dp,
+          end = Spacing.medium16dp,
+          bottom = Spacing.medium16dp,
+        ),
+      horizontalArrangement = Arrangement.spacedBy(Spacing.medium16dp),
+      verticalArrangement = Arrangement.spacedBy(Spacing.medium16dp),
       modifier = Modifier.fillMaxSize().hazeSource(hazeState),
     ) {
       item(span = { GridItemSpan(maxLineSpan) }) {
