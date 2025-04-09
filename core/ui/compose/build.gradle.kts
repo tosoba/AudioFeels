@@ -30,6 +30,7 @@ kotlin {
 
         implementation(libs.coil.core)
         implementation(libs.coil.compose)
+        implementation(libs.haze)
 
         implementation(compose.material3AdaptiveNavigationSuite)
         implementation(libs.material3.adaptive)

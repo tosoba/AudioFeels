@@ -13,14 +13,13 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import com.trm.audiofeels.core.ui.compose.theme.topAppBarColorsWithGradient
+import com.trm.audiofeels.core.ui.compose.util.defaultHazeEffect
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.go_back
 import com.trm.audiofeels.core.ui.resources.mood
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.hazeEffect
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
@@ -29,7 +28,6 @@ internal fun SharedTransitionScope.MoodsTopBar(
   hazeState: HazeState,
   onNavigationIconClick: () -> Unit,
 ) {
-  val hazeStyle = HazeStyle(backgroundColor = MaterialTheme.colorScheme.background, tint = null)
   TopAppBar(
     title = {
       Text(
@@ -47,9 +45,10 @@ internal fun SharedTransitionScope.MoodsTopBar(
     },
     colors = topAppBarColorsWithGradient(),
     modifier =
-      Modifier.renderInSharedTransitionScopeOverlay().hazeEffect(hazeState) {
-        style = hazeStyle
-        blurRadius = 10.dp
-      },
+      Modifier.renderInSharedTransitionScopeOverlay()
+        .defaultHazeEffect(
+          hazeState = hazeState,
+          hazeStyle = HazeStyle(backgroundColor = MaterialTheme.colorScheme.background, tint = null),
+        ),
   )
 }

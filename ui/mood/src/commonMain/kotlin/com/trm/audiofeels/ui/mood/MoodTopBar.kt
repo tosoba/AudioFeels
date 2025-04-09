@@ -12,21 +12,19 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import com.trm.audiofeels.core.ui.compose.theme.Spacing
 import com.trm.audiofeels.core.ui.compose.theme.topAppBarColorsWithGradient
+import com.trm.audiofeels.core.ui.compose.util.defaultHazeEffect
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.go_back
 import com.trm.audiofeels.domain.model.Mood
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.hazeEffect
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun MoodTopBar(mood: Mood, hazeState: HazeState, onNavigationIconClick: () -> Unit) {
-  val hazeStyle = HazeStyle(backgroundColor = MaterialTheme.colorScheme.background, tint = null)
   TopAppBar(
     title = {
       Text(
@@ -51,9 +49,9 @@ internal fun MoodTopBar(mood: Mood, hazeState: HazeState, onNavigationIconClick:
     },
     colors = topAppBarColorsWithGradient(),
     modifier =
-      Modifier.hazeEffect(hazeState) {
-        style = hazeStyle
-        blurRadius = 10.dp
-      },
+      Modifier.defaultHazeEffect(
+        hazeState = hazeState,
+        hazeStyle = HazeStyle(backgroundColor = MaterialTheme.colorScheme.background, tint = null),
+      ),
   )
 }

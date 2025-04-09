@@ -83,11 +83,13 @@ import coil3.compose.setSingletonImageLoaderFactory
 import com.materialkolor.DynamicMaterialTheme
 import com.materialkolor.ktx.rememberThemeColor
 import com.trm.audiofeels.core.ui.compose.theme.GRADIENT_BASE_ALPHA
+import com.trm.audiofeels.core.ui.compose.theme.GRADIENT_MAX_ALPHA
 import com.trm.audiofeels.core.ui.compose.theme.Spacing
 import com.trm.audiofeels.core.ui.compose.theme.UpdateEdgeToEdge
 import com.trm.audiofeels.core.ui.compose.util.NavigationContentPosition
 import com.trm.audiofeels.core.ui.compose.util.NavigationType
 import com.trm.audiofeels.core.ui.compose.util.calculateWindowSize
+import com.trm.audiofeels.core.ui.compose.util.defaultHazeEffect
 import com.trm.audiofeels.core.ui.compose.util.loadImageBitmapOrNull
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.favourite
@@ -114,7 +116,6 @@ import com.trm.audiofeels.ui.search.SearchPage
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
-import dev.chrisbanes.haze.hazeEffect
 import dev.zwander.compose.rememberThemeInfo
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -314,7 +315,9 @@ private fun AppBottomSheetScaffold(
       backgroundColor = BottomSheetDefaults.ContainerColor,
       tint =
         HazeTint(
-          BottomSheetDefaults.ContainerColor.copy(alpha = GRADIENT_BASE_ALPHA + expandedAlpha * .1f)
+          BottomSheetDefaults.ContainerColor.copy(
+            alpha = GRADIENT_BASE_ALPHA + expandedAlpha * (GRADIENT_MAX_ALPHA - GRADIENT_BASE_ALPHA)
+          )
         ),
     )
 
@@ -330,10 +333,7 @@ private fun AppBottomSheetScaffold(
             WindowHeightSizeClass.COMPACT,
         modifier =
           Modifier.fillMaxSize()
-            .hazeEffect(hazeState) {
-              style = sheetHazeStyle
-              blurRadius = 10.dp
-            }
+            .defaultHazeEffect(hazeState, sheetHazeStyle)
             .onGloballyPositioned { layoutCoordinates ->
               sheetHeightPx =
                 layoutCoordinates.size.height.toFloat() - with(density) { sheetPeekHeight.toPx() }
@@ -341,13 +341,7 @@ private fun AppBottomSheetScaffold(
       )
     },
     sheetDragHandle = {
-      Column(
-        modifier =
-          Modifier.fillMaxWidth().hazeEffect(hazeState) {
-            style = sheetHazeStyle
-            blurRadius = 10.dp
-          }
-      ) {
+      Column(modifier = Modifier.fillMaxWidth().defaultHazeEffect(hazeState, sheetHazeStyle)) {
         Spacer(
           modifier = Modifier.height(safeDrawingPaddingValues.calculateTopPadding() * expandedAlpha)
         )

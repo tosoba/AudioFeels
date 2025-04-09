@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import com.trm.audiofeels.core.ui.compose.theme.GRADIENT_MAX_ALPHA
 import com.trm.audiofeels.core.ui.compose.theme.Spacing
 import com.trm.audiofeels.core.ui.compose.theme.topAppBarColorsWithGradient
+import com.trm.audiofeels.core.ui.compose.util.defaultHazeEffect
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.clear_search
 import com.trm.audiofeels.core.ui.resources.collapse_search
@@ -40,7 +41,6 @@ import com.trm.audiofeels.core.ui.resources.search
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
-import dev.chrisbanes.haze.hazeEffect
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,21 +63,18 @@ internal fun SearchTopBar(
 
   LaunchedEffect(expanded, suggestions) { onSearchBarExpandedChange(isSearchBarExpanded()) }
 
-  val boxHazeStyle =
-    HazeStyle(
-      backgroundColor = TopAppBarDefaults.topAppBarColors().containerColor,
-      tint = HazeTint(topAppBarColorsWithGradient().containerColor),
-    )
-
   Box(
     modifier =
-      Modifier.fillMaxWidth().hazeEffect(hazeState) {
-        style = boxHazeStyle
-        blurRadius = 10.dp
-      }
+      Modifier.fillMaxWidth()
+        .defaultHazeEffect(
+          hazeState = hazeState,
+          hazeStyle =
+            HazeStyle(
+              backgroundColor = TopAppBarDefaults.topAppBarColors().containerColor,
+              tint = HazeTint(topAppBarColorsWithGradient().containerColor),
+            ),
+        )
   ) {
-    val searchBarHazeStyle =
-      HazeStyle(backgroundColor = SearchBarDefaults.colors().containerColor, tint = null)
     DockedSearchBar(
       modifier =
         Modifier.fillMaxWidth()
@@ -90,10 +87,11 @@ internal fun SearchTopBar(
             bottom = Spacing.small8dp,
           )
           .clip(SearchBarDefaults.dockedShape)
-          .hazeEffect(hazeState) {
-            style = searchBarHazeStyle
-            blurRadius = 10.dp
-          },
+          .defaultHazeEffect(
+            hazeState = hazeState,
+            hazeStyle =
+              HazeStyle(backgroundColor = SearchBarDefaults.colors().containerColor, tint = null),
+          ),
       colors =
         SearchBarDefaults.colors(
           containerColor =

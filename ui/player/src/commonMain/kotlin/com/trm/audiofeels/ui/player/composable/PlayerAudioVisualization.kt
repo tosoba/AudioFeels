@@ -67,7 +67,7 @@ fun PlayerAudioVisualization(
         topLeft = topLeft,
         strokeWidthPx = strokeWidthPx,
         multiplier = 1f + it * 2f,
-        alpha = 1f - it * 0.1f,
+        alpha = 1f - it * .1f,
       )
     }
   }
