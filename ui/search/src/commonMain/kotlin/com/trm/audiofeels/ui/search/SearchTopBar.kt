@@ -30,6 +30,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import com.trm.audiofeels.core.ui.compose.theme.GRADIENT_BASE_ALPHA
+import com.trm.audiofeels.core.ui.compose.theme.GRADIENT_MAX_ALPHA
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.clear_search
 import com.trm.audiofeels.core.ui.resources.collapse_search
@@ -66,7 +68,7 @@ internal fun SearchTopBar(
       tint =
         HazeTint(
           TopAppBarDefaults.topAppBarColors()
-            .run { copy(containerColor = containerColor.copy(alpha = .85f)) }
+            .run { copy(containerColor = containerColor.copy(alpha = GRADIENT_BASE_ALPHA)) }
             .containerColor
         ),
     )
@@ -98,7 +100,8 @@ internal fun SearchTopBar(
           },
       colors =
         SearchBarDefaults.colors(
-          containerColor = SearchBarDefaults.colors().containerColor.copy(alpha = .95f)
+          containerColor =
+            SearchBarDefaults.colors().containerColor.copy(alpha = GRADIENT_MAX_ALPHA)
         ),
       inputField = {
         SearchBarDefaults.InputField(

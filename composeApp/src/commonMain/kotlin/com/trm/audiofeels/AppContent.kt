@@ -82,6 +82,7 @@ import androidx.window.core.layout.WindowHeightSizeClass
 import coil3.compose.setSingletonImageLoaderFactory
 import com.materialkolor.DynamicMaterialTheme
 import com.materialkolor.ktx.rememberThemeColor
+import com.trm.audiofeels.core.ui.compose.theme.GRADIENT_BASE_ALPHA
 import com.trm.audiofeels.core.ui.compose.theme.UpdateEdgeToEdge
 import com.trm.audiofeels.core.ui.compose.util.NavigationContentPosition
 import com.trm.audiofeels.core.ui.compose.util.NavigationType
@@ -310,7 +311,10 @@ private fun AppBottomSheetScaffold(
   val sheetHazeStyle =
     HazeStyle(
       backgroundColor = BottomSheetDefaults.ContainerColor,
-      tint = HazeTint(BottomSheetDefaults.ContainerColor.copy(alpha = .85f + expandedAlpha * .1f)),
+      tint =
+        HazeTint(
+          BottomSheetDefaults.ContainerColor.copy(alpha = GRADIENT_BASE_ALPHA + expandedAlpha * .1f)
+        ),
     )
 
   BottomSheetScaffold(

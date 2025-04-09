@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.trm.audiofeels.core.ui.compose.theme.GRADIENT_BASE_ALPHA
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.app_name
 import dev.chrisbanes.haze.HazeState
@@ -29,7 +30,7 @@ internal fun DiscoverTopBar(hazeState: HazeState) {
     },
     colors =
       TopAppBarDefaults.topAppBarColors().run {
-        copy(containerColor = containerColor.copy(alpha = .85f))
+        copy(containerColor = containerColor.copy(alpha = GRADIENT_BASE_ALPHA))
       },
     modifier =
       Modifier.hazeEffect(hazeState) {

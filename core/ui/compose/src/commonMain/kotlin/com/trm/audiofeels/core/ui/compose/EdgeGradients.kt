@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.trm.audiofeels.core.ui.compose.theme.GRADIENT_BASE_ALPHA
 
 @Composable
 fun BoxScope.StartEdgeGradient() {
@@ -62,7 +63,7 @@ fun TopEdgeGradient(topOffset: Dp) {
           .background(
             Brush.verticalGradient(
               listOf(
-                MaterialTheme.colorScheme.background.copy(alpha = .85f),
+                MaterialTheme.colorScheme.background.copy(alpha = GRADIENT_BASE_ALPHA),
                 MaterialTheme.colorScheme.background.copy(alpha = 0f),
               )
             )
