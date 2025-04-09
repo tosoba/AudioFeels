@@ -30,8 +30,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import com.trm.audiofeels.core.ui.compose.theme.GRADIENT_BASE_ALPHA
 import com.trm.audiofeels.core.ui.compose.theme.GRADIENT_MAX_ALPHA
+import com.trm.audiofeels.core.ui.compose.theme.topAppBarColorsWithGradient
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.clear_search
 import com.trm.audiofeels.core.ui.resources.collapse_search
@@ -65,12 +65,7 @@ internal fun SearchTopBar(
   val boxHazeStyle =
     HazeStyle(
       backgroundColor = TopAppBarDefaults.topAppBarColors().containerColor,
-      tint =
-        HazeTint(
-          TopAppBarDefaults.topAppBarColors()
-            .run { copy(containerColor = containerColor.copy(alpha = GRADIENT_BASE_ALPHA)) }
-            .containerColor
-        ),
+      tint = HazeTint(topAppBarColorsWithGradient().containerColor),
     )
 
   Box(

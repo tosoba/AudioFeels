@@ -9,12 +9,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.trm.audiofeels.core.ui.compose.theme.GRADIENT_BASE_ALPHA
+import com.trm.audiofeels.core.ui.compose.theme.topAppBarColorsWithGradient
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.go_back
 import com.trm.audiofeels.domain.model.Mood
@@ -49,10 +48,7 @@ internal fun MoodTopBar(mood: Mood, hazeState: HazeState, onNavigationIconClick:
         modifier = Modifier.padding(end = 16.dp),
       )
     },
-    colors =
-      TopAppBarDefaults.topAppBarColors().run {
-        copy(containerColor = containerColor.copy(alpha = GRADIENT_BASE_ALPHA))
-      },
+    colors = topAppBarColorsWithGradient(),
     modifier =
       Modifier.hazeEffect(hazeState) {
         style = hazeStyle
