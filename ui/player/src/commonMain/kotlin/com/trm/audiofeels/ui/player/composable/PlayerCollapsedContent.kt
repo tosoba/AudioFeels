@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.trm.audiofeels.core.ui.compose.AsyncShimmerImage
+import com.trm.audiofeels.core.ui.compose.theme.RoundedCornerSize
 import com.trm.audiofeels.core.ui.compose.theme.Spacing
 import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
 import com.trm.audiofeels.core.ui.resources.Res
@@ -120,16 +121,17 @@ internal fun PlayerCollapsedContent(
               bottom = Spacing.mediumSmall12dp,
             ),
       ) {
+        val imageSize = 60.dp
         when (viewState) {
           is PlayerViewState.Invisible,
           is PlayerViewState.Loading -> {
             Box(
               modifier =
-                Modifier.size(60.dp)
-                  .clip(RoundedCornerShape(Spacing.mediumSmall12dp))
+                Modifier.size(imageSize)
+                  .clip(RoundedCornerShape(RoundedCornerSize.mediumSmall12dp))
                   .shimmerBackground(
                     enabled = true,
-                    shape = RoundedCornerShape(Spacing.mediumSmall12dp),
+                    shape = RoundedCornerShape(RoundedCornerSize.mediumSmall12dp),
                   )
             )
           }
@@ -138,8 +140,8 @@ internal fun PlayerCollapsedContent(
               painter = rememberVectorPainter(vectorResource(Res.drawable.artwork_placeholder)),
               contentDescription = null,
               modifier =
-                Modifier.size(60.dp)
-                  .clip(RoundedCornerShape(Spacing.mediumSmall12dp))
+                Modifier.size(imageSize)
+                  .clip(RoundedCornerShape(RoundedCornerSize.mediumSmall12dp))
                   .background(MaterialTheme.colorScheme.errorContainer),
             )
           }
@@ -148,11 +150,11 @@ internal fun PlayerCollapsedContent(
               model = viewState.currentTrack?.artworkUrl,
               contentDescription = null,
               modifier = { enabled ->
-                Modifier.size(60.dp)
-                  .clip(RoundedCornerShape(Spacing.mediumSmall12dp))
+                Modifier.size(imageSize)
+                  .clip(RoundedCornerShape(RoundedCornerSize.mediumSmall12dp))
                   .shimmerBackground(
                     enabled = enabled,
-                    shape = RoundedCornerShape(Spacing.mediumSmall12dp),
+                    shape = RoundedCornerShape(RoundedCornerSize.mediumSmall12dp),
                   )
               },
             )

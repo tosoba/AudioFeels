@@ -20,7 +20,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import com.trm.audiofeels.core.ui.compose.theme.ListItemSize
+import com.trm.audiofeels.core.ui.compose.theme.RoundedCornerSize
 import com.trm.audiofeels.core.ui.compose.theme.Spacing
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.error_occurred
@@ -31,13 +32,13 @@ import org.jetbrains.compose.resources.vectorResource
 @Composable
 fun ErrorListItem(modifier: Modifier = Modifier, onClick: () -> Unit) {
   Box(modifier = modifier, contentAlignment = Alignment.Center) {
-    Card(modifier = Modifier.width(150.dp), onClick = onClick) {
+    Card(modifier = Modifier.width(ListItemSize.medium150dp), onClick = onClick) {
       Image(
         painter = rememberVectorPainter(vectorResource(Res.drawable.refresh)),
         contentDescription = null,
         modifier =
-          Modifier.size(150.dp)
-            .clip(RoundedCornerShape(Spacing.medium16dp))
+          Modifier.size(ListItemSize.medium150dp)
+            .clip(RoundedCornerShape(RoundedCornerSize.medium16dp))
             .background(MaterialTheme.colorScheme.errorContainer),
       )
 

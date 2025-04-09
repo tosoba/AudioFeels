@@ -18,10 +18,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import com.trm.audiofeels.core.ui.compose.BottomEdgeGradient
 import com.trm.audiofeels.core.ui.compose.MoodItem
 import com.trm.audiofeels.core.ui.compose.TopEdgeGradient
+import com.trm.audiofeels.core.ui.compose.theme.ListItemSize
 import com.trm.audiofeels.core.ui.compose.theme.Spacing
 import com.trm.audiofeels.core.ui.compose.util.topAppBarSpacerHeight
 import com.trm.audiofeels.domain.model.Mood
@@ -39,7 +39,7 @@ fun SharedTransitionScope.MoodsPage(
 ) {
   Box {
     LazyVerticalGrid(
-      columns = GridCells.Adaptive(90.dp),
+      columns = GridCells.Adaptive(ListItemSize.small90dp),
       contentPadding =
         PaddingValues(
           start = Spacing.medium16dp,
@@ -64,7 +64,7 @@ fun SharedTransitionScope.MoodsPage(
                   state = rememberSharedContentState(key = item.name),
                   animatedVisibilityScope = animatedContentScope,
                 )
-                .size(90.dp),
+                .size(ListItemSize.small90dp),
             onClick = { onMoodClick(item) },
           )
         }

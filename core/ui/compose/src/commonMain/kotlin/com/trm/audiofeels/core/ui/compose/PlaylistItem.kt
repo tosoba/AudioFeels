@@ -18,7 +18,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.unit.dp
+import com.trm.audiofeels.core.ui.compose.theme.ListItemSize
+import com.trm.audiofeels.core.ui.compose.theme.RoundedCornerSize
 import com.trm.audiofeels.core.ui.compose.theme.Spacing
 import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
 import com.trm.audiofeels.core.ui.resources.Res
@@ -86,16 +87,22 @@ fun PlaylistArtworkImage(
 
 @Composable
 fun PlaylistLazyRowItemArtworkImageModifier(shimmerEnabled: Boolean): Modifier =
-  Modifier.size(150.dp)
-    .clip(RoundedCornerShape(Spacing.medium16dp))
-    .shimmerBackground(enabled = shimmerEnabled, shape = RoundedCornerShape(Spacing.medium16dp))
+  Modifier.size(ListItemSize.medium150dp)
+    .clip(RoundedCornerShape(RoundedCornerSize.medium16dp))
+    .shimmerBackground(
+      enabled = shimmerEnabled,
+      shape = RoundedCornerShape(RoundedCornerSize.medium16dp),
+    )
 
 @Composable
 fun PlaylistLazyVerticalGridItemArtworkImageModifier(shimmerEnabled: Boolean): Modifier =
   Modifier.fillMaxWidth()
     .aspectRatio(1f)
-    .clip(RoundedCornerShape(Spacing.medium16dp))
-    .shimmerBackground(enabled = shimmerEnabled, shape = RoundedCornerShape(Spacing.medium16dp))
+    .clip(RoundedCornerShape(RoundedCornerSize.medium16dp))
+    .shimmerBackground(
+      enabled = shimmerEnabled,
+      shape = RoundedCornerShape(RoundedCornerSize.medium16dp),
+    )
 
 @Composable
 fun PlaylistNameText(name: String) {
@@ -109,7 +116,7 @@ fun PlaylistNameText(name: String) {
 
 @Composable
 fun ColumnScope.PlaylistPlaceholderItemContent() {
-  Spacer(modifier = Modifier.height(158.dp))
+  Spacer(modifier = Modifier.height(ListItemSize.medium150dp + Spacing.small8dp))
   Text(text = "", style = MaterialTheme.typography.labelLarge)
   Spacer(modifier = Modifier.height(Spacing.small8dp))
 }
@@ -118,8 +125,8 @@ fun ColumnScope.PlaylistPlaceholderItemContent() {
 fun LazyGridItemScope.LazyGridPlaylistPlaceholderItem(content: @Composable ColumnScope.() -> Unit) {
   Column(
     modifier =
-      Modifier.width(150.dp)
-        .shimmerBackground(enabled = true, shape = RoundedCornerShape(Spacing.medium16dp))
+      Modifier.width(ListItemSize.medium150dp)
+        .shimmerBackground(enabled = true, shape = RoundedCornerShape(RoundedCornerSize.medium16dp))
         .animateItem(),
     content = content,
   )
@@ -127,7 +134,7 @@ fun LazyGridItemScope.LazyGridPlaylistPlaceholderItem(content: @Composable Colum
 
 @Composable
 fun ColumnScope.CarryOnPlaylistPlaceholderItemContent() {
-  Spacer(modifier = Modifier.height(158.dp))
+  Spacer(modifier = Modifier.height(ListItemSize.medium150dp + Spacing.small8dp))
   Text(text = "", style = MaterialTheme.typography.labelLarge)
   Text(text = "", style = MaterialTheme.typography.labelSmall)
   Spacer(modifier = Modifier.height(Spacing.small8dp))

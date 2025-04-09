@@ -65,6 +65,8 @@ import com.trm.audiofeels.core.ui.compose.PlaylistLazyRowItem
 import com.trm.audiofeels.core.ui.compose.PlaylistPlaceholderItemContent
 import com.trm.audiofeels.core.ui.compose.StartEdgeGradient
 import com.trm.audiofeels.core.ui.compose.TopEdgeGradient
+import com.trm.audiofeels.core.ui.compose.theme.ListItemSize
+import com.trm.audiofeels.core.ui.compose.theme.RoundedCornerSize
 import com.trm.audiofeels.core.ui.compose.theme.Spacing
 import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
 import com.trm.audiofeels.core.ui.compose.util.topAppBarSpacerHeight
@@ -136,7 +138,7 @@ fun SharedTransitionScope.DiscoverPage(
                   ),
                 animatedVisibilityScope = animatedContentScope,
               )
-              .width(150.dp)
+              .width(ListItemSize.medium150dp)
               .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = items.lastIndex))
               .animateItem(),
           onClick = { onCarryOnPlaylistClick(carryOn) },
@@ -157,7 +159,7 @@ fun SharedTransitionScope.DiscoverPage(
       }
 
       LazyHorizontalGrid(
-        rows = GridCells.FixedSize(90.dp),
+        rows = GridCells.FixedSize(ListItemSize.small90dp),
         contentPadding =
           PaddingValues(
             start = Spacing.medium16dp,
@@ -185,7 +187,7 @@ fun SharedTransitionScope.DiscoverPage(
                   state = rememberSharedContentState(key = item.name),
                   animatedVisibilityScope = animatedContentScope,
                 )
-                .size(90.dp),
+                .size(ListItemSize.small90dp),
             onClick = { onMoodClick(item) },
           )
         }
@@ -216,7 +218,7 @@ fun SharedTransitionScope.DiscoverPage(
                   ),
                 animatedVisibilityScope = animatedContentScope,
               )
-              .width(150.dp)
+              .width(ListItemSize.medium150dp)
               .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = items.lastIndex))
               .animateItem(),
           onClick = { onPlaylistClick(playlist) },
@@ -248,7 +250,7 @@ fun SharedTransitionScope.DiscoverPage(
                   ),
                 animatedVisibilityScope = animatedContentScope,
               )
-              .width(150.dp)
+              .width(ListItemSize.medium150dp)
               .padding(playlistItemPaddingValues(itemIndex = index, lastIndex = items.lastIndex))
               .animateItem(),
           onClick = { onPlaylistClick(playlist) },
@@ -303,7 +305,7 @@ private fun <T : Any> DiscoverListHeadline(
   list: LoadableState<List<T>>,
   onViewAllClick: () -> Unit,
   modifier: Modifier = Modifier,
-  shimmerShape: Shape = RoundedCornerShape(6.dp),
+  shimmerShape: Shape = RoundedCornerShape(RoundedCornerSize.small6dp),
 ) {
   Crossfade(list) {
     when (it) {
@@ -421,14 +423,14 @@ private fun LazyItemScope.DiscoverListPlaceholderItem(
   val horizontalPaddingValues = playlistItemPaddingValues(itemIndex = index, lastIndex = lastIndex)
   Column(
     modifier =
-      Modifier.width(150.dp)
+      Modifier.width(ListItemSize.medium150dp)
         .padding(
           top = Spacing.medium16dp,
           start = horizontalPaddingValues.calculateStartPadding(LocalLayoutDirection.current),
           end = horizontalPaddingValues.calculateEndPadding(LocalLayoutDirection.current),
           bottom = Spacing.medium16dp,
         )
-        .shimmerBackground(enabled = true, shape = RoundedCornerShape(Spacing.medium16dp))
+        .shimmerBackground(enabled = true, shape = RoundedCornerShape(RoundedCornerSize.medium16dp))
         .animateItem(),
     content = content,
   )
