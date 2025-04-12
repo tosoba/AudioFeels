@@ -6,6 +6,14 @@ plugins {
 
 kotlin {
   sourceSets {
+    commonMain {
+      dependencies {
+        implementation(projects.core.base)
+        implementation(projects.core.preferences)
+        implementation(projects.domain)
+      }
+    }
+
     commonTest {
       dependencies {
         implementation(projects.api.audius)
@@ -16,6 +24,7 @@ kotlin {
         implementation(projects.core.preferences)
         implementation(projects.data.hosts)
         implementation(projects.data.playlists)
+        implementation(projects.data.suggestions)
         implementation(projects.domain)
 
         implementation(libs.kotlin.test)

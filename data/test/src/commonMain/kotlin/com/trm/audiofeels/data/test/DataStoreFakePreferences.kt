@@ -17,6 +17,6 @@ internal class DataStoreFakePreferences(initialValue: Preferences) : DataStore<P
   override val data: Flow<Preferences>
     get() = preferences
 
-  override suspend fun updateData(transform: suspend (t: Preferences) -> Preferences): Preferences =
+  override suspend fun updateData(transform: suspend (Preferences) -> Preferences): Preferences =
     preferences.updateAndGet { transform(it) }
 }

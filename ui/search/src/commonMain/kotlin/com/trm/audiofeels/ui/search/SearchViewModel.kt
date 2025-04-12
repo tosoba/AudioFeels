@@ -92,6 +92,6 @@ class SearchViewModel(
   private data class SearchResult(val query: String, val playlists: List<Playlist>)
 
   companion object {
-    private const val EMPTY_QUERY = ""
+    internal const val EMPTY_QUERY = ""
   }
 }
