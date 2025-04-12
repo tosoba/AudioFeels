@@ -110,6 +110,9 @@ import com.trm.audiofeels.ui.player.composable.PlayerExpandedContent
 import com.trm.audiofeels.ui.player.composable.PlayerRecordAudioPermissionObserver
 import com.trm.audiofeels.ui.player.composable.PlayerRecordAudioPermissionRequest
 import com.trm.audiofeels.ui.player.composable.PlayerSheetContent
+import com.trm.audiofeels.ui.player.util.currentTrackArtworkUrl
+import com.trm.audiofeels.ui.player.util.isPlaying
+import com.trm.audiofeels.ui.player.util.playerVisible
 import com.trm.audiofeels.ui.playlists.CarryOnPlaylistsPage
 import com.trm.audiofeels.ui.playlists.PlaylistsPage
 import com.trm.audiofeels.ui.search.SearchPage
