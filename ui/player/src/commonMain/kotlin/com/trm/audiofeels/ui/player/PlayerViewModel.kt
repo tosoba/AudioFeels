@@ -1,9 +1,5 @@
 package com.trm.audiofeels.ui.player
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Refresh
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.trm.audiofeels.core.base.model.LoadableState
@@ -11,10 +7,6 @@ import com.trm.audiofeels.core.base.model.loadableStateFlowOf
 import com.trm.audiofeels.core.base.util.RestartableStateFlow
 import com.trm.audiofeels.core.base.util.restartableStateIn
 import com.trm.audiofeels.core.base.util.roundTo
-import com.trm.audiofeels.core.ui.resources.Res
-import com.trm.audiofeels.core.ui.resources.pause
-import com.trm.audiofeels.core.ui.resources.play
-import com.trm.audiofeels.core.ui.resources.retry
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import com.trm.audiofeels.domain.model.PlaybackState
 import com.trm.audiofeels.domain.model.PlayerError
@@ -29,7 +21,6 @@ import com.trm.audiofeels.domain.repository.PlaylistsRepository
 import com.trm.audiofeels.domain.repository.VisualizationRepository
 import com.trm.audiofeels.domain.usecase.GetPlayerInputUseCase
 import io.github.aakira.napier.Napier
-import kotlin.math.roundToLong
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
@@ -49,6 +40,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlin.math.roundToLong
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class PlayerViewModel(
@@ -233,21 +225,21 @@ class PlayerViewModel(
     playlist: Playlist,
     playerState: PlayerState,
     togglePlayback: () -> Unit,
-  ): PlayerViewState.PrimaryControlState =
+  ): PlayerPrimaryControlState =
     when (playerState) {
       PlayerState.Idle -> {
-        playAction(togglePlayback)
+        PlayerPrimaryControlState.playAction(togglePlayback)
       }
       is PlayerState.Enqueued -> {
         when {
           playerState.playbackState == PlaybackState.BUFFERING -> {
-            PlayerViewState.PrimaryControlState.Loading
+            PlayerPrimaryControlState.Loading
           }
           playerState.isPlaying -> {
-            pauseAction(togglePlayback)
+            PlayerPrimaryControlState.pauseAction(togglePlayback)
           }
           else -> {
-            playAction(togglePlayback)
+            PlayerPrimaryControlState.playAction(togglePlayback)
           }
         }
       }
@@ -259,33 +251,18 @@ class PlayerViewModel(
       }
     }
 
-  private fun pauseAction(togglePlayback: () -> Unit) =
-    PlayerViewState.PrimaryControlState.Action(
-      imageVector = Icons.Filled.Pause,
-      contentDescription = Res.string.pause,
-      action = togglePlayback,
-    )
-
-  private fun playAction(togglePlayback: () -> Unit) =
-    PlayerViewState.PrimaryControlState.Action(
-      imageVector = Icons.Filled.PlayArrow,
-      contentDescription = Res.string.play,
-      action = togglePlayback,
-    )
-
-  private fun retryAction(playlist: Playlist, clearHost: Boolean) =
-    PlayerViewState.PrimaryControlState.Action(
-      imageVector = Icons.Filled.Refresh,
-      contentDescription = Res.string.retry,
-      action = {
-        viewModelScope
-          .launch {
-            if (clearHost) hostsRepository.clearHost()
-            suspendStartNewPlaylistPlayback(playlist = playlist, carryOn = true)
-          }
-          .invokeOnCompletion { playerViewState.restart() }
-      },
-    )
+  private fun retryAction(
+    playlist: Playlist,
+    clearHost: Boolean,
+  ): PlayerPrimaryControlState.Action =
+    PlayerPrimaryControlState.retryAction {
+      viewModelScope
+        .launch {
+          if (clearHost) hostsRepository.clearHost()
+          suspendStartNewPlaylistPlayback(playlist = playlist, carryOn = true)
+        }
+        .invokeOnCompletion { playerViewState.restart() }
+    }
 
   private fun currentTrackProgress(
     playerInput: PlayerInput,

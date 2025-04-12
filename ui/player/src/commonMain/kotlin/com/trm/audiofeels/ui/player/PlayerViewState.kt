@@ -1,34 +1,23 @@
 package com.trm.audiofeels.ui.player
 
-import androidx.compose.ui.graphics.vector.ImageVector
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.model.Track
-import org.jetbrains.compose.resources.StringResource
 
 sealed interface PlayerViewState {
-  val primaryControlState: PrimaryControlState
+  val primaryControlState: PlayerPrimaryControlState
   val startPlaylistPlayback: (Playlist) -> Unit
   val startCarryOnPlaylistPlayback: (CarryOnPlaylist) -> Unit
   val cancelPlayback: () -> Unit
-
-  sealed interface PrimaryControlState {
-    data object Loading : PrimaryControlState
-
-    data class Action(
-      val imageVector: ImageVector,
-      val contentDescription: StringResource?,
-      val action: () -> Unit,
-    ) : PrimaryControlState
-  }
 
   data class Invisible(
     override val startPlaylistPlayback: (Playlist) -> Unit,
     override val startCarryOnPlaylistPlayback: (CarryOnPlaylist) -> Unit,
     override val cancelPlayback: () -> Unit,
   ) : PlayerViewState {
-    override val primaryControlState: PrimaryControlState.Loading = PrimaryControlState.Loading
+    override val primaryControlState: PlayerPrimaryControlState.Loading =
+      PlayerPrimaryControlState.Loading
   }
 
   data class Loading(
@@ -36,7 +25,8 @@ sealed interface PlayerViewState {
     override val startCarryOnPlaylistPlayback: (CarryOnPlaylist) -> Unit,
     override val cancelPlayback: () -> Unit,
   ) : PlayerViewState {
-    override val primaryControlState: PrimaryControlState.Loading = PrimaryControlState.Loading
+    override val primaryControlState: PlayerPrimaryControlState.Loading =
+      PlayerPrimaryControlState.Loading
   }
 
   data class Playback(
@@ -45,7 +35,7 @@ sealed interface PlayerViewState {
     val tracks: List<Track>,
     val currentTrackIndex: Int,
     val currentTrackProgress: Double,
-    override val primaryControlState: PrimaryControlState,
+    override val primaryControlState: PlayerPrimaryControlState,
     override val startPlaylistPlayback: (Playlist) -> Unit,
     override val startCarryOnPlaylistPlayback: (CarryOnPlaylist) -> Unit,
     override val cancelPlayback: () -> Unit,
@@ -68,7 +58,7 @@ sealed interface PlayerViewState {
   }
 
   data class Error(
-    override val primaryControlState: PrimaryControlState.Action,
+    override val primaryControlState: PlayerPrimaryControlState.Action,
     override val startPlaylistPlayback: (Playlist) -> Unit,
     override val startCarryOnPlaylistPlayback: (CarryOnPlaylist) -> Unit,
     override val cancelPlayback: () -> Unit,

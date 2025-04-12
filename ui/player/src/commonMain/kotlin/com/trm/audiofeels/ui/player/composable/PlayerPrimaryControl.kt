@@ -5,24 +5,24 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import com.trm.audiofeels.ui.player.PlayerViewState
+import com.trm.audiofeels.ui.player.PlayerPrimaryControlState
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-internal fun PlayerPrimaryControl(controlState: PlayerViewState.PrimaryControlState) {
+internal fun PlayerPrimaryControl(controlState: PlayerPrimaryControlState) {
   FilledIconButton(
-    onClick = { (controlState as? PlayerViewState.PrimaryControlState.Action)?.action?.invoke() },
-    enabled = controlState is PlayerViewState.PrimaryControlState.Action,
+    onClick = { (controlState as? PlayerPrimaryControlState.Action)?.action?.invoke() },
+    enabled = controlState is PlayerPrimaryControlState.Action,
   ) {
     AnimatedContent(controlState) { state ->
       when (state) {
-        is PlayerViewState.PrimaryControlState.Action -> {
+        is PlayerPrimaryControlState.Action -> {
           Icon(
             imageVector = state.imageVector,
             contentDescription = state.contentDescription?.let { stringResource(it) },
           )
         }
-        PlayerViewState.PrimaryControlState.Loading -> {
+        PlayerPrimaryControlState.Loading -> {
           CircularProgressIndicator()
         }
       }
