@@ -407,7 +407,7 @@ class PlayerViewModel(
         playerConnection.playPrevious()
       }
       is PlayerState.Error -> {
-        return
+        playerState.previousEnqueuedState?.let { playerConnection.playPrevious() }
       }
     }
   }
@@ -427,7 +427,7 @@ class PlayerViewModel(
         playerConnection.playNext()
       }
       is PlayerState.Error -> {
-        return
+        playerState.previousEnqueuedState?.let { playerConnection.playNext() }
       }
     }
   }
@@ -450,7 +450,7 @@ class PlayerViewModel(
         }
       }
       is PlayerState.Error -> {
-        return
+        playerState.previousEnqueuedState?.let { playerConnection.playAtIndex(index) }
       }
     }
   }
