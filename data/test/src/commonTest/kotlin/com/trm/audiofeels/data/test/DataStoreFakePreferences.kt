@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.updateAndGet
 
-class FakeDataStorePreferences(initialValue: Preferences) : DataStore<Preferences> {
+internal class DataStoreFakePreferences(initialValue: Preferences) : DataStore<Preferences> {
   constructor(
     vararg initialValues: Preferences.Pair<*>
   ) : this(mutablePreferencesOf(*initialValues))

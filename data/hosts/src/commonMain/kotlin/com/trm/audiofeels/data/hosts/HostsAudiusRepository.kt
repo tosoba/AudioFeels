@@ -20,8 +20,8 @@ import me.tatarka.inject.annotations.Inject
 
 @ApplicationScope
 @Inject
-class AudiusHostsRepository(
-  private val inMemoryDataSource: AudiusHostsInMemoryDataSource,
+class HostsAudiusRepository(
+  private val inMemoryDataSource: HostsInMemoryDataSource,
   private val dataStore: DataStore<Preferences>,
   endpoints: Lazy<HostsEndpoints>,
   validator: Lazy<HostValidator>,

@@ -21,7 +21,7 @@ import kotlinx.datetime.Clock
 import me.tatarka.inject.annotations.Inject
 
 @Inject
-class AudiusPlaylistsRepository(
+class PlaylistsAudiusRepository(
   private val audiusEndpoints: AudiusEndpoints,
   private val playlistDao: PlaylistDao,
 ) : PlaylistsRepository {
