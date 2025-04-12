@@ -94,25 +94,27 @@ class PlayerViewModel(
       .distinctUntilChanged()
       .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), null)
 
-  val viewState: RestartableStateFlow<PlayerViewState> =
+  val playerViewState: RestartableStateFlow<PlayerViewState> =
     playlistsRepository
       .getCurrentPlaylistPlaybackFlow()
       .distinctUntilChangedBy { playback -> playback?.playlist?.id }
       .flatMapLatest { playback ->
         playback?.let(::playerViewStateFlow)
-          ?: flowOf(invisibleViewState()).onEach { playerConnection.reset() }
+          ?: flowOf(invisiblePlayerViewState()).onEach { playerConnection.reset() }
       }
-      .onEach { if (it is PlayerViewState.Playback) onPlayerViewStatePlayback(it) }
+      .onEach { if (it is PlayerViewState.Playback) onPlayerPlaybackViewState(it) }
       .restartableStateIn(
         scope = viewModelScope,
         started = SharingStarted.Lazily,
-        initialValue = invisibleViewState(),
+        initialValue = invisiblePlayerViewState(),
       )
 
-  private fun invisibleViewState(): PlayerViewState.Invisible =
+  private fun invisiblePlayerViewState(): PlayerViewState.Invisible =
     PlayerViewState.Invisible(
-      startPlaylistPlayback = StartPlaylistPlayback(),
-      startCarryOnPlaylistPlayback = StartCarryOnPlaylistPlayback(),
+      startPlaylistPlayback =
+        ParameterizedInputAction(PlaylistPlaybackActionInput(), ::startPlaylistPlayback),
+      startCarryOnPlaylistPlayback =
+        ParameterizedInputAction(PlaylistPlaybackActionInput(), ::startCarryOnPlaylistPlayback),
       cancelPlayback = ::cancelPlayback,
     )
 
@@ -138,8 +140,13 @@ class PlayerViewModel(
       LoadableState.Loading -> {
         flowOf(
           PlayerViewState.Loading(
-            startPlaylistPlayback = StartPlaylistPlayback(),
-            startCarryOnPlaylistPlayback = StartCarryOnPlaylistPlayback(),
+            startPlaylistPlayback =
+              ParameterizedInputAction(PlaylistPlaybackActionInput(), ::startPlaylistPlayback),
+            startCarryOnPlaylistPlayback =
+              ParameterizedInputAction(
+                PlaylistPlaybackActionInput(),
+                ::startCarryOnPlaylistPlayback,
+              ),
             cancelPlayback = ::cancelPlayback,
           )
         )
@@ -150,8 +157,13 @@ class PlayerViewModel(
       is LoadableState.Error -> {
         flowOf(
           PlayerViewState.Error(
-            startPlaylistPlayback = StartPlaylistPlayback(),
-            startCarryOnPlaylistPlayback = StartCarryOnPlaylistPlayback(),
+            startPlaylistPlayback =
+              ParameterizedInputAction(PlaylistPlaybackActionInput(), ::startPlaylistPlayback),
+            startCarryOnPlaylistPlayback =
+              ParameterizedInputAction(
+                PlaylistPlaybackActionInput(),
+                ::startCarryOnPlaylistPlayback,
+              ),
             cancelPlayback = ::cancelPlayback,
             primaryControlState = retryAction(playlist = playback.playlist, clearHost = false),
           )
@@ -169,7 +181,7 @@ class PlayerViewModel(
         .filter { it > 0L }
         .onStart { emit(playback.currentTrackPositionMs) }
         .map {
-          playbackViewState(
+          playbackPlayerViewState(
             playerInput = input,
             playback = playback,
             playerState = playerState,
@@ -179,14 +191,15 @@ class PlayerViewModel(
         }
     }
 
-  private fun playbackViewState(
+  private fun playbackPlayerViewState(
     playerInput: PlayerInput,
     playback: PlaylistPlayback,
     playerState: PlayerState,
     currentTrackPositionMs: Long,
   ): PlayerViewState.Playback {
-    val arguments = PlaybackActionArguments(playerState, playerInput, playback)
-    val togglePlayback = TogglePlayback(arguments)
+    val trackPlaybackActionInput = TrackPlaybackActionInput(playerState, playerInput, playback)
+    val togglePlayback = InputAction(trackPlaybackActionInput, ::togglePlayback)
+    val playlistPlaybackActionInput = PlaylistPlaybackActionInput(playback.playlist, togglePlayback)
     return PlayerViewState.Playback(
       playlistId = playback.playlist.id,
       playerState = playerState,
@@ -195,21 +208,23 @@ class PlayerViewModel(
       currentTrackProgress =
         currentTrackProgress(playerInput, playback, playerState, currentTrackPositionMs),
       primaryControlState = primaryControlState(playback.playlist, playerState, togglePlayback),
-      startPlaylistPlayback = StartPlaylistPlayback(playback.playlist, togglePlayback),
+      startPlaylistPlayback =
+        ParameterizedInputAction(playlistPlaybackActionInput, ::startPlaylistPlayback),
       startCarryOnPlaylistPlayback =
-        StartCarryOnPlaylistPlayback(playback.playlist, togglePlayback),
+        ParameterizedInputAction(playlistPlaybackActionInput, ::startCarryOnPlaylistPlayback),
       cancelPlayback = ::cancelPlayback,
       togglePlaylistFavourite = ::toggleCurrentPlaylistFavourite,
-      playPreviousTrack = PlayPreviousTrackAction(arguments),
-      playNextTrack = PlayNextTrackAction(arguments),
-      playTrackAtIndex = PlayAtIndexTrackAction(arguments),
+      playPreviousTrack = InputAction(trackPlaybackActionInput, ::playPreviousTrack),
+      playNextTrack = InputAction(trackPlaybackActionInput, ::playNextTrack),
+      playTrackAtIndex = ParameterizedInputAction(trackPlaybackActionInput, ::playTrackAtIndex),
       seekToProgress =
-        SeekToProgress(
+        ParameterizedInputAction(
           when (playerState) {
             PlayerState.Idle -> null
             is PlayerState.Enqueued -> playerState.currentTrack
             is PlayerState.Error -> null
-          }
+          },
+          ::seekToProgress,
         ),
     )
   }
@@ -217,7 +232,7 @@ class PlayerViewModel(
   private fun primaryControlState(
     playlist: Playlist,
     playerState: PlayerState,
-    togglePlayback: TogglePlayback,
+    togglePlayback: () -> Unit,
   ): PlayerViewState.PrimaryControlState =
     when (playerState) {
       PlayerState.Idle -> {
@@ -244,14 +259,14 @@ class PlayerViewModel(
       }
     }
 
-  private fun pauseAction(togglePlayback: TogglePlayback) =
+  private fun pauseAction(togglePlayback: () -> Unit) =
     PlayerViewState.PrimaryControlState.Action(
       imageVector = Icons.Filled.Pause,
       contentDescription = Res.string.pause,
       action = togglePlayback,
     )
 
-  private fun playAction(togglePlayback: TogglePlayback) =
+  private fun playAction(togglePlayback: () -> Unit) =
     PlayerViewState.PrimaryControlState.Action(
       imageVector = Icons.Filled.PlayArrow,
       contentDescription = Res.string.play,
@@ -268,13 +283,9 @@ class PlayerViewModel(
             if (clearHost) hostsRepository.clearHost()
             suspendStartNewPlaylistPlayback(playlist = playlist, carryOn = true)
           }
-          .invokeOnCompletion { viewState.restart() }
+          .invokeOnCompletion { playerViewState.restart() }
       },
     )
-
-  private fun toggleCurrentPlaylistFavourite() {
-    viewModelScope.launch { playlistsRepository.toggleCurrentPlaylistFavourite() }
-  }
 
   private fun currentTrackProgress(
     playerInput: PlayerInput,
@@ -296,16 +307,16 @@ class PlayerViewModel(
       }
     }.roundTo(3)
 
-  private fun onPlayerViewStatePlayback(playbackState: PlayerViewState.Playback) {
-    Napier.d(tag = "PLAYER_STATE", message = playbackState.playerState.toString())
-    when (val playerState = playbackState.playerState) {
+  private fun onPlayerPlaybackViewState(state: PlayerViewState.Playback) {
+    Napier.d(tag = "PLAYER_STATE", message = state.playerState.toString())
+    when (val playerState = state.playerState) {
       is PlayerState.Enqueued -> {
         viewModelScope.launch {
           playlistsRepository.updateCurrentPlaylist(
-            id = playbackState.playlistId,
+            id = state.playlistId,
             currentTrackIndex = playerState.currentTrackIndex,
             currentTrackPositionMs =
-              playerState.currentTrack.positionMsOf(playbackState.currentTrackProgress),
+              playerState.currentTrack.positionMsOf(state.currentTrackProgress),
           )
         }
       }
@@ -329,74 +340,23 @@ class PlayerViewModel(
       }
     }
 
-  private inner class StartPlaylistPlayback(
-    private val currentPlaylist: Playlist? = null,
-    private val togglePlayback: TogglePlayback? = null,
-  ) : (Playlist) -> Unit {
-    override fun invoke(playlist: Playlist) {
-      if (playlist.id != currentPlaylist?.id) {
-        startNewPlaylistPlayback(playlist = playlist, carryOn = false)
-      } else {
-        togglePlayback?.invoke()
-      }
-    }
-
-    override fun equals(other: Any?): Boolean {
-      if (this === other) return true
-      if (other !is StartPlaylistPlayback) return false
-      if (currentPlaylist != other.currentPlaylist) return false
-      if (togglePlayback != other.togglePlayback) return false
-      return true
-    }
-
-    override fun hashCode(): Int {
-      var result = currentPlaylist.hashCode()
-      result = 31 * result + togglePlayback.hashCode()
-      return result
+  private fun startPlaylistPlayback(input: PlaylistPlaybackActionInput, playlist: Playlist) {
+    if (playlist.id != input.currentPlaylist?.id) {
+      startNewPlaylistPlayback(playlist = playlist, carryOn = false)
+    } else {
+      input.togglePlayback?.invoke()
     }
   }
 
-  private inner class StartCarryOnPlaylistPlayback(
-    private val currentPlaylist: Playlist? = null,
-    private val togglePlayback: TogglePlayback? = null,
-  ) : (CarryOnPlaylist) -> Unit {
-    override fun invoke(carryOnPlaylist: CarryOnPlaylist) {
-      if (carryOnPlaylist.playlist.id != currentPlaylist?.id) {
-        startNewPlaylistPlayback(playlist = carryOnPlaylist.playlist, carryOn = true)
-      } else {
-        togglePlayback?.invoke()
-      }
+  private fun startCarryOnPlaylistPlayback(
+    input: PlaylistPlaybackActionInput,
+    carryOnPlaylist: CarryOnPlaylist,
+  ) {
+    if (carryOnPlaylist.playlist.id != input.currentPlaylist?.id) {
+      startNewPlaylistPlayback(playlist = carryOnPlaylist.playlist, carryOn = true)
+    } else {
+      input.togglePlayback?.invoke()
     }
-
-    override fun equals(other: Any?): Boolean {
-      if (this === other) return true
-      if (other !is StartCarryOnPlaylistPlayback) return false
-      if (currentPlaylist != other.currentPlaylist) return false
-      if (togglePlayback != other.togglePlayback) return false
-      return true
-    }
-
-    override fun hashCode(): Int {
-      var result = currentPlaylist.hashCode()
-      result = 31 * result + togglePlayback.hashCode()
-      return result
-    }
-  }
-
-  private inner class SeekToProgress(private val currentTrack: Track?) : (Float) -> Unit {
-    override fun invoke(progress: Float) {
-      currentTrack
-        ?.duration
-        ?.toFloat()
-        ?.let { it * progress * 1000f }
-        ?.roundToLong()
-        ?.let(playerConnection::seekTo)
-    }
-
-    override fun equals(other: Any?): Boolean =
-      other is SeekToProgress && currentTrack == other.currentTrack
-
-    override fun hashCode(): Int = currentTrack.hashCode()
   }
 
   private fun startNewPlaylistPlayback(playlist: Playlist, carryOn: Boolean): Job =
@@ -410,135 +370,135 @@ class PlayerViewModel(
     viewModelScope.launch { playlistsRepository.clearCurrentPlaylist() }
   }
 
-  private inner class TogglePlayback(private val arguments: PlaybackActionArguments) : () -> Unit {
-    override fun invoke() {
-      val (playerState, playerInput, playback) = arguments
-      when (playerState) {
-        PlayerState.Idle -> {
-          playerConnection.enqueue(
-            input = playerInput,
-            startTrackIndex = playback.currentTrackIndex,
-            startPositionMs = playback.currentTrackPositionMs,
-          )
-        }
-        is PlayerState.Enqueued -> {
-          if (playerState.isPlaying) playerConnection.pause() else playerConnection.play()
-        }
-        is PlayerState.Error -> {
-          return
-        }
-      }
-    }
-
-    override fun equals(other: Any?): Boolean =
-      when {
-        this === other -> true
-        other !is TogglePlayback -> false
-        else -> arguments == other.arguments
-      }
-
-    override fun hashCode(): Int = arguments.hashCode()
+  private fun toggleCurrentPlaylistFavourite() {
+    viewModelScope.launch { playlistsRepository.toggleCurrentPlaylistFavourite() }
   }
 
-  private inner class PlayPreviousTrackAction(private val arguments: PlaybackActionArguments) :
-    () -> Unit {
-    override fun invoke() {
-      val (playerState, playerInput, playback) = arguments
-      when (playerState) {
-        PlayerState.Idle -> {
+  private fun togglePlayback(input: TrackPlaybackActionInput) {
+    val (playerState, playerInput, playback) = input
+    when (playerState) {
+      PlayerState.Idle -> {
+        playerConnection.enqueue(
+          input = playerInput,
+          startTrackIndex = playback.currentTrackIndex,
+          startPositionMs = playback.currentTrackPositionMs,
+        )
+      }
+      is PlayerState.Enqueued -> {
+        if (playerState.isPlaying) playerConnection.pause() else playerConnection.play()
+      }
+      is PlayerState.Error -> {
+        return
+      }
+    }
+  }
+
+  private fun playPreviousTrack(input: TrackPlaybackActionInput) {
+    val (playerState, playerInput, playback) = input
+    when (playerState) {
+      PlayerState.Idle -> {
+        playerConnection.enqueue(
+          input = playerInput,
+          startTrackIndex = (playback.currentTrackIndex - 1).coerceAtLeast(0),
+          startPositionMs = 0L,
+        )
+      }
+      is PlayerState.Enqueued -> {
+        playerConnection.playPrevious()
+      }
+      is PlayerState.Error -> {
+        return
+      }
+    }
+  }
+
+  private fun playNextTrack(input: TrackPlaybackActionInput) {
+    val (playerState, playerInput, playback) = input
+    when (playerState) {
+      PlayerState.Idle -> {
+        playerConnection.enqueue(
+          input = playerInput,
+          startTrackIndex =
+            (playback.currentTrackIndex + 1).coerceAtMost(playerInput.tracks.lastIndex),
+          startPositionMs = 0L,
+        )
+      }
+      is PlayerState.Enqueued -> {
+        playerConnection.playNext()
+      }
+      is PlayerState.Error -> {
+        return
+      }
+    }
+  }
+
+  private fun playTrackAtIndex(input: TrackPlaybackActionInput, index: Int) {
+    val (playerState, playerInput, playback) = input
+    when (playerState) {
+      PlayerState.Idle -> {
+        if (playback.currentTrackIndex != index) {
           playerConnection.enqueue(
             input = playerInput,
-            startTrackIndex = (playback.currentTrackIndex - 1).coerceAtLeast(0),
+            startTrackIndex = index.coerceIn(0..playerInput.tracks.lastIndex),
             startPositionMs = 0L,
           )
         }
-        is PlayerState.Enqueued -> {
-          playerConnection.playPrevious()
+      }
+      is PlayerState.Enqueued -> {
+        if (playerState.currentTrackIndex != index) {
+          playerConnection.playAtIndex(index)
         }
-        is PlayerState.Error -> {
-          return
-        }
+      }
+      is PlayerState.Error -> {
+        return
       }
     }
-
-    override fun equals(other: Any?): Boolean =
-      when {
-        this === other -> true
-        other !is PlayPreviousTrackAction -> false
-        else -> arguments == other.arguments
-      }
-
-    override fun hashCode(): Int = arguments.hashCode()
   }
 
-  private inner class PlayNextTrackAction(private val arguments: PlaybackActionArguments) :
-    () -> Unit {
+  private fun seekToProgress(currentTrack: Track?, progress: Float) {
+    currentTrack
+      ?.duration
+      ?.toFloat()
+      ?.let { it * progress * 1000f }
+      ?.roundToLong()
+      ?.let(playerConnection::seekTo)
+  }
+
+  private inner class InputAction<T>(input: T, private val action: (T) -> Unit) :
+    BaseInputAction<T>(input), () -> Unit {
     override fun invoke() {
-      val (playerState, playerInput, playback) = arguments
-      when (playerState) {
-        PlayerState.Idle -> {
-          playerConnection.enqueue(
-            input = playerInput,
-            startTrackIndex =
-              (playback.currentTrackIndex + 1).coerceAtMost(playerInput.tracks.lastIndex),
-            startPositionMs = 0L,
-          )
-        }
-        is PlayerState.Enqueued -> {
-          playerConnection.playNext()
-        }
-        is PlayerState.Error -> {
-          return
+      action(input)
+    }
+  }
+
+  private inner class ParameterizedInputAction<T, S>(input: T, private val action: (T, S) -> Unit) :
+    BaseInputAction<T>(input), (S) -> Unit {
+    override fun invoke(param: S) {
+      action(input, param)
+    }
+  }
+
+  private abstract class BaseInputAction<T>(protected val input: T) {
+    override fun equals(other: Any?): Boolean {
+      when {
+        this === other -> return true
+        other == null || this::class != other::class -> return false
+        else -> {
+          other as BaseInputAction<*>
+          return input == other.input
         }
       }
     }
 
-    override fun equals(other: Any?): Boolean =
-      when {
-        this === other -> true
-        other !is PlayNextTrackAction -> false
-        else -> arguments == other.arguments
-      }
-
-    override fun hashCode(): Int = arguments.hashCode()
+    override fun hashCode(): Int = input.hashCode()
   }
 
-  private inner class PlayAtIndexTrackAction(private val arguments: PlaybackActionArguments) :
-    (Int) -> Unit {
-    override fun invoke(index: Int) {
-      val (playerState, playerInput, playback) = arguments
-      when (playerState) {
-        PlayerState.Idle -> {
-          if (playback.currentTrackIndex != index) {
-            playerConnection.enqueue(
-              input = playerInput,
-              startTrackIndex = index.coerceIn(0..playerInput.tracks.lastIndex),
-              startPositionMs = 0L,
-            )
-          }
-        }
-        is PlayerState.Enqueued -> {
-          if (playerState.currentTrackIndex != index) {
-            playerConnection.playAtIndex(index)
-          }
-        }
-        is PlayerState.Error -> {
-          return
-        }
-      }
-    }
+  private data class PlaylistPlaybackActionInput(
+    val currentPlaylist: Playlist? = null,
+    val togglePlayback: (() -> Unit)? = null,
+  )
 
-    override fun equals(other: Any?): Boolean =
-      when {
-        this === other -> true
-        other !is PlayAtIndexTrackAction -> false
-        else -> arguments == other.arguments
-      }
-
-    override fun hashCode(): Int = arguments.hashCode()
-  }
-
-  private data class PlaybackActionArguments(
+  private data class TrackPlaybackActionInput(
     val playerState: PlayerState,
     val playerInput: PlayerInput,
     val playback: PlaylistPlayback,

@@ -134,7 +134,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
 
   val playerViewModel =
     viewModel<PlayerViewModel>(factory = applicationComponent.playerViewModelFactory)
-  val playerViewState by playerViewModel.viewState.collectAsStateWithLifecycle()
+  val playerViewState by playerViewModel.playerViewState.collectAsStateWithLifecycle()
   val currentPlaylist by playerViewModel.currentPlaylist.collectAsStateWithLifecycle()
 
   val requestRecordAudioPermission by
