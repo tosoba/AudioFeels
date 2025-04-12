@@ -46,6 +46,7 @@ import com.trm.audiofeels.core.ui.resources.artwork_placeholder
 import com.trm.audiofeels.core.ui.resources.error_occurred
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.ui.player.PlayerViewState
+import com.trm.audiofeels.ui.player.util.currentTrackProgressOrZero
 import kotlin.math.absoluteValue
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
@@ -81,11 +82,7 @@ fun PlayerExpandedContent(
       if (showSlider) {
         AnimatedVisibility(visible = viewState is PlayerViewState.Playback) {
           var sliderValue by
-            remember(viewState) {
-              mutableFloatStateOf(
-                (viewState as? PlayerViewState.Playback)?.currentTrackProgress?.toFloat() ?: 0f
-              )
-            }
+            remember(viewState) { mutableFloatStateOf(viewState.currentTrackProgressOrZero) }
           Slider(
             value = sliderValue,
             onValueChange = { sliderValue = it },
