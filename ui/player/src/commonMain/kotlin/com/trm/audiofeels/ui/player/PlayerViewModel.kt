@@ -3,6 +3,8 @@ package com.trm.audiofeels.ui.player
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.trm.audiofeels.core.base.model.LoadableState
+import com.trm.audiofeels.core.base.model.ParameterizedViewStateAction
+import com.trm.audiofeels.core.base.model.ViewStateAction
 import com.trm.audiofeels.core.base.model.loadableStateFlowOf
 import com.trm.audiofeels.core.base.util.RestartableStateFlow
 import com.trm.audiofeels.core.base.util.restartableStateIn
@@ -21,6 +23,7 @@ import com.trm.audiofeels.domain.repository.PlaylistsRepository
 import com.trm.audiofeels.domain.repository.VisualizationRepository
 import com.trm.audiofeels.domain.usecase.GetPlayerInputUseCase
 import io.github.aakira.napier.Napier
+import kotlin.math.roundToLong
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
@@ -40,7 +43,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlin.math.roundToLong
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class PlayerViewModel(
@@ -104,9 +106,9 @@ class PlayerViewModel(
   private fun invisiblePlayerViewState(): PlayerViewState.Invisible =
     PlayerViewState.Invisible(
       startPlaylistPlayback =
-        ParameterizedInputAction(PlaylistPlaybackActionInput(), ::startPlaylistPlayback),
+        ParameterizedViewStateAction(PlaylistPlaybackActionInput(), ::startPlaylistPlayback),
       startCarryOnPlaylistPlayback =
-        ParameterizedInputAction(PlaylistPlaybackActionInput(), ::startCarryOnPlaylistPlayback),
+        ParameterizedViewStateAction(PlaylistPlaybackActionInput(), ::startCarryOnPlaylistPlayback),
       cancelPlayback = ::cancelPlayback,
     )
 
@@ -133,9 +135,9 @@ class PlayerViewModel(
         flowOf(
           PlayerViewState.Loading(
             startPlaylistPlayback =
-              ParameterizedInputAction(PlaylistPlaybackActionInput(), ::startPlaylistPlayback),
+              ParameterizedViewStateAction(PlaylistPlaybackActionInput(), ::startPlaylistPlayback),
             startCarryOnPlaylistPlayback =
-              ParameterizedInputAction(
+              ParameterizedViewStateAction(
                 PlaylistPlaybackActionInput(),
                 ::startCarryOnPlaylistPlayback,
               ),
@@ -150,9 +152,9 @@ class PlayerViewModel(
         flowOf(
           PlayerViewState.Error(
             startPlaylistPlayback =
-              ParameterizedInputAction(PlaylistPlaybackActionInput(), ::startPlaylistPlayback),
+              ParameterizedViewStateAction(PlaylistPlaybackActionInput(), ::startPlaylistPlayback),
             startCarryOnPlaylistPlayback =
-              ParameterizedInputAction(
+              ParameterizedViewStateAction(
                 PlaylistPlaybackActionInput(),
                 ::startCarryOnPlaylistPlayback,
               ),
@@ -190,7 +192,7 @@ class PlayerViewModel(
     currentTrackPositionMs: Long,
   ): PlayerViewState.Playback {
     val trackPlaybackActionInput = TrackPlaybackActionInput(playerState, playerInput, playback)
-    val togglePlayback = InputAction(trackPlaybackActionInput, ::togglePlayback)
+    val togglePlayback = ViewStateAction(trackPlaybackActionInput, ::togglePlayback)
     val playlistPlaybackActionInput = PlaylistPlaybackActionInput(playback.playlist, togglePlayback)
     return PlayerViewState.Playback(
       playlistId = playback.playlist.id,
@@ -201,16 +203,16 @@ class PlayerViewModel(
         currentTrackProgress(playerInput, playback, playerState, currentTrackPositionMs),
       primaryControlState = primaryControlState(playback.playlist, playerState, togglePlayback),
       startPlaylistPlayback =
-        ParameterizedInputAction(playlistPlaybackActionInput, ::startPlaylistPlayback),
+        ParameterizedViewStateAction(playlistPlaybackActionInput, ::startPlaylistPlayback),
       startCarryOnPlaylistPlayback =
-        ParameterizedInputAction(playlistPlaybackActionInput, ::startCarryOnPlaylistPlayback),
+        ParameterizedViewStateAction(playlistPlaybackActionInput, ::startCarryOnPlaylistPlayback),
       cancelPlayback = ::cancelPlayback,
       togglePlaylistFavourite = ::toggleCurrentPlaylistFavourite,
-      playPreviousTrack = InputAction(trackPlaybackActionInput, ::playPreviousTrack),
-      playNextTrack = InputAction(trackPlaybackActionInput, ::playNextTrack),
-      playTrackAtIndex = ParameterizedInputAction(trackPlaybackActionInput, ::playTrackAtIndex),
+      playPreviousTrack = ViewStateAction(trackPlaybackActionInput, ::playPreviousTrack),
+      playNextTrack = ViewStateAction(trackPlaybackActionInput, ::playNextTrack),
+      playTrackAtIndex = ParameterizedViewStateAction(trackPlaybackActionInput, ::playTrackAtIndex),
       seekToProgress =
-        ParameterizedInputAction(
+        ParameterizedViewStateAction(
           when (playerState) {
             PlayerState.Idle -> null
             is PlayerState.Enqueued -> playerState.currentTrack
@@ -439,35 +441,6 @@ class PlayerViewModel(
       ?.let { it * progress * 1000f }
       ?.roundToLong()
       ?.let(playerConnection::seekTo)
-  }
-
-  private inner class InputAction<T>(input: T, private val action: (T) -> Unit) :
-    BaseInputAction<T>(input), () -> Unit {
-    override fun invoke() {
-      action(input)
-    }
-  }
-
-  private inner class ParameterizedInputAction<T, S>(input: T, private val action: (T, S) -> Unit) :
-    BaseInputAction<T>(input), (S) -> Unit {
-    override fun invoke(param: S) {
-      action(input, param)
-    }
-  }
-
-  private abstract class BaseInputAction<T>(protected val input: T) {
-    override fun equals(other: Any?): Boolean {
-      when {
-        this === other -> return true
-        other == null || this::class != other::class -> return false
-        else -> {
-          other as BaseInputAction<*>
-          return input == other.input
-        }
-      }
-    }
-
-    override fun hashCode(): Int = input.hashCode()
   }
 
   private data class PlaylistPlaybackActionInput(
