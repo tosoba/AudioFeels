@@ -94,16 +94,16 @@ class PlayerViewModel(
       .distinctUntilChangedBy { playback -> playback?.playlist?.id }
       .flatMapLatest { playback ->
         playback?.let(::playerViewStateFlow)
-          ?: flowOf(invisiblePlayerViewState()).onEach { playerConnection.reset() }
+          ?: flowOf(playerInvisibleViewState()).onEach { playerConnection.reset() }
       }
       .onEach { if (it is PlayerViewState.Playback) onPlayerPlaybackViewState(it) }
       .restartableStateIn(
         scope = viewModelScope,
         started = SharingStarted.Lazily,
-        initialValue = invisiblePlayerViewState(),
+        initialValue = playerInvisibleViewState(),
       )
 
-  private fun invisiblePlayerViewState(): PlayerViewState.Invisible =
+  private fun playerInvisibleViewState(): PlayerViewState.Invisible =
     PlayerViewState.Invisible(
       startPlaylistPlayback =
         ParameterizedViewStateAction(PlaylistPlaybackActionInput(), ::startPlaylistPlayback),
@@ -131,41 +131,32 @@ class PlayerViewModel(
     playback: PlaylistPlayback,
   ): Flow<PlayerViewState> =
     when (input) {
-      LoadableState.Loading -> {
-        flowOf(
-          PlayerViewState.Loading(
-            startPlaylistPlayback =
-              ParameterizedViewStateAction(PlaylistPlaybackActionInput(), ::startPlaylistPlayback),
-            startCarryOnPlaylistPlayback =
-              ParameterizedViewStateAction(
-                PlaylistPlaybackActionInput(),
-                ::startCarryOnPlaylistPlayback,
-              ),
-            cancelPlayback = ::cancelPlayback,
-          )
-        )
-      }
-      is LoadableState.Idle -> {
-        playbackViewStateFlow(input.value, playback)
-      }
-      is LoadableState.Error -> {
-        flowOf(
-          PlayerViewState.Error(
-            startPlaylistPlayback =
-              ParameterizedViewStateAction(PlaylistPlaybackActionInput(), ::startPlaylistPlayback),
-            startCarryOnPlaylistPlayback =
-              ParameterizedViewStateAction(
-                PlaylistPlaybackActionInput(),
-                ::startCarryOnPlaylistPlayback,
-              ),
-            cancelPlayback = ::cancelPlayback,
-            primaryControlState = retryAction(playlist = playback.playlist, clearHost = false),
-          )
-        )
-      }
+      LoadableState.Loading -> flowOf(playerLoadingViewState())
+      is LoadableState.Idle -> playerPlaybackViewStateFlow(input.value, playback)
+      is LoadableState.Error -> flowOf(playerErrorViewState(playback))
     }
 
-  private fun playbackViewStateFlow(
+  private fun playerLoadingViewState(): PlayerViewState.Loading =
+    PlayerViewState.Loading(
+      startPlaylistPlayback =
+        ParameterizedViewStateAction(PlaylistPlaybackActionInput(), ::startPlaylistPlayback),
+      startCarryOnPlaylistPlayback =
+        ParameterizedViewStateAction(PlaylistPlaybackActionInput(), ::startCarryOnPlaylistPlayback),
+      cancelPlayback = ::cancelPlayback,
+    )
+
+  private fun playerErrorViewState(playback: PlaylistPlayback): PlayerViewState.Error =
+    PlayerViewState.Error(
+      startPlaylistPlayback =
+        ParameterizedViewStateAction(PlaylistPlaybackActionInput(), ::startPlaylistPlayback),
+      startCarryOnPlaylistPlayback =
+        ParameterizedViewStateAction(PlaylistPlaybackActionInput(), ::startCarryOnPlaylistPlayback),
+      cancelPlayback = ::cancelPlayback,
+      primaryControlState =
+        playerPrimaryControlRetryAction(playlist = playback.playlist, clearHost = false),
+    )
+
+  private fun playerPlaybackViewStateFlow(
     input: PlayerInput,
     playback: PlaylistPlayback,
   ): Flow<PlayerViewState> =
@@ -175,7 +166,7 @@ class PlayerViewModel(
         .filter { it > 0L }
         .onStart { emit(playback.currentTrackPositionMs) }
         .map {
-          playbackPlayerViewState(
+          playerPlaybackViewState(
             playerInput = input,
             playback = playback,
             playerState = playerState,
@@ -185,7 +176,7 @@ class PlayerViewModel(
         }
     }
 
-  private fun playbackPlayerViewState(
+  private fun playerPlaybackViewState(
     playerInput: PlayerInput,
     playback: PlaylistPlayback,
     playerState: PlayerState,
@@ -246,14 +237,14 @@ class PlayerViewModel(
         }
       }
       is PlayerState.Error -> {
-        retryAction(
+        playerPrimaryControlRetryAction(
           playlist = playlist,
           clearHost = playerState.error == PlayerError.INVALID_HOST_ERROR,
         )
       }
     }
 
-  private fun retryAction(
+  private fun playerPrimaryControlRetryAction(
     playlist: Playlist,
     clearHost: Boolean,
   ): PlayerPrimaryControlState.Action =
