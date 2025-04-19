@@ -45,7 +45,7 @@ class SearchViewModel(
   val playlists: RestartableStateFlow<LoadableState<List<Playlist>>> =
     processedQuery
       .flatMapLatest {
-        if (it.length < 3) {
+        if (it.length < MIN_QUERY_LENGTH) {
           flowOf(LoadableState.Loading)
         } else {
           loadableStateFlowOf {
@@ -93,5 +93,6 @@ class SearchViewModel(
 
   companion object {
     internal const val EMPTY_QUERY = ""
+    internal const val MIN_QUERY_LENGTH = 3
   }
 }
