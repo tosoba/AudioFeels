@@ -19,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -49,9 +50,11 @@ internal class SearchViewModelTests {
       val viewModel = searchViewModel()
       viewModel.query.test {
         skipItems(1)
+
         repeat(10) { index ->
-          val query = Array(size = index + 1) { "a" }.joinToString(separator = "")
+          val query = queryOf(length = index + 1)
           viewModel.onQueryChange(query)
+
           assertEquals(expected = query, actual = awaitItem())
           ensureAllEventsConsumed()
         }
@@ -72,9 +75,11 @@ internal class SearchViewModelTests {
       val viewModel = searchViewModel()
       viewModel.playlists.test {
         skipItems(1)
+
         repeat(times = SearchViewModel.MIN_QUERY_LENGTH) {
-          viewModel.onQueryChange(Array(size = it) { "a" }.joinToString(separator = ""))
+          viewModel.onQueryChange(queryOf(length = it))
         }
+
         ensureAllEventsConsumed()
       }
     }
@@ -85,36 +90,70 @@ internal class SearchViewModelTests {
       val viewModel = searchViewModel()
       viewModel.playlists.test {
         skipItems(1)
+
         repeat(times = SearchViewModel.MIN_QUERY_LENGTH) {
           viewModel.onQueryChange(
-            Array(size = it) { "a" }
-              .joinToString(separator = "")
-              .padEnd(length = SearchViewModel.MIN_QUERY_LENGTH, padChar = ' ')
+            queryOf(length = it).padEnd(length = SearchViewModel.MIN_QUERY_LENGTH, padChar = ' ')
           )
         }
+
         ensureAllEventsConsumed()
       }
     }
 
   @Test
-  fun `given initial playlists Loading received - when valid query is repeated multiple times - then searchPlaylists is called only once`() =
+  fun `given initial playlists Loading received - when multiple same query changes - then searchPlaylists is called only once`() =
     runTest {
       val playlistsRepository =
         mock<PlaylistsRepository> { everySuspend { searchPlaylists(any()) } returns emptyList() }
       val viewModel = searchViewModel(playlistsRepository = playlistsRepository)
       viewModel.playlists.test {
         skipItems(1)
-        val query =
-          Array(size = SearchViewModel.MIN_QUERY_LENGTH) { "a" }.joinToString(separator = "")
+
+        val query = queryOf()
         repeat(times = 10) {
           viewModel.onQueryChange(query)
-          advanceTimeBy(delayTimeMillis = 1_000L)
+          advanceTimeBy(delayTimeMillis = SearchViewModel.QUERY_DEBOUNCE_TIMEOUT_MILLIS * 2)
         }
+
         awaitItem()
         ensureAllEventsConsumed()
         verifySuspend(exactly(1)) { playlistsRepository.searchPlaylists(eq(query)) }
       }
     }
+
+  @Test
+  fun `given initial playlists Loading received - when multiple different valid query changes within debounce timeout - then searchPlaylists is called only once`() =
+    runTest {
+      val playlistsRepository =
+        mock<PlaylistsRepository> { everySuspend { searchPlaylists(any()) } returns emptyList() }
+      val viewModel = searchViewModel(playlistsRepository = playlistsRepository)
+      viewModel.playlists.test {
+        skipItems(1)
+
+        val start = currentTime
+        var current = start
+        var latestQuery = ""
+        while (current - start < SearchViewModel.QUERY_DEBOUNCE_TIMEOUT_MILLIS) {
+          viewModel.onQueryChange(
+            queryOf(length = SearchViewModel.MIN_QUERY_LENGTH + latestQuery.length).also {
+              latestQuery = it
+            }
+          )
+          advanceTimeBy(delayTimeMillis = 50L)
+          current = currentTime
+        }
+
+        awaitItem()
+        ensureAllEventsConsumed()
+        verifySuspend(exactly(1)) { playlistsRepository.searchPlaylists(eq(latestQuery)) }
+      }
+    }
+
+  private fun queryOf(
+    length: Int = SearchViewModel.MIN_QUERY_LENGTH,
+    repeatedChar: Char = 'a',
+  ): String = Array(size = length) { repeatedChar }.joinToString(separator = "")
 
   private fun searchViewModel(playlistsRepository: PlaylistsRepository = mock {}): SearchViewModel =
     SearchViewModel(

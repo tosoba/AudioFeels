@@ -38,7 +38,7 @@ class SearchViewModel(
   val query: StateFlow<String> = _query.asStateFlow()
 
   private val processedQuery: Flow<String>
-    get() = _query.map(String::trim).debounce(500L).distinctUntilChanged()
+    get() = _query.map(String::trim).debounce(QUERY_DEBOUNCE_TIMEOUT_MILLIS).distinctUntilChanged()
 
   private val shuffle = MutableSharedFlow<Boolean>()
 
@@ -94,5 +94,6 @@ class SearchViewModel(
   companion object {
     internal const val EMPTY_QUERY = ""
     internal const val MIN_QUERY_LENGTH = 3
+    internal const val QUERY_DEBOUNCE_TIMEOUT_MILLIS = 500L
   }
 }
