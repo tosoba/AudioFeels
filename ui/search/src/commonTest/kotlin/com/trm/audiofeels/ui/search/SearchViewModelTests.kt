@@ -4,7 +4,13 @@ import app.cash.turbine.test
 import com.trm.audiofeels.core.base.model.LoadableState
 import com.trm.audiofeels.data.test.SuggestionsFakeRepository
 import com.trm.audiofeels.domain.repository.PlaylistsRepository
+import dev.mokkery.answering.returns
+import dev.mokkery.everySuspend
+import dev.mokkery.matcher.any
+import dev.mokkery.matcher.eq
 import dev.mokkery.mock
+import dev.mokkery.verify.VerifyMode.Companion.exactly
+import dev.mokkery.verifySuspend
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -12,6 +18,7 @@ import kotlin.test.assertEquals
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -86,6 +93,26 @@ internal class SearchViewModelTests {
           )
         }
         ensureAllEventsConsumed()
+      }
+    }
+
+  @Test
+  fun `given initial playlists Loading received - when valid query is repeated multiple times - then searchPlaylists is called only once`() =
+    runTest {
+      val playlistsRepository =
+        mock<PlaylistsRepository> { everySuspend { searchPlaylists(any()) } returns emptyList() }
+      val viewModel = searchViewModel(playlistsRepository = playlistsRepository)
+      viewModel.playlists.test {
+        skipItems(1)
+        val query =
+          Array(size = SearchViewModel.MIN_QUERY_LENGTH) { "a" }.joinToString(separator = "")
+        repeat(times = 10) {
+          viewModel.onQueryChange(query)
+          advanceTimeBy(delayTimeMillis = 1_000L)
+        }
+        awaitItem()
+        ensureAllEventsConsumed()
+        verifySuspend(exactly(1)) { playlistsRepository.searchPlaylists(eq(query)) }
       }
     }
 
