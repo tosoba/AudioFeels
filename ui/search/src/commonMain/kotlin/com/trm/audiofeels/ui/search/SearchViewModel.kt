@@ -71,7 +71,8 @@ class SearchViewModel(
   val suggestions: StateFlow<List<String>> =
     processedQuery
       .flatMapLatest { query ->
-        suggestionsRepository.getSuggestionsFlow(limit = 10).map { suggestions ->
+        suggestionsRepository.getSuggestionsFlow(limit = QUERY_SUGGESTIONS_LIMIT).map { suggestions
+          ->
           suggestions.filter { it != query }
         }
       }
@@ -95,5 +96,6 @@ class SearchViewModel(
     internal const val EMPTY_QUERY = ""
     internal const val MIN_QUERY_LENGTH = 3
     internal const val QUERY_DEBOUNCE_TIMEOUT_MILLIS = 500L
+    internal const val QUERY_SUGGESTIONS_LIMIT = 10
   }
 }

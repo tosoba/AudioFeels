@@ -3,20 +3,25 @@ package com.trm.audiofeels.ui.search
 import app.cash.turbine.test
 import com.trm.audiofeels.core.base.model.LoadableState
 import com.trm.audiofeels.data.test.SuggestionsFakeRepository
+import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.repository.PlaylistsRepository
+import com.trm.audiofeels.domain.repository.SuggestionsRepository
 import dev.mokkery.answering.returns
 import dev.mokkery.everySuspend
 import dev.mokkery.matcher.any
 import dev.mokkery.matcher.eq
 import dev.mokkery.mock
 import dev.mokkery.verify.VerifyMode.Companion.exactly
+import dev.mokkery.verifyNoMoreCalls
 import dev.mokkery.verifySuspend
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.currentTime
@@ -70,24 +75,24 @@ internal class SearchViewModelTests {
   }
 
   @Test
-  fun `given initial playlists Loading received - when query too short - then query playlists does not emit more items`() =
-    runTest {
-      val viewModel = searchViewModel()
-      viewModel.playlists.test {
-        skipItems(1)
+  fun `when query too short - then query playlists does not emit more items`() = runTest {
+    val viewModel = searchViewModel()
+    viewModel.playlists.test {
+      skipItems(1)
 
-        repeat(times = SearchViewModel.MIN_QUERY_LENGTH) {
-          viewModel.onQueryChange(queryOf(length = it))
-        }
-
-        ensureAllEventsConsumed()
+      repeat(times = SearchViewModel.MIN_QUERY_LENGTH) {
+        viewModel.onQueryChange(queryOf(length = it))
       }
+
+      ensureAllEventsConsumed()
     }
+  }
 
   @Test
-  fun `given initial playlists Loading received - when query too short after trim - then query playlists does not emit more items`() =
+  fun `when query too short after trim - then query playlists does not emit more items`() =
     runTest {
       val viewModel = searchViewModel()
+
       viewModel.playlists.test {
         skipItems(1)
 
@@ -102,32 +107,34 @@ internal class SearchViewModelTests {
     }
 
   @Test
-  fun `given initial playlists Loading received - when multiple same query changes - then searchPlaylists is called only once`() =
-    runTest {
-      val playlistsRepository =
-        mock<PlaylistsRepository> { everySuspend { searchPlaylists(any()) } returns emptyList() }
-      val viewModel = searchViewModel(playlistsRepository = playlistsRepository)
-      viewModel.playlists.test {
-        skipItems(1)
+  fun `when multiple same query changes - then searchPlaylists is called only once`() = runTest {
+    val playlistsRepository =
+      mock<PlaylistsRepository> { everySuspend { searchPlaylists(any()) } returns emptyList() }
+    val viewModel = searchViewModel(playlistsRepository = playlistsRepository)
 
-        val query = queryOf()
-        repeat(times = 10) {
-          viewModel.onQueryChange(query)
-          advanceTimeBy(delayTimeMillis = SearchViewModel.QUERY_DEBOUNCE_TIMEOUT_MILLIS * 2)
-        }
+    viewModel.playlists.test {
+      skipItems(1)
 
-        awaitItem()
-        ensureAllEventsConsumed()
-        verifySuspend(exactly(1)) { playlistsRepository.searchPlaylists(eq(query)) }
+      val query = queryOf()
+      repeat(times = 10) {
+        viewModel.onQueryChange(query)
+        advanceTimeBy(delayTimeMillis = SearchViewModel.QUERY_DEBOUNCE_TIMEOUT_MILLIS * 2)
       }
+
+      awaitItem()
+      ensureAllEventsConsumed()
+
+      verifySuspend(exactly(1)) { playlistsRepository.searchPlaylists(eq(query)) }
     }
+  }
 
   @Test
-  fun `given initial playlists Loading received - when multiple different valid query changes within debounce timeout - then searchPlaylists is called only once`() =
+  fun `when multiple different valid query changes within debounce timeout - then searchPlaylists is called only once`() =
     runTest {
       val playlistsRepository =
         mock<PlaylistsRepository> { everySuspend { searchPlaylists(any()) } returns emptyList() }
       val viewModel = searchViewModel(playlistsRepository = playlistsRepository)
+
       viewModel.playlists.test {
         skipItems(1)
 
@@ -146,18 +153,119 @@ internal class SearchViewModelTests {
 
         awaitItem()
         ensureAllEventsConsumed()
+
         verifySuspend(exactly(1)) { playlistsRepository.searchPlaylists(eq(latestQuery)) }
       }
     }
+
+  @Test
+  fun `when valid query and empty searchPlaylists response - then suggestion is not saved`() =
+    runTest {
+      val suggestionsRepository = mock<SuggestionsRepository> {}
+
+      searchViewModel(
+          playlistsRepository =
+            mock { everySuspend { searchPlaylists(any()) } returns emptyList() },
+          suggestionsRepository = suggestionsRepository,
+        )
+        .testPlaylistsWithQuery(queryOf())
+
+      verifyNoMoreCalls(suggestionsRepository)
+    }
+
+  @Test
+  fun `when valid query and non-empty searchPlaylists response - then suggestion is saved`() =
+    runTest {
+      val suggestionsRepository = SuggestionsFakeRepository()
+      val query = queryOf()
+
+      searchViewModel(
+          playlistsRepository =
+            mock { everySuspend { searchPlaylists(any()) } returns listOf(stubPlaylist()) },
+          suggestionsRepository = suggestionsRepository,
+        )
+        .testPlaylistsWithQuery(query)
+
+      assertContentEquals(
+        expected = listOf(query),
+        actual =
+          suggestionsRepository
+            .getSuggestionsFlow(limit = SearchViewModel.QUERY_SUGGESTIONS_LIMIT)
+            .firstOrNull(),
+      )
+    }
+
+  @Test
+  fun `given valid query and non-empty searchPlaylists response - when no interaction - then valid query suggestion is not returned`() =
+    runTest {
+      val suggestionsRepository = SuggestionsFakeRepository()
+      val viewModel =
+        searchViewModel(
+          playlistsRepository =
+            mock { everySuspend { searchPlaylists(any()) } returns listOf(stubPlaylist()) },
+          suggestionsRepository = suggestionsRepository,
+        )
+      val query = queryOf()
+      viewModel.testPlaylistsWithQuery(query)
+
+      viewModel.suggestions.test {
+        assertContentEquals(expected = emptyList(), actual = awaitItem())
+        ensureAllEventsConsumed()
+      }
+    }
+
+  @Test
+  fun `given valid query and non-empty searchPlaylists response - when query change - then valid query suggestion is returned`() =
+    runTest {
+      val suggestionsRepository = SuggestionsFakeRepository()
+      val viewModel =
+        searchViewModel(
+          playlistsRepository =
+            mock { everySuspend { searchPlaylists(any()) } returns listOf(stubPlaylist()) },
+          suggestionsRepository = suggestionsRepository,
+        )
+      val query = queryOf()
+      viewModel.testPlaylistsWithQuery(query)
+
+      viewModel.suggestions.test {
+        skipItems(1)
+        viewModel.onQueryChange(SearchViewModel.EMPTY_QUERY)
+        assertContentEquals(expected = listOf(query), actual = awaitItem())
+        ensureAllEventsConsumed()
+      }
+    }
+
+  private suspend fun SearchViewModel.testPlaylistsWithQuery(query: String) {
+    playlists.test {
+      skipItems(1)
+      onQueryChange(query)
+      awaitItem()
+      ensureAllEventsConsumed()
+    }
+  }
 
   private fun queryOf(
     length: Int = SearchViewModel.MIN_QUERY_LENGTH,
     repeatedChar: Char = 'a',
   ): String = Array(size = length) { repeatedChar }.joinToString(separator = "")
 
-  private fun searchViewModel(playlistsRepository: PlaylistsRepository = mock {}): SearchViewModel =
+  private fun stubPlaylist(): Playlist =
+    Playlist(
+      id = "",
+      name = "",
+      description = null,
+      artworkUrl = null,
+      score = 0.0,
+      trackCount = 0,
+      favourite = false,
+    )
+
+  private fun searchViewModel(
+    playlistsRepository: PlaylistsRepository = mock {},
+    suggestionsRepository: SuggestionsRepository = SuggestionsFakeRepository(),
+  ): SearchViewModel =
     SearchViewModel(
       playlistsRepository = playlistsRepository,
-      suggestionsRepository = SuggestionsFakeRepository(),
+      suggestionsRepository = suggestionsRepository,
     )
 }
