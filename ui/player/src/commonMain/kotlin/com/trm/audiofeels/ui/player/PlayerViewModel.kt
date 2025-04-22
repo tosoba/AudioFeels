@@ -3,8 +3,8 @@ package com.trm.audiofeels.ui.player
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.trm.audiofeels.core.base.model.LoadableState
-import com.trm.audiofeels.core.base.model.ParameterizedViewStateAction
-import com.trm.audiofeels.core.base.model.ViewStateAction
+import com.trm.audiofeels.core.base.model.ParameterizedInputAction
+import com.trm.audiofeels.core.base.model.InputAction
 import com.trm.audiofeels.core.base.model.loadableStateFlowOf
 import com.trm.audiofeels.core.base.util.RestartableStateFlow
 import com.trm.audiofeels.core.base.util.restartableStateIn
@@ -106,9 +106,9 @@ class PlayerViewModel(
   private fun playerInvisibleViewState(): PlayerViewState.Invisible =
     PlayerViewState.Invisible(
       startPlaylistPlayback =
-        ParameterizedViewStateAction(PlaylistPlaybackActionInput(), ::startPlaylistPlayback),
+        ParameterizedInputAction(PlaylistPlaybackActionInput(), ::startPlaylistPlayback),
       startCarryOnPlaylistPlayback =
-        ParameterizedViewStateAction(PlaylistPlaybackActionInput(), ::startCarryOnPlaylistPlayback),
+        ParameterizedInputAction(PlaylistPlaybackActionInput(), ::startCarryOnPlaylistPlayback),
       cancelPlayback = ::cancelPlayback,
     )
 
@@ -139,18 +139,18 @@ class PlayerViewModel(
   private fun playerLoadingViewState(): PlayerViewState.Loading =
     PlayerViewState.Loading(
       startPlaylistPlayback =
-        ParameterizedViewStateAction(PlaylistPlaybackActionInput(), ::startPlaylistPlayback),
+        ParameterizedInputAction(PlaylistPlaybackActionInput(), ::startPlaylistPlayback),
       startCarryOnPlaylistPlayback =
-        ParameterizedViewStateAction(PlaylistPlaybackActionInput(), ::startCarryOnPlaylistPlayback),
+        ParameterizedInputAction(PlaylistPlaybackActionInput(), ::startCarryOnPlaylistPlayback),
       cancelPlayback = ::cancelPlayback,
     )
 
   private fun playerErrorViewState(playback: PlaylistPlayback): PlayerViewState.Error =
     PlayerViewState.Error(
       startPlaylistPlayback =
-        ParameterizedViewStateAction(PlaylistPlaybackActionInput(), ::startPlaylistPlayback),
+        ParameterizedInputAction(PlaylistPlaybackActionInput(), ::startPlaylistPlayback),
       startCarryOnPlaylistPlayback =
-        ParameterizedViewStateAction(PlaylistPlaybackActionInput(), ::startCarryOnPlaylistPlayback),
+        ParameterizedInputAction(PlaylistPlaybackActionInput(), ::startCarryOnPlaylistPlayback),
       cancelPlayback = ::cancelPlayback,
       primaryControlState =
         playerPrimaryControlRetryAction(playlist = playback.playlist, clearHost = false),
@@ -183,7 +183,7 @@ class PlayerViewModel(
     currentTrackPositionMs: Long,
   ): PlayerViewState.Playback {
     val trackPlaybackActionInput = TrackPlaybackActionInput(playerState, playerInput, playback)
-    val togglePlayback = ViewStateAction(trackPlaybackActionInput, ::togglePlayback)
+    val togglePlayback = InputAction(trackPlaybackActionInput, ::togglePlayback)
     val playlistPlaybackActionInput = PlaylistPlaybackActionInput(playback.playlist, togglePlayback)
     return PlayerViewState.Playback(
       playlistId = playback.playlist.id,
@@ -194,16 +194,16 @@ class PlayerViewModel(
         currentTrackProgress(playerInput, playback, playerState, currentTrackPositionMs),
       primaryControlState = primaryControlState(playback.playlist, playerState, togglePlayback),
       startPlaylistPlayback =
-        ParameterizedViewStateAction(playlistPlaybackActionInput, ::startPlaylistPlayback),
+        ParameterizedInputAction(playlistPlaybackActionInput, ::startPlaylistPlayback),
       startCarryOnPlaylistPlayback =
-        ParameterizedViewStateAction(playlistPlaybackActionInput, ::startCarryOnPlaylistPlayback),
+        ParameterizedInputAction(playlistPlaybackActionInput, ::startCarryOnPlaylistPlayback),
       cancelPlayback = ::cancelPlayback,
       togglePlaylistFavourite = ::toggleCurrentPlaylistFavourite,
-      playPreviousTrack = ViewStateAction(trackPlaybackActionInput, ::playPreviousTrack),
-      playNextTrack = ViewStateAction(trackPlaybackActionInput, ::playNextTrack),
-      playTrackAtIndex = ParameterizedViewStateAction(trackPlaybackActionInput, ::playTrackAtIndex),
+      playPreviousTrack = InputAction(trackPlaybackActionInput, ::playPreviousTrack),
+      playNextTrack = InputAction(trackPlaybackActionInput, ::playNextTrack),
+      playTrackAtIndex = ParameterizedInputAction(trackPlaybackActionInput, ::playTrackAtIndex),
       seekToProgress =
-        ParameterizedViewStateAction(
+        ParameterizedInputAction(
           when (playerState) {
             PlayerState.Idle -> null
             is PlayerState.Enqueued -> playerState.currentTrack
