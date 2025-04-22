@@ -2,6 +2,7 @@ plugins {
   id("com.trm.audiofeels.android.library")
   id("com.trm.audiofeels.kotlin.multiplatform")
   id("com.trm.audiofeels.compose")
+  alias(libs.plugins.mokkery)
 }
 
 kotlin {
@@ -25,6 +26,16 @@ kotlin {
         implementation(libs.androidx.lifecycle.viewmodel.compose)
 
         implementation(libs.coil.compose)
+      }
+    }
+
+    commonTest {
+      dependencies {
+        implementation(projects.data.test)
+
+        implementation(libs.kotlin.test)
+        implementation(libs.kotlinx.coroutines.test)
+        implementation(libs.turbine)
       }
     }
   }
