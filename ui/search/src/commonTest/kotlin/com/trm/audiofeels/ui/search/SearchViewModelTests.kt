@@ -7,11 +7,15 @@ import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.repository.PlaylistsRepository
 import com.trm.audiofeels.domain.repository.SuggestionsRepository
 import dev.mokkery.answering.returns
+import dev.mokkery.answering.sequentiallyReturns
 import dev.mokkery.everySuspend
 import dev.mokkery.matcher.any
 import dev.mokkery.matcher.eq
 import dev.mokkery.mock
+import dev.mokkery.spy
+import dev.mokkery.verify
 import dev.mokkery.verify.VerifyMode.Companion.exactly
+import dev.mokkery.verify.VerifyMode.Companion.not
 import dev.mokkery.verifyNoMoreCalls
 import dev.mokkery.verifySuspend
 import kotlin.test.AfterTest
@@ -121,7 +125,7 @@ internal class SearchViewModelTests {
         advanceTimeBy(delayTimeMillis = SearchViewModel.QUERY_DEBOUNCE_TIMEOUT_MILLIS * 2)
       }
 
-      awaitItem()
+      skipItems(1)
       ensureAllEventsConsumed()
 
       verifySuspend(exactly(1)) { playlistsRepository.searchPlaylists(eq(query)) }
@@ -151,7 +155,7 @@ internal class SearchViewModelTests {
           current = currentTime
         }
 
-        awaitItem()
+        skipItems(1)
         ensureAllEventsConsumed()
 
         verifySuspend(exactly(1)) { playlistsRepository.searchPlaylists(eq(latestQuery)) }
@@ -235,6 +239,59 @@ internal class SearchViewModelTests {
       }
     }
 
+  @Test
+  fun `given valid query and non-empty searchPlaylists response - when shuffle - then playlists are shuffled`() =
+    runTest {
+      val playlists = spy(listOf(stubPlaylist()))
+      val viewModel =
+        searchViewModel(
+          playlistsRepository = mock { everySuspend { searchPlaylists(any()) } returns playlists }
+        )
+
+      viewModel.playlists.test {
+        skipItems(1)
+        viewModel.onQueryChange(queryOf())
+        skipItems(1)
+
+        viewModel.onShuffleClick()
+        skipItems(1)
+        ensureAllEventsConsumed()
+      }
+
+      verify(exactly(1)) { playlists.shuffled() }
+    }
+
+  @Test
+  fun `given shuffled searchPlaylists response - when query change - then new playlists are not shuffled`() =
+    runTest {
+      val firstQueryPlaylists = spy(listOf(stubPlaylist(id = "1"), stubPlaylist(id = "2")))
+      val secondQueryPlaylists = spy(listOf(stubPlaylist(id = "3"), stubPlaylist(id = "4")))
+
+      val viewModel =
+        searchViewModel(
+          playlistsRepository =
+            mock {
+              everySuspend { searchPlaylists(any()) } sequentiallyReturns
+                listOf(firstQueryPlaylists, secondQueryPlaylists)
+            }
+        )
+
+      viewModel.playlists.test {
+        skipItems(1)
+        viewModel.onQueryChange(queryOf(repeatedChar = '0'))
+        skipItems(1)
+        viewModel.onShuffleClick()
+        skipItems(1)
+
+        viewModel.onQueryChange(queryOf(repeatedChar = '1'))
+        skipItems(2)
+        ensureAllEventsConsumed()
+      }
+
+      verify(exactly(1)) { firstQueryPlaylists.shuffled() }
+      verify(not) { secondQueryPlaylists.shuffled() }
+    }
+
   private suspend fun SearchViewModel.testPlaylistsWithQuery(query: String) {
     playlists.test {
       skipItems(1)
@@ -249,9 +306,9 @@ internal class SearchViewModelTests {
     repeatedChar: Char = 'a',
   ): String = Array(size = length) { repeatedChar }.joinToString(separator = "")
 
-  private fun stubPlaylist(): Playlist =
+  private fun stubPlaylist(id: String = ""): Playlist =
     Playlist(
-      id = "",
+      id = id,
       name = "",
       description = null,
       artworkUrl = null,
