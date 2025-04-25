@@ -1,45 +1,45 @@
 [versions]
 accompanist = "0.37.2"
 adaptive = "1.0.1"
-agp = "8.7.2"
+agp = "8.7.3"
 android-compileSdk = "35"
 android-minSdk = "24"
 android-targetSdk = "35"
-androidx-activityCompose = "1.9.3"
+androidx-activityCompose = "1.10.1"
 androidx-appcompat = "1.7.0"
-androidx-constraintlayout = "2.2.0"
-androidx-core-ktx = "1.15.0"
+androidx-constraintlayout = "2.2.1"
+androidx-core-ktx = "1.16.0"
 androidx-espresso-core = "3.6.1"
 androidx-lifecycle = "2.8.7"
 androidx-material = "1.12.0"
 androidx-test-junit = "1.2.1"
 androidx-window = "1.3.0"
-baselineprofile = "1.3.3"
+baselineprofile = "1.3.4"
 coil = "3.0.4"
 compose-multiplatform = "1.7.3"
 compose-plugin = "1.6.11"
-coroutines = "1.9.0"
+coroutines = "1.10.1"
 datastore = "1.1.1"
-desugarjdklibs = "2.1.3"
+desugarjdklibs = "2.1.5"
 haze = "1.5.0"
 jetbrains-lifecycle = "2.8.4"
 junit = "4.13.2"
 kachetor = "1.0.0"
-kotlin = "2.1.0"
+kotlin = "2.1.10"
 kotlinx-datetime = "0.6.1"
 kotlinx-serialization-json = "1.7.3"
 kotlininject = "0.7.2"
-ksp = "2.1.0-1.0.29"
+ksp = "2.1.10-1.0.31"
 ktor = "3.0.1"
 materialkolor = "2.0.0"
 materialyou = "0.2.6"
-media3 = "1.5.0"
+media3 = "1.6.1"
 mokkkery = "2.6.1"
-napier = "2.6.1"
+napier = "2.7.1"
 navigation = "2.9.0-alpha15"
 okio = "3.9.1"
-room = "2.7.0-alpha12"
-sqlite = "2.5.0-alpha12"
+room = "2.7.1"
+sqlite = "2.5.0"
 turbine = "1.2.0"
 
 [libraries]
@@ -98,6 +98,7 @@ okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
 sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 tools-desugarjdklibs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugarjdklibs" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
@@ -120,4 +121,4 @@ kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref =
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 mokkery = { id = "dev.mokkery", version.ref = "mokkkery" }
-room = { id = "androidx.room", version.ref = "room" }
+room = { id = "androidx.room", version = "2.7.1" }
