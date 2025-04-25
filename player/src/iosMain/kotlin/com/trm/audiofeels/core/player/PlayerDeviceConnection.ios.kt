@@ -58,7 +58,7 @@ import platform.darwin.dispatch_get_main_queue
 @OptIn(ExperimentalForeignApi::class)
 @ApplicationScope
 @Inject
-actual class AudioPlayerConnection : PlayerConnection {
+actual class PlayerDeviceConnection : PlayerConnection {
   private val player by lazy {
     AVPlayer().apply {
       addObserver(
@@ -76,7 +76,7 @@ actual class AudioPlayerConnection : PlayerConnection {
         setCategory(category = AVAudioSessionCategoryPlayback, error = null)
       } catch (ex: Exception) {
         Napier.e(
-          tag = this@AudioPlayerConnection::class.simpleName,
+          tag = this@PlayerDeviceConnection::class.simpleName,
           message = "Failed to set the audio session configuration",
           throwable = ex,
         )
@@ -265,7 +265,7 @@ actual class AudioPlayerConnection : PlayerConnection {
     } catch (ex: Exception) {
       Napier.e(
         message = "Failed to update the audio session active to $active",
-        tag = this@AudioPlayerConnection::class.simpleName,
+        tag = this@PlayerDeviceConnection::class.simpleName,
         throwable = ex,
       )
     }

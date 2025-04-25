@@ -37,7 +37,7 @@ import me.tatarka.inject.annotations.Inject
 
 @ApplicationScope
 @Inject
-actual class AudioPlayerConnection(
+actual class PlayerDeviceConnection(
   private val context: PlatformContext,
   private val scope: AppCoroutineScope,
 ) : PlayerConnection {
@@ -70,7 +70,7 @@ actual class AudioPlayerConnection(
                     previousState = it
                     Napier.d(
                       message = it.toString(),
-                      tag = this@AudioPlayerConnection.javaClass.simpleName,
+                      tag = this@PlayerDeviceConnection.javaClass.simpleName,
                     )
                   }
                 )
@@ -81,7 +81,7 @@ actual class AudioPlayerConnection(
               Napier.e(
                 message = "Error code: ${error.errorCode}\nMessage:${error.localizedMessage}",
                 throwable = error,
-                tag = this@AudioPlayerConnection.javaClass.simpleName,
+                tag = this@PlayerDeviceConnection.javaClass.simpleName,
               )
             }
           }
