@@ -6,11 +6,18 @@ plugins {
 
 kotlin {
   sourceSets {
+    androidMain { dependencies { implementation(libs.androidx.test.core) } }
+
     commonMain {
       dependencies {
+        implementation(projects.api.audius)
         implementation(projects.core.base)
+        implementation(projects.core.database)
         implementation(projects.core.preferences)
+        implementation(projects.data.playlists)
         implementation(projects.domain)
+
+        implementation(libs.room.runtime)
       }
     }
 

@@ -16,7 +16,7 @@ internal actual fun createApplicationDatabase(
     .setQueryCoroutineContext(Dispatchers.IO)
     .build()
 
-internal actual fun createApplicationInMemoryDatabase(
+actual fun createApplicationInMemoryDatabase(
   platformContext: PlatformContext
 ): ApplicationDatabase =
   Room.inMemoryDatabaseBuilder(context = platformContext, klass = ApplicationDatabase::class.java)
