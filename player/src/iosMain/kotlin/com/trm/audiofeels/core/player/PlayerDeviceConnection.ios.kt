@@ -132,7 +132,7 @@ actual class PlayerDeviceConnection : PlayerConnection {
   override val currentTrackPositionMsFlow: Flow<Long> = flow {
     while (currentCoroutineContext().isActive) {
       player.currentItem?.let { emit((CMTimeGetSeconds(player.currentTime()) * 1000).toLong()) }
-      delay(1_000L)
+      delay(PlayerConstants.TRACK_POSITION_UPDATE_INTERVAL_MS)
     }
   }
 
@@ -225,13 +225,10 @@ actual class PlayerDeviceConnection : PlayerConnection {
       }
   }
 
-  private fun play(
-    trackIndex: Int,
-    startPositionMs: Long = PlayerConstants.DEFAULT_START_POSITION_MS,
-  ) {
+  private fun play(trackIndex: Int, startPositionMs: Long = PlayerConstants.MIN_TRACK_POSITION_MS) {
     setCurrentItem(index = trackIndex)
     play()
-    startPositionMs.takeUnless { it == PlayerConstants.DEFAULT_START_POSITION_MS }?.let(::seekTo)
+    startPositionMs.takeUnless { it == PlayerConstants.MIN_TRACK_POSITION_MS }?.let(::seekTo)
   }
 
   override fun reset() {

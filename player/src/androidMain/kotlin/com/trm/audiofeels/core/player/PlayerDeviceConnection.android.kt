@@ -18,6 +18,7 @@ import com.trm.audiofeels.core.base.util.lazyAsync
 import com.trm.audiofeels.core.player.mapper.toMediaItem
 import com.trm.audiofeels.core.player.mapper.toState
 import com.trm.audiofeels.core.player.visualizer.WaveEngine
+import com.trm.audiofeels.domain.model.PlayerConstants
 import com.trm.audiofeels.domain.model.PlayerInput
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.player.PlayerConnection
@@ -44,7 +45,7 @@ actual class PlayerDeviceConnection(
   override val currentTrackPositionMsFlow: Flow<Long> = flow {
     while (currentCoroutineContext().isActive) {
       emit(mediaBrowser.await().currentPosition)
-      delay(1_000L)
+      delay(PlayerConstants.TRACK_POSITION_UPDATE_INTERVAL_MS)
     }
   }
 
