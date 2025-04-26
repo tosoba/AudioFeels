@@ -14,3 +14,7 @@ internal actual fun createApplicationDatabase(
     .setDriver(BundledSQLiteDriver())
     .setQueryCoroutineContext(Dispatchers.IO)
     .build()
+
+internal actual fun createApplicationInMemoryDatabase(
+  platformContext: PlatformContext
+): ApplicationDatabase = Room.inMemoryDatabaseBuilder<ApplicationDatabase>().build()
