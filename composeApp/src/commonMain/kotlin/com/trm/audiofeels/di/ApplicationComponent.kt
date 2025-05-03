@@ -5,11 +5,12 @@ import com.trm.audiofeels.api.hosts.di.HostsApiComponent
 import com.trm.audiofeels.core.base.di.ApplicationScope
 import com.trm.audiofeels.core.base.util.AppCoroutineDispatchers
 import com.trm.audiofeels.core.base.util.AppCoroutineScope
-import com.trm.audiofeels.data.database.di.DatabaseCoreComponent
 import com.trm.audiofeels.core.network.di.NetworkCoreComponent
 import com.trm.audiofeels.core.player.di.PlayerComponent
 import com.trm.audiofeels.core.preferences.di.PreferencesCoreComponent
+import com.trm.audiofeels.data.database.di.DatabaseCoreComponent
 import com.trm.audiofeels.data.hosts.di.HostsDataComponent
+import com.trm.audiofeels.data.playback.di.PlaybackDataComponent
 import com.trm.audiofeels.data.playlists.di.PlaylistsDataComponent
 import com.trm.audiofeels.data.suggestions.di.SuggestionsDataComponent
 import com.trm.audiofeels.data.visualization.di.VisualizationDataComponent
@@ -29,6 +30,7 @@ interface ApplicationComponent :
   NetworkCoreComponent,
   PreferencesCoreComponent,
   HostsDataComponent,
+  PlaybackDataComponent,
   PlaylistsDataComponent,
   SuggestionsDataComponent,
   VisualizationDataComponent,

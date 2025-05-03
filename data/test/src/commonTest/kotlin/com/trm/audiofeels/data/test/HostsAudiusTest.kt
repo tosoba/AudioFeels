@@ -12,7 +12,6 @@ import com.trm.audiofeels.core.preferences.get
 import com.trm.audiofeels.data.hosts.HostsAudiusRepository
 import com.trm.audiofeels.data.hosts.HostsInMemoryDataSource
 import com.trm.audiofeels.data.playlists.PlaylistsAudiusRepository
-import dev.mokkery.mock
 import dev.mokkery.spy
 import dev.mokkery.verify
 import dev.mokkery.verify.VerifyMode.Companion.exactly
@@ -361,7 +360,6 @@ internal class HostsAudiusTest {
           logLevel = LogLevel.NONE,
           engine = playlistsEngine,
         ),
-      playlistDao = mock {},
     )
   }
 

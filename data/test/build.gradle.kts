@@ -14,7 +14,7 @@ kotlin {
         implementation(projects.core.base)
         implementation(projects.core.preferences)
         implementation(projects.data.database)
-        implementation(projects.data.playlists)
+        implementation(projects.data.playback)
         implementation(projects.domain)
 
         implementation(libs.room.runtime)

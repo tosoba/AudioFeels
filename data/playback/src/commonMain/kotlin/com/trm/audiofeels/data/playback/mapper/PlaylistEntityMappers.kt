@@ -1,11 +1,11 @@
-package com.trm.audiofeels.data.playlists.mapper
+package com.trm.audiofeels.data.playback.mapper
 
 import com.trm.audiofeels.data.database.model.PlaylistEntity
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.model.PlaylistPlayback
 
-internal fun Playlist.toCurrentPlaylistEntity(): PlaylistEntity =
+internal fun Playlist.toEntity(): PlaylistEntity =
   PlaylistEntity(
     id = id,
     name = name,

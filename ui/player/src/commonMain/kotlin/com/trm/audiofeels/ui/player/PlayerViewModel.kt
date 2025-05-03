@@ -2,9 +2,9 @@ package com.trm.audiofeels.ui.player
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.trm.audiofeels.core.base.model.InputAction
 import com.trm.audiofeels.core.base.model.LoadableState
 import com.trm.audiofeels.core.base.model.ParameterizedInputAction
-import com.trm.audiofeels.core.base.model.InputAction
 import com.trm.audiofeels.core.base.model.loadableStateFlowOf
 import com.trm.audiofeels.core.base.util.RestartableStateFlow
 import com.trm.audiofeels.core.base.util.restartableStateIn
@@ -19,7 +19,7 @@ import com.trm.audiofeels.domain.model.PlaylistPlayback
 import com.trm.audiofeels.domain.model.Track
 import com.trm.audiofeels.domain.player.PlayerConnection
 import com.trm.audiofeels.domain.repository.HostsRepository
-import com.trm.audiofeels.domain.repository.PlaylistsRepository
+import com.trm.audiofeels.domain.repository.PlaybackRepository
 import com.trm.audiofeels.domain.repository.VisualizationRepository
 import com.trm.audiofeels.domain.usecase.GetPlayerInputUseCase
 import io.github.aakira.napier.Napier
@@ -48,7 +48,7 @@ import kotlinx.coroutines.launch
 class PlayerViewModel(
   private val playerConnection: PlayerConnection,
   private val getPlayerInputUseCase: GetPlayerInputUseCase,
-  private val playlistsRepository: PlaylistsRepository,
+  private val playbackRepository: PlaybackRepository,
   private val visualizationRepository: VisualizationRepository,
   private val hostsRepository: HostsRepository,
 ) : ViewModel() {
@@ -83,13 +83,13 @@ class PlayerViewModel(
   }
 
   val currentPlaylist: StateFlow<Playlist?> =
-    playlistsRepository
+    playbackRepository
       .getCurrentPlaylistFlow()
       .distinctUntilChanged()
       .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), null)
 
   val playerViewState: RestartableStateFlow<PlayerViewState> =
-    playlistsRepository
+    playbackRepository
       .getCurrentPlaylistPlaybackFlow()
       .distinctUntilChangedBy { playback -> playback?.playlist?.id }
       .flatMapLatest { playback ->
@@ -282,7 +282,7 @@ class PlayerViewModel(
     when (val playerState = state.playerState) {
       is PlayerState.Enqueued -> {
         viewModelScope.launch {
-          playlistsRepository.updateCurrentPlaylist(
+          playbackRepository.updateCurrentPlaylist(
             id = state.playlistId,
             currentTrackIndex = playerState.currentTrackIndex,
             currentTrackPositionMs =
@@ -333,15 +333,15 @@ class PlayerViewModel(
     viewModelScope.launch { suspendStartNewPlaylistPlayback(playlist, carryOn) }
 
   private suspend fun suspendStartNewPlaylistPlayback(playlist: Playlist, carryOn: Boolean) {
-    playlistsRepository.setNewCurrentPlaylist(playlist, carryOn)
+    playbackRepository.setNewCurrentPlaylist(playlist, carryOn)
   }
 
   private fun cancelPlayback() {
-    viewModelScope.launch { playlistsRepository.clearCurrentPlaylist() }
+    viewModelScope.launch { playbackRepository.clearCurrentPlaylist() }
   }
 
   private fun toggleCurrentPlaylistFavourite() {
-    viewModelScope.launch { playlistsRepository.toggleCurrentPlaylistFavourite() }
+    viewModelScope.launch { playbackRepository.toggleCurrentPlaylistFavourite() }
   }
 
   private fun togglePlayback(input: TrackPlaybackActionInput) {

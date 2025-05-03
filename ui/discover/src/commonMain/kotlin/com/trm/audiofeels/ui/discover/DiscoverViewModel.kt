@@ -8,15 +8,19 @@ import com.trm.audiofeels.core.base.util.RestartableStateFlow
 import com.trm.audiofeels.core.base.util.restartableStateIn
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import com.trm.audiofeels.domain.model.Playlist
+import com.trm.audiofeels.domain.repository.PlaybackRepository
 import com.trm.audiofeels.domain.repository.PlaylistsRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
-class DiscoverViewModel(private val playlistsRepository: PlaylistsRepository) : ViewModel() {
+class DiscoverViewModel(
+  private val playlistsRepository: PlaylistsRepository,
+  playbackRepository: PlaybackRepository,
+) : ViewModel() {
   val carryOnPlaylists: StateFlow<LoadableState<List<CarryOnPlaylist>>> =
-    playlistsRepository
+    playbackRepository
       .getCarryOnPlaylistsFlow()
       .map { LoadableState.Idle(it) }
       .stateIn(
@@ -26,7 +30,7 @@ class DiscoverViewModel(private val playlistsRepository: PlaylistsRepository) : 
       )
 
   val favouritePlaylists: StateFlow<LoadableState<List<Playlist>>> =
-    playlistsRepository
+    playbackRepository
       .getFavouritePlaylistsFlow()
       .map { LoadableState.Idle(it) }
       .stateIn(

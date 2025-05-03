@@ -7,13 +7,12 @@ kotlin {
   sourceSets {
     commonMain {
       dependencies {
-        implementation(projects.api.audius)
         implementation(projects.core.base)
-        implementation(projects.core.network)
+        implementation(projects.data.database)
         implementation(projects.domain)
       }
     }
   }
 }
 
-android { namespace = "com.trm.audiofeels.data.playlists" }
+android { namespace = "com.trm.audiofeels.data.playback" }
