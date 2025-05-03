@@ -1,6 +1,7 @@
 package com.trm.audiofeels.core.player.mapper
 
 import android.net.Uri
+import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaItem.RequestMetadata
@@ -12,7 +13,7 @@ internal fun Track.toMediaItem(host: String): MediaItem =
   MediaItem.Builder()
     .setMediaId(id)
     .setRequestMetadata(
-      RequestMetadata.Builder().setMediaUri(Uri.parse(buildStreamUrl(host = host))).build()
+      RequestMetadata.Builder().setMediaUri(buildStreamUrl(host = host).toUri()).build()
     )
     .setMediaMetadata(
       MediaMetadata.Builder()
