@@ -1,4 +1,4 @@
-package com.trm.audiofeels.core.player
+package com.trm.audiofeels.core.test
 
 import com.trm.audiofeels.domain.model.PlaybackState
 import com.trm.audiofeels.domain.model.PlayerConstants

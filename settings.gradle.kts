@@ -39,6 +39,7 @@ include(
   ":core:network",
   ":core:player",
   ":core:preferences",
+  ":core:test",
   ":core:ui:compose",
   ":core:ui:resources",
   ":data:database",

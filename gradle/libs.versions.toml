@@ -39,6 +39,7 @@ mokkkery = "2.6.1"
 napier = "2.7.1"
 navigation = "2.9.0-alpha15"
 okio = "3.9.1"
+robolectric = "4.14.1"
 room = "2.7.1"
 sqlite = "2.5.0"
 turbine = "1.2.0"
@@ -97,6 +98,7 @@ materialyou = { group = "dev.zwander", name = "materialyou", version.ref = "mate
 napier = { group = "io.github.aakira", name = "napier", version.ref = "napier" }
 navigation-compose = { group = "org.jetbrains.androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }

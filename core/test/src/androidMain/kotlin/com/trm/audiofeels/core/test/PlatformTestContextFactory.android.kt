@@ -1,4 +1,4 @@
-package com.trm.audiofeels.data.test
+package com.trm.audiofeels.core.test
 
 import androidx.test.core.app.ApplicationProvider
 import com.trm.audiofeels.core.base.util.PlatformContext
