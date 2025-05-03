@@ -4,7 +4,7 @@ import kotlin.math.floor
 import kotlin.math.roundToInt
 
 internal object SgFilters {
-  fun gramPolynomial(i: Int, m: Int, k: Int, s: Int): Float =
+  private fun gramPolynomial(i: Int, m: Int, k: Int, s: Int): Float =
     if (k > 0) {
       val t0 = (4 * k - 2).toFloat()
       val t1 = (k * (2 * m - k + 1)).toFloat()
@@ -28,7 +28,7 @@ internal object SgFilters {
       }
     }
 
-  fun productOfRange(a: Int, b: Int): Int {
+  private fun productOfRange(a: Int, b: Int): Int {
     var gf = 1
     if (a >= b) {
       for (j in a - b + 1..a) {
@@ -38,7 +38,13 @@ internal object SgFilters {
     return gf
   }
 
-  fun polyWeight(i: Int, t: Int, windowMiddle: Int, polynomial: Int, derivative: Int): Float {
+  private fun polyWeight(
+    i: Int,
+    t: Int,
+    windowMiddle: Int,
+    polynomial: Int,
+    derivative: Int,
+  ): Float {
     var sum = 0f
     for (k in 0..polynomial) {
       val t0 = (2 * k + 1).toFloat()
