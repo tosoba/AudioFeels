@@ -8,7 +8,7 @@ kotlin {
     commonMain {
       dependencies {
         implementation(projects.core.base)
-        implementation(projects.core.database)
+        implementation(projects.data.database)
         implementation(projects.domain)
       }
     }

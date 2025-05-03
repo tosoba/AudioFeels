@@ -1,7 +1,7 @@
 package com.trm.audiofeels.data.suggestions
 
-import com.trm.audiofeels.core.database.dao.SuggestionDao
-import com.trm.audiofeels.core.database.model.SuggestionEntity
+import com.trm.audiofeels.data.database.dao.SuggestionDao
+import com.trm.audiofeels.data.database.model.SuggestionEntity
 import com.trm.audiofeels.domain.repository.SuggestionsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map

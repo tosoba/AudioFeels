@@ -9,8 +9,8 @@ kotlin {
       dependencies {
         implementation(projects.api.audius)
         implementation(projects.core.base)
-        implementation(projects.core.database)
         implementation(projects.core.network)
+        implementation(projects.data.database)
         implementation(projects.domain)
       }
     }

@@ -5,7 +5,7 @@ import com.trm.audiofeels.api.hosts.di.HostsApiComponent
 import com.trm.audiofeels.core.base.di.ApplicationScope
 import com.trm.audiofeels.core.base.util.AppCoroutineDispatchers
 import com.trm.audiofeels.core.base.util.AppCoroutineScope
-import com.trm.audiofeels.core.database.di.DatabaseCoreComponent
+import com.trm.audiofeels.data.database.di.DatabaseCoreComponent
 import com.trm.audiofeels.core.network.di.NetworkCoreComponent
 import com.trm.audiofeels.core.player.di.PlayerComponent
 import com.trm.audiofeels.core.preferences.di.PreferencesCoreComponent

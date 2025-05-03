@@ -1,8 +1,8 @@
 package com.trm.audiofeels.data.playlists
 
 import com.trm.audiofeels.api.audius.AudiusEndpoints
-import com.trm.audiofeels.core.database.dao.PlaylistDao
-import com.trm.audiofeels.core.database.model.PlaylistEntity
+import com.trm.audiofeels.data.database.dao.PlaylistDao
+import com.trm.audiofeels.data.database.model.PlaylistEntity
 import com.trm.audiofeels.data.playlists.mapper.toCarryOn
 import com.trm.audiofeels.data.playlists.mapper.toCurrentPlaylistEntity
 import com.trm.audiofeels.data.playlists.mapper.toPlaylist

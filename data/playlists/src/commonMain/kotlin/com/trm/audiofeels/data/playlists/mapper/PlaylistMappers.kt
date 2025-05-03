@@ -1,6 +1,6 @@
 package com.trm.audiofeels.data.playlists.mapper
 
-import com.trm.audiofeels.core.database.model.PlaylistEntity
+import com.trm.audiofeels.data.database.model.PlaylistEntity
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.model.PlaylistPlayback

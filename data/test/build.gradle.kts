@@ -12,8 +12,8 @@ kotlin {
       dependencies {
         implementation(projects.api.audius)
         implementation(projects.core.base)
-        implementation(projects.core.database)
         implementation(projects.core.preferences)
+        implementation(projects.data.database)
         implementation(projects.data.playlists)
         implementation(projects.domain)
 
@@ -26,9 +26,9 @@ kotlin {
         implementation(projects.api.audius)
         implementation(projects.api.hosts)
         implementation(projects.core.base)
-        implementation(projects.core.database)
         implementation(projects.core.network)
         implementation(projects.core.preferences)
+        implementation(projects.data.database)
         implementation(projects.data.hosts)
         implementation(projects.data.playlists)
         implementation(projects.data.suggestions)
