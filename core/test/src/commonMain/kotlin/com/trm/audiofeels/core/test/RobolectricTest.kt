@@ -1,3 +1,3 @@
 package com.trm.audiofeels.core.test
 
-expect open class RobolectricTest()
+expect abstract class RobolectricTest()
