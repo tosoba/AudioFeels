@@ -21,6 +21,7 @@ kotlin {
         implementation(projects.core.test)
         implementation(projects.data.database)
         implementation(projects.data.playback)
+        implementation(projects.data.visualization)
         implementation(projects.domain)
 
         implementation(libs.room.runtime)

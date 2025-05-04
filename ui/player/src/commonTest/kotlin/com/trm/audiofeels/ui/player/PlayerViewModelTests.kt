@@ -3,6 +3,7 @@ package com.trm.audiofeels.ui.player
 import com.trm.audiofeels.core.test.PlayerFakeConnection
 import com.trm.audiofeels.core.test.RobolectricTest
 import com.trm.audiofeels.data.test.playbackInMemoryRepository
+import com.trm.audiofeels.data.test.visualizationInMemoryRepository
 import com.trm.audiofeels.domain.repository.HostsRepository
 import com.trm.audiofeels.domain.usecase.GetPlayerInputUseCase
 import dev.mokkery.mock
@@ -36,7 +37,7 @@ internal class PlayerViewModelTests : RobolectricTest() {
       playerConnection = PlayerFakeConnection(),
       getPlayerInputUseCase = GetPlayerInputUseCase(mock {}, hostsRepository),
       playbackRepository = playbackInMemoryRepository(),
-      visualizationRepository = mock {},
+      visualizationRepository = visualizationInMemoryRepository(),
       hostsRepository = hostsRepository,
     )
   }
