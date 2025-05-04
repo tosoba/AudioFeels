@@ -9,6 +9,7 @@ import com.trm.audiofeels.core.base.util.HTTPS_PREFIX
 import com.trm.audiofeels.core.base.util.trimHttps
 import com.trm.audiofeels.core.network.host.HostValidator
 import com.trm.audiofeels.core.preferences.get
+import com.trm.audiofeels.core.test.InMemoryDataStorePreferences
 import com.trm.audiofeels.data.hosts.HostsAudiusRepository
 import com.trm.audiofeels.data.hosts.HostsInMemoryDataSource
 import com.trm.audiofeels.data.playlists.PlaylistsAudiusRepository
@@ -133,7 +134,7 @@ internal class HostsAudiusTest {
     runTest {
       val hostsEngine =
         defaultHostsEngine(mapOf(validateHostAtIndexUrl(0) to MockResponse(delayMillis = 1_000L)))
-      val dataStore = spy<DataStore<Preferences>>(DataStoreFakePreferences())
+      val dataStore = spy<DataStore<Preferences>>(InMemoryDataStorePreferences())
       val repository = playlistsRepository(hostsEngine = hostsEngine, dataStore = dataStore)
 
       List(5) { async { repository.getPlaylists(null) } }.awaitAll()
@@ -160,7 +161,7 @@ internal class HostsAudiusTest {
   fun `given no host stored locally - when call to getPlaylists - then fetched host is stored in preferences`() =
     runTest {
       val hostsEngine = defaultHostsEngine()
-      val dataStore = DataStoreFakePreferences()
+      val dataStore = InMemoryDataStorePreferences()
 
       playlistsRepository(hostsEngine = hostsEngine, dataStore = dataStore).getPlaylists(null)
 
@@ -192,7 +193,7 @@ internal class HostsAudiusTest {
       playlistsRepository(
           hostsEngine = hostsEngine,
           dataStore =
-            DataStoreFakePreferences(
+            InMemoryDataStorePreferences(
               HostsAudiusRepository.hostPreferenceKey to hostAtIndex(0).trimHttps()
             ),
         )
@@ -211,7 +212,7 @@ internal class HostsAudiusTest {
           hostsEngine = hostsEngine,
           inMemoryDataSource = inMemoryDataSource,
           dataStore =
-            DataStoreFakePreferences(
+            InMemoryDataStorePreferences(
               HostsAudiusRepository.hostPreferenceKey to hostAtIndex(0).trimHttps()
             ),
         )
@@ -230,7 +231,7 @@ internal class HostsAudiusTest {
           hostsEngine = hostsEngine,
           playlistsEngine = defaultPlaylistsEngine(invalidHost),
           dataStore =
-            DataStoreFakePreferences(HostsAudiusRepository.hostPreferenceKey to invalidHost),
+            InMemoryDataStorePreferences(HostsAudiusRepository.hostPreferenceKey to invalidHost),
         )
         .getPlaylists(null)
 
@@ -248,7 +249,7 @@ internal class HostsAudiusTest {
           hostsEngine = hostsEngine,
           playlistsEngine = playlistsEngine,
           dataStore =
-            DataStoreFakePreferences(HostsAudiusRepository.hostPreferenceKey to invalidHost),
+            InMemoryDataStorePreferences(HostsAudiusRepository.hostPreferenceKey to invalidHost),
         )
         .getPlaylists(null)
 
@@ -267,7 +268,7 @@ internal class HostsAudiusTest {
           playlistsEngine = defaultPlaylistsEngine(invalidHost),
           inMemoryDataSource = inMemoryDataSource,
           dataStore =
-            DataStoreFakePreferences(HostsAudiusRepository.hostPreferenceKey to invalidHost),
+            InMemoryDataStorePreferences(HostsAudiusRepository.hostPreferenceKey to invalidHost),
         )
         .getPlaylists(null)
 
@@ -280,7 +281,7 @@ internal class HostsAudiusTest {
       val invalidHost = "audius-invalid-host.com"
       val hostsEngine = defaultHostsEngine()
       val dataStore =
-        DataStoreFakePreferences(HostsAudiusRepository.hostPreferenceKey to invalidHost)
+        InMemoryDataStorePreferences(HostsAudiusRepository.hostPreferenceKey to invalidHost)
       val repository =
         playlistsRepository(
           hostsEngine = hostsEngine,
@@ -306,7 +307,7 @@ internal class HostsAudiusTest {
           hostsEngine = hostsEngine,
           playlistsEngine = defaultPlaylistsEngine(invalidHost),
           dataStore =
-            DataStoreFakePreferences(HostsAudiusRepository.hostPreferenceKey to invalidHost),
+            InMemoryDataStorePreferences(HostsAudiusRepository.hostPreferenceKey to invalidHost),
         )
 
       List(5) { async { repository.getPlaylists(null) } }.awaitAll()
@@ -324,7 +325,7 @@ internal class HostsAudiusTest {
           hostsEngine = hostsEngine,
           playlistsEngine = defaultPlaylistsEngine(invalidHost),
           dataStore =
-            DataStoreFakePreferences(HostsAudiusRepository.hostPreferenceKey to invalidHost),
+            InMemoryDataStorePreferences(HostsAudiusRepository.hostPreferenceKey to invalidHost),
         )
 
       List(5) { async { repository.getPlaylists(null) } }.awaitAll()
@@ -340,7 +341,7 @@ internal class HostsAudiusTest {
     hostsEngine: MockEngine,
     playlistsEngine: MockEngine = defaultPlaylistsEngine(),
     inMemoryDataSource: HostsInMemoryDataSource = HostsInMemoryDataSource(),
-    dataStore: DataStore<Preferences> = DataStoreFakePreferences(),
+    dataStore: DataStore<Preferences> = InMemoryDataStorePreferences(),
   ): PlaylistsAudiusRepository {
     val hostsRepository =
       HostsAudiusRepository(

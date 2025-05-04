@@ -1,4 +1,4 @@
-package com.trm.audiofeels.data.test
+package com.trm.audiofeels.core.test
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.updateAndGet
 
-internal class DataStoreFakePreferences(initialValue: Preferences) : DataStore<Preferences> {
+class InMemoryDataStorePreferences(initialValue: Preferences) : DataStore<Preferences> {
   constructor(
     vararg initialValues: Preferences.Pair<*>
   ) : this(mutablePreferencesOf(*initialValues))
