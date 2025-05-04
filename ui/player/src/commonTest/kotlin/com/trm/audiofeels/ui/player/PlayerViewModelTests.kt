@@ -1,5 +1,6 @@
 package com.trm.audiofeels.ui.player
 
+import app.cash.turbine.test
 import com.trm.audiofeels.core.test.PlayerFakeConnection
 import com.trm.audiofeels.core.test.RobolectricTest
 import com.trm.audiofeels.data.test.playbackInMemoryRepository
@@ -10,6 +11,7 @@ import dev.mokkery.mock
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -29,15 +31,41 @@ internal class PlayerViewModelTests : RobolectricTest() {
     Dispatchers.resetMain()
   }
 
-  @Test fun test() = runTest { viewModel() }
+  @Test
+  fun `requestRecordAudioPermission emits false by default`() = runTest {
+    viewModel().requestRecordAudioPermission.test {
+      assertEquals(expected = false, actual = awaitItem())
+      expectNoEvents()
+    }
+  }
 
-  private fun viewModel(): PlayerViewModel {
+  @Test
+  fun `given permission not permanently denied - then requestRecordAudioPermission emits true`() =
+    runTest {
+      viewModel(recordAudioPermissionPermanentlyDenied = false).requestRecordAudioPermission.test {
+        skipItems(1)
+        assertEquals(expected = true, actual = awaitItem())
+        expectNoEvents()
+      }
+    }
+
+  @Test
+  fun `given permission permanently denied - then requestRecordAudioPermission emits false`() =
+    runTest {
+      viewModel(recordAudioPermissionPermanentlyDenied = true).requestRecordAudioPermission.test {
+        assertEquals(expected = false, actual = awaitItem())
+        expectNoEvents()
+      }
+    }
+
+  private fun viewModel(recordAudioPermissionPermanentlyDenied: Boolean? = null): PlayerViewModel {
     val hostsRepository = mock<HostsRepository> {}
     return PlayerViewModel(
       playerConnection = PlayerFakeConnection(),
       getPlayerInputUseCase = GetPlayerInputUseCase(mock {}, hostsRepository),
       playbackRepository = playbackInMemoryRepository(),
-      visualizationRepository = visualizationInMemoryRepository(),
+      visualizationRepository =
+        visualizationInMemoryRepository(recordAudioPermissionPermanentlyDenied),
       hostsRepository = hostsRepository,
     )
   }
