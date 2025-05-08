@@ -12,6 +12,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -54,6 +55,15 @@ internal class PlayerViewModelTests : RobolectricTest() {
     runTest {
       viewModel(recordAudioPermissionPermanentlyDenied = true).requestRecordAudioPermission.test {
         assertEquals(expected = false, actual = awaitItem())
+        expectNoEvents()
+      }
+    }
+
+  @Test
+  fun `given no current playlist - when no interaction - then playerViewState is Invisible`() =
+    runTest {
+      viewModel().playerViewState.test {
+        assertIs<PlayerViewState.Invisible>(awaitItem())
         expectNoEvents()
       }
     }
