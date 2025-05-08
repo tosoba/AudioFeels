@@ -5,7 +5,9 @@ import com.trm.audiofeels.core.test.PlayerFakeConnection
 import com.trm.audiofeels.core.test.RobolectricTest
 import com.trm.audiofeels.data.test.playbackInMemoryRepository
 import com.trm.audiofeels.data.test.visualizationInMemoryRepository
+import com.trm.audiofeels.domain.player.PlayerConnection
 import com.trm.audiofeels.domain.repository.HostsRepository
+import com.trm.audiofeels.domain.repository.PlaylistsRepository
 import com.trm.audiofeels.domain.usecase.GetPlayerInputUseCase
 import dev.mokkery.mock
 import kotlin.test.AfterTest
@@ -68,15 +70,18 @@ internal class PlayerViewModelTests : RobolectricTest() {
       }
     }
 
-  private fun viewModel(recordAudioPermissionPermanentlyDenied: Boolean? = null): PlayerViewModel {
-    val hostsRepository = mock<HostsRepository> {}
-    return PlayerViewModel(
-      playerConnection = PlayerFakeConnection(),
-      getPlayerInputUseCase = GetPlayerInputUseCase(mock {}, hostsRepository),
+  private fun viewModel(
+    playerConnection: PlayerConnection = PlayerFakeConnection(),
+    playlistsRepository: PlaylistsRepository = mock {},
+    hostsRepository: HostsRepository = mock {},
+    recordAudioPermissionPermanentlyDenied: Boolean? = null,
+  ): PlayerViewModel =
+    PlayerViewModel(
+      playerConnection = playerConnection,
+      getPlayerInputUseCase = GetPlayerInputUseCase(playlistsRepository, hostsRepository),
       playbackRepository = playbackInMemoryRepository(),
       visualizationRepository =
         visualizationInMemoryRepository(recordAudioPermissionPermanentlyDenied),
       hostsRepository = hostsRepository,
     )
-  }
 }
