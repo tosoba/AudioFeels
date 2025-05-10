@@ -12,6 +12,7 @@ import com.trm.audiofeels.domain.player.PlayerConnection
 import com.trm.audiofeels.domain.repository.HostsRepository
 import com.trm.audiofeels.domain.repository.PlaylistsRepository
 import com.trm.audiofeels.domain.usecase.GetPlayerInputUseCase
+import com.trm.audiofeels.ui.player.util.isPlaying
 import dev.mokkery.answering.returns
 import dev.mokkery.everySuspend
 import dev.mokkery.matcher.eq
@@ -21,6 +22,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -123,6 +125,64 @@ internal class PlayerViewModelTests : RobolectricTest() {
           assertContentEquals(expected = tracks, actual = playback.tracks)
           assertEquals(expected = 0, actual = playback.currentTrackIndex)
           assertEquals(expected = 0.0, actual = playback.currentTrackProgress)
+
+          awaitComplete()
+        }
+    }
+
+  @Test
+  fun `given no current playlist - when start playlist playback and pause - then playerViewState emits Loading and Playback playing and Playback paused`() =
+    runTest {
+      val playlistId = "playlist-1"
+      val tracks = listOf(stubTrack(id = "track-1"))
+      val playerConnection = PlayerFakeConnection()
+
+      viewModel(
+          playerConnection = playerConnection,
+          playlistsRepository =
+            mock { everySuspend { getPlaylistTracks(eq(playlistId)) } returns tracks },
+          hostsRepository = mock { everySuspend { retrieveHost() } returns "audius-host.com" },
+        )
+        .playerViewState
+        .transformWhile {
+          emit(it)
+          it !is PlayerViewState.Playback || it.isPlaying
+        }
+        .onEach {
+          if (it is PlayerViewState.Playback && !it.isPlaying) {
+            playerConnection.reset()
+          }
+        }
+        .test {
+          awaitItem().startPlaylistPlayback(stubPlaylist(id = playlistId))
+
+          assertIs<PlayerViewState.Loading>(awaitItem())
+
+          val initialPlaybackViewState = awaitItem()
+          assertIs<PlayerViewState.Playback>(initialPlaybackViewState)
+          assertEquals(expected = playlistId, actual = initialPlaybackViewState.playlistId)
+          val initialPlaybackPlayerState = initialPlaybackViewState.playerState
+          assertIs<PlayerState.Enqueued>(initialPlaybackPlayerState)
+          assertTrue(initialPlaybackPlayerState.isPlaying)
+          assertEquals(expected = tracks.first(), actual = initialPlaybackPlayerState.currentTrack)
+          assertContentEquals(expected = tracks, actual = initialPlaybackViewState.tracks)
+          assertEquals(expected = 0, actual = initialPlaybackViewState.currentTrackIndex)
+          assertEquals(expected = 0.0, actual = initialPlaybackViewState.currentTrackProgress)
+
+          val primaryControlState = initialPlaybackViewState.primaryControlState
+          assertIs<PlayerPrimaryControlState.Action>(primaryControlState)
+          primaryControlState.action()
+
+          var nextPlaybackViewState: PlayerViewState = awaitItem()
+          while (nextPlaybackViewState.isPlaying) nextPlaybackViewState = awaitItem()
+          assertIs<PlayerViewState.Playback>(nextPlaybackViewState)
+          assertEquals(expected = playlistId, actual = nextPlaybackViewState.playlistId)
+          val nextPlaybackPlayerState = nextPlaybackViewState.playerState
+          assertIs<PlayerState.Enqueued>(nextPlaybackPlayerState)
+          assertFalse(nextPlaybackPlayerState.isPlaying)
+          assertEquals(expected = tracks.first(), actual = nextPlaybackPlayerState.currentTrack)
+          assertContentEquals(expected = tracks, actual = nextPlaybackViewState.tracks)
+          assertEquals(expected = 0, actual = nextPlaybackPlayerState.currentTrackIndex)
 
           awaitComplete()
         }
