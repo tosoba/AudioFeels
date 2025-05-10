@@ -2,8 +2,8 @@ package com.trm.audiofeels.ui.search
 
 import app.cash.turbine.test
 import com.trm.audiofeels.core.base.model.LoadableState
+import com.trm.audiofeels.core.test.stubPlaylist
 import com.trm.audiofeels.data.test.SuggestionsFakeRepository
-import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.domain.repository.PlaylistsRepository
 import com.trm.audiofeels.domain.repository.SuggestionsRepository
 import dev.mokkery.answering.returns
@@ -305,17 +305,6 @@ internal class SearchViewModelTests {
     length: Int = SearchViewModel.MIN_QUERY_LENGTH,
     repeatedChar: Char = 'a',
   ): String = Array(size = length) { repeatedChar }.joinToString(separator = "")
-
-  private fun stubPlaylist(id: String = ""): Playlist =
-    Playlist(
-      id = id,
-      name = "",
-      description = null,
-      artworkUrl = null,
-      score = 0.0,
-      trackCount = 0,
-      favourite = false,
-    )
 
   private fun searchViewModel(
     playlistsRepository: PlaylistsRepository = mock {},

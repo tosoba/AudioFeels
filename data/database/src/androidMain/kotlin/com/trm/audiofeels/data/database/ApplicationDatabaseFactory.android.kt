@@ -20,5 +20,4 @@ actual fun createApplicationInMemoryDatabase(
   platformContext: PlatformContext
 ): ApplicationDatabase =
   Room.inMemoryDatabaseBuilder(context = platformContext, klass = ApplicationDatabase::class.java)
-    .setDriver(BundledSQLiteDriver())
     .build()
