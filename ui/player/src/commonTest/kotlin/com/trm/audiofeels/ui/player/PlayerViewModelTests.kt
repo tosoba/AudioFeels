@@ -28,7 +28,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.transformWhile
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -109,7 +108,6 @@ internal class PlayerViewModelTests : RobolectricTest() {
           emit(it)
           it !is PlayerViewState.Playback
         }
-        .onEach { if (it is PlayerViewState.Playback) playerConnection.reset() }
         .test {
           awaitItem().startPlaylistPlayback(stubPlaylist(id = playlistId))
 
@@ -125,6 +123,8 @@ internal class PlayerViewModelTests : RobolectricTest() {
           assertContentEquals(expected = tracks, actual = playback.tracks)
           assertEquals(expected = 0, actual = playback.currentTrackIndex)
           assertEquals(expected = 0.0, actual = playback.currentTrackProgress)
+
+          playerConnection.reset()
 
           awaitComplete()
         }
@@ -147,11 +147,6 @@ internal class PlayerViewModelTests : RobolectricTest() {
         .transformWhile {
           emit(it)
           it !is PlayerViewState.Playback || it.isPlaying
-        }
-        .onEach {
-          if (it is PlayerViewState.Playback && !it.isPlaying) {
-            playerConnection.reset()
-          }
         }
         .test {
           awaitItem().startPlaylistPlayback(stubPlaylist(id = playlistId))
@@ -183,6 +178,8 @@ internal class PlayerViewModelTests : RobolectricTest() {
           assertEquals(expected = tracks.first(), actual = nextPlaybackPlayerState.currentTrack)
           assertContentEquals(expected = tracks, actual = nextPlaybackViewState.tracks)
           assertEquals(expected = 0, actual = nextPlaybackPlayerState.currentTrackIndex)
+
+          playerConnection.reset()
 
           awaitComplete()
         }
