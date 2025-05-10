@@ -42,8 +42,6 @@ class PlayerNotificationProvider(
   private val imageLoader: ImageLoader,
   private val platformContext: PlatformContext,
 ) : MediaNotification.Provider {
-  private val notificationManager = requireNotNull(context.getSystemService<NotificationManager>())
-
   override fun createNotification(
     session: MediaSession,
     customLayout: ImmutableList<CommandButton>,
@@ -52,9 +50,7 @@ class PlayerNotificationProvider(
   ): MediaNotification {
     ensureNotificationChannel()
 
-    val player = session.player
-    val metadata = player.mediaMetadata
-
+    val metadata = session.player.mediaMetadata
     val builder =
       NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_NAME)
         .setContentTitle(metadata.title)
@@ -69,14 +65,6 @@ class PlayerNotificationProvider(
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
           )
         )
-
-    //    getNotificationActions(
-    //        mediaSession = session,
-    //        actionFactory = actionFactory,
-    //        playWhenReady = player.playWhenReady,
-    //      )
-    //      .forEach(builder::addAction)
-
     metadata.artworkUri?.let {
       scope.launch {
         builder.setLargeIcon(loadBitmap(it))
@@ -93,6 +81,11 @@ class PlayerNotificationProvider(
     true
 
   private fun ensureNotificationChannel() {
+    val notificationManager by
+      lazy(LazyThreadSafetyMode.NONE) {
+        requireNotNull(context.getSystemService<NotificationManager>())
+      }
+
     if (
       Build.VERSION.SDK_INT < Build.VERSION_CODES.O ||
         notificationManager.getNotificationChannel(NOTIFICATION_CHANNEL_NAME) != null
@@ -108,17 +101,6 @@ class PlayerNotificationProvider(
       )
     )
   }
-
-  //  private fun getNotificationActions(
-  //    mediaSession: MediaSession,
-  //    actionFactory: MediaNotification.ActionFactory,
-  //    playWhenReady: Boolean,
-  //  ): List<NotificationCompat.Action> =
-  //    listOf(
-  //      PlayerActions.getPlayPreviousAction(context, mediaSession, actionFactory),
-  //      PlayerActions.getPlayPauseAction(context, mediaSession, actionFactory, playWhenReady),
-  //      PlayerActions.getPlayNextAction(context, mediaSession, actionFactory),
-  //    )
 
   private suspend fun loadBitmap(uri: Uri): Bitmap? =
     withContext(appCoroutineDispatchers.io) {
