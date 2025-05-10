@@ -23,8 +23,11 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.transformWhile
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -92,6 +95,7 @@ internal class PlayerViewModelTests : RobolectricTest() {
       val playlistId = "playlist-1"
       val tracks = listOf(stubTrack(id = "track-1"))
       val playerConnection = PlayerFakeConnection()
+
       viewModel(
           playerConnection = playerConnection,
           playlistsRepository =
@@ -99,17 +103,28 @@ internal class PlayerViewModelTests : RobolectricTest() {
           hostsRepository = mock { everySuspend { retrieveHost() } returns "audius-host.com" },
         )
         .playerViewState
+        .transformWhile {
+          emit(it)
+          it !is PlayerViewState.Playback
+        }
+        .onEach { if (it is PlayerViewState.Playback) playerConnection.reset() }
         .test {
           awaitItem().startPlaylistPlayback(stubPlaylist(id = playlistId))
+
           assertIs<PlayerViewState.Loading>(awaitItem())
+
           val playback = awaitItem()
           assertIs<PlayerViewState.Playback>(playback)
           assertEquals(expected = playlistId, actual = playback.playlistId)
-          assertIs<PlayerState.Enqueued>(playback.playerState)
+          val playerState = playback.playerState
+          assertIs<PlayerState.Enqueued>(playerState)
+          assertTrue(playerState.isPlaying)
+          assertEquals(expected = tracks.first(), actual = playerState.currentTrack)
           assertContentEquals(expected = tracks, actual = playback.tracks)
           assertEquals(expected = 0, actual = playback.currentTrackIndex)
           assertEquals(expected = 0.0, actual = playback.currentTrackProgress)
-          expectNoEvents()
+
+          awaitComplete()
         }
     }
 

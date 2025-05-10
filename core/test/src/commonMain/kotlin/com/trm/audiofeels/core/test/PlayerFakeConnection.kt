@@ -6,11 +6,12 @@ import com.trm.audiofeels.domain.model.PlayerInput
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Track
 import com.trm.audiofeels.domain.player.PlayerConnection
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 
 class PlayerFakeConnection : PlayerConnection {
@@ -26,7 +27,32 @@ class PlayerFakeConnection : PlayerConnection {
   private val PlayerState.Enqueued.nextTrackIndex: Int
     get() = if (currentTrackIndex < currentTracks.lastIndex) currentTrackIndex + 1 else 0
 
-  override val currentTrackPositionMsFlow: Flow<Long> = flowOf(0L)
+  override val currentTrackPositionMsFlow: Flow<Long>
+    get() = flow {
+      val playerState = _playerStateFlow.value
+      while (playerState is PlayerState.Enqueued) {
+        if (playerState.isPlaying) {
+          if (currentTrackPositionMs < playerState.currentTrack.duration * 1_000) {
+            currentTrackPositionMs += PlayerConstants.TRACK_POSITION_UPDATE_INTERVAL_MS
+            emit(currentTrackPositionMs)
+          } else {
+            _playerStateFlow.update { state ->
+              if (state is PlayerState.Enqueued) {
+                enqueuedWithCurrentTrackAt(state.nextTrackIndex).also {
+                  currentTrackPositionMs = 0
+                  emit(currentTrackPositionMs)
+                }
+              } else {
+                state
+              }
+            }
+          }
+        } else {
+          emit(currentTrackPositionMs)
+        }
+        delay(PlayerConstants.TRACK_POSITION_UPDATE_INTERVAL_MS)
+      }
+    }
 
   override val audioDataFlow: Flow<List<Float>> = emptyFlow()
 
