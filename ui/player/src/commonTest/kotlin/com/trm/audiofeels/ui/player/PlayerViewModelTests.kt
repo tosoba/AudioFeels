@@ -8,6 +8,7 @@ import com.trm.audiofeels.core.test.stubTrack
 import com.trm.audiofeels.data.test.playbackInMemoryRepository
 import com.trm.audiofeels.data.test.visualizationInMemoryRepository
 import com.trm.audiofeels.domain.model.PlayerState
+import com.trm.audiofeels.domain.model.Track
 import com.trm.audiofeels.domain.player.PlayerConnection
 import com.trm.audiofeels.domain.repository.HostsRepository
 import com.trm.audiofeels.domain.repository.PlaylistsRepository
@@ -25,7 +26,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.transformWhile
@@ -113,16 +113,11 @@ internal class PlayerViewModelTests : RobolectricTest() {
 
           assertIs<PlayerViewState.Loading>(awaitItem())
 
-          val playback = awaitItem()
-          assertIs<PlayerViewState.Playback>(playback)
-          assertEquals(expected = playlistId, actual = playback.playlistId)
-          val playerState = playback.playerState
-          assertIs<PlayerState.Enqueued>(playerState)
-          assertTrue(playerState.isPlaying)
-          assertEquals(expected = tracks.first(), actual = playerState.currentTrack)
-          assertContentEquals(expected = tracks, actual = playback.tracks)
-          assertEquals(expected = 0, actual = playback.currentTrackIndex)
-          assertEquals(expected = 0.0, actual = playback.currentTrackProgress)
+          assertInitialPlaybackViewState(
+            initialPlaybackViewState = awaitItem(),
+            expectedPlaylistId = playlistId,
+            expectedTracks = tracks,
+          )
 
           playerConnection.reset()
 
@@ -154,21 +149,17 @@ internal class PlayerViewModelTests : RobolectricTest() {
           assertIs<PlayerViewState.Loading>(awaitItem())
 
           val initialPlaybackViewState = awaitItem()
-          assertIs<PlayerViewState.Playback>(initialPlaybackViewState)
-          assertEquals(expected = playlistId, actual = initialPlaybackViewState.playlistId)
-          val initialPlaybackPlayerState = initialPlaybackViewState.playerState
-          assertIs<PlayerState.Enqueued>(initialPlaybackPlayerState)
-          assertTrue(initialPlaybackPlayerState.isPlaying)
-          assertEquals(expected = tracks.first(), actual = initialPlaybackPlayerState.currentTrack)
-          assertContentEquals(expected = tracks, actual = initialPlaybackViewState.tracks)
-          assertEquals(expected = 0, actual = initialPlaybackViewState.currentTrackIndex)
-          assertEquals(expected = 0.0, actual = initialPlaybackViewState.currentTrackProgress)
+          assertInitialPlaybackViewState(
+            initialPlaybackViewState = initialPlaybackViewState,
+            expectedPlaylistId = playlistId,
+            expectedTracks = tracks,
+          )
 
           val primaryControlState = initialPlaybackViewState.primaryControlState
           assertIs<PlayerPrimaryControlState.Action>(primaryControlState)
           primaryControlState.action()
 
-          var nextPlaybackViewState: PlayerViewState = awaitItem()
+          var nextPlaybackViewState = awaitItem()
           while (nextPlaybackViewState.isPlaying) nextPlaybackViewState = awaitItem()
           assertIs<PlayerViewState.Playback>(nextPlaybackViewState)
           assertEquals(expected = playlistId, actual = nextPlaybackViewState.playlistId)
@@ -184,6 +175,23 @@ internal class PlayerViewModelTests : RobolectricTest() {
           awaitComplete()
         }
     }
+
+  private fun assertInitialPlaybackViewState(
+    initialPlaybackViewState: PlayerViewState,
+    expectedPlaylistId: String,
+    expectedTracks: List<Track>,
+    expectedIsPlaying: Boolean = true,
+  ) {
+    assertIs<PlayerViewState.Playback>(initialPlaybackViewState)
+    assertEquals(expected = expectedPlaylistId, actual = initialPlaybackViewState.playlistId)
+    val playerState = initialPlaybackViewState.playerState
+    assertIs<PlayerState.Enqueued>(playerState)
+    assertEquals(expected = expectedIsPlaying, actual = playerState.isPlaying)
+    assertEquals(expected = expectedTracks.first(), actual = playerState.currentTrack)
+    assertContentEquals(expected = expectedTracks, actual = initialPlaybackViewState.tracks)
+    assertEquals(expected = 0, actual = initialPlaybackViewState.currentTrackIndex)
+    assertEquals(expected = 0.0, actual = initialPlaybackViewState.currentTrackProgress)
+  }
 
   private fun viewModel(
     playerConnection: PlayerConnection = PlayerFakeConnection(),
