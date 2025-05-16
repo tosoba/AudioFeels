@@ -14,7 +14,7 @@ interface PlaylistDao {
   @Upsert suspend fun upsert(playlist: PlaylistEntity)
 
   @Query(
-    "UPDATE playlist SET currentTrackIndex = :currentTrackIndex, currentTrackPositionMs = :currentTrackPositionMs, autoPlay = FALSE WHERE id = :id"
+    "UPDATE playlist SET currentTrackIndex = :currentTrackIndex, currentTrackPositionMs = :currentTrackPositionMs, autoPlay = 0 WHERE id = :id"
   )
   suspend fun updateCurrentPlaylist(
     id: String,
@@ -32,18 +32,18 @@ interface PlaylistDao {
   fun selectCurrentPlaylist(): Flow<PlaylistEntity?>
 
   @Query(
-    "UPDATE playlist SET favourite = CASE WHEN favourite = TRUE THEN FALSE ELSE TRUE END WHERE lastPlayed IS NULL"
+    "UPDATE playlist SET favourite = CASE WHEN favourite = 1 THEN FALSE ELSE TRUE END WHERE lastPlayed IS NULL"
   )
   suspend fun toggleCurrentPlaylistFavourite()
 
-  @Query("UPDATE playlist SET lastPlayed = :lastPlayed, autoPlay = FALSE WHERE lastPlayed IS NULL")
+  @Query("UPDATE playlist SET lastPlayed = :lastPlayed, autoPlay = 0 WHERE lastPlayed IS NULL")
   suspend fun clearCurrentPlaylist(lastPlayed: Instant)
 
-  @Query("UPDATE playlist SET lastPlayed = NULL, autoPlay = TRUE WHERE id = :id")
+  @Query("UPDATE playlist SET lastPlayed = NULL, autoPlay = 1 WHERE id = :id")
   suspend fun setNewCurrentPlaylistCarryOn(id: String)
 
   @Query(
-    "UPDATE playlist SET lastPlayed = NULL, autoPlay = TRUE, currentTrackIndex = 0, currentTrackPositionMs = 0 WHERE id = :id"
+    "UPDATE playlist SET lastPlayed = NULL, autoPlay = 1, currentTrackIndex = 0, currentTrackPositionMs = 0 WHERE id = :id"
   )
   suspend fun setNewCurrentPlaylist(id: String)
 
@@ -59,6 +59,6 @@ interface PlaylistDao {
     } ?: run { upsert(playlist) }
   }
 
-  @Query("SELECT * FROM playlist WHERE favourite = TRUE")
+  @Query("SELECT * FROM playlist WHERE favourite = 1")
   fun selectFavouritePlaylists(): Flow<List<PlaylistEntity>>
 }
