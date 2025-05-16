@@ -115,9 +115,9 @@ internal class PlayerViewModelTests : RobolectricTest() {
           assertPlaybackViewState(
             viewState = awaitItem(),
             expectedPlaylistId = playlistId,
+            expectedIsPlaying = true,
             expectedTracks = tracks,
             expectedCurrentTrackIndex = 0,
-            expectedIsPlaying = true,
             expectedCurrentTrackProgress = 0.0,
           )
 
@@ -154,9 +154,9 @@ internal class PlayerViewModelTests : RobolectricTest() {
           assertPlaybackViewState(
             viewState = initialPlaybackViewState,
             expectedPlaylistId = playlistId,
+            expectedIsPlaying = true,
             expectedTracks = tracks,
             expectedCurrentTrackIndex = 0,
-            expectedIsPlaying = true,
             expectedCurrentTrackProgress = 0.0,
           )
 
@@ -169,9 +169,9 @@ internal class PlayerViewModelTests : RobolectricTest() {
           assertPlaybackViewState(
             viewState = nextPlaybackViewState,
             expectedPlaylistId = playlistId,
+            expectedIsPlaying = false,
             expectedTracks = tracks,
             expectedCurrentTrackIndex = 0,
-            expectedIsPlaying = false,
           )
 
           playerConnection.reset()
@@ -183,13 +183,14 @@ internal class PlayerViewModelTests : RobolectricTest() {
   private fun assertPlaybackViewState(
     viewState: PlayerViewState,
     expectedPlaylistId: String,
+    expectedIsPlaying: Boolean,
     expectedTracks: List<Track>,
     expectedCurrentTrackIndex: Int,
-    expectedIsPlaying: Boolean,
     expectedCurrentTrackProgress: Double? = null,
   ) {
     assertIs<PlayerViewState.Playback>(viewState)
     assertEquals(expected = expectedPlaylistId, actual = viewState.playlistId)
+
     val playerState = viewState.playerState
     assertIs<PlayerState.Enqueued>(playerState)
     assertEquals(expected = expectedIsPlaying, actual = playerState.isPlaying)
@@ -197,6 +198,7 @@ internal class PlayerViewModelTests : RobolectricTest() {
       expected = expectedTracks[expectedCurrentTrackIndex],
       actual = playerState.currentTrack,
     )
+
     assertContentEquals(expected = expectedTracks, actual = viewState.tracks)
     assertEquals(expected = expectedCurrentTrackIndex, actual = viewState.currentTrackIndex)
     expectedCurrentTrackProgress?.let {
