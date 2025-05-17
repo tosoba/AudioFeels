@@ -21,6 +21,7 @@ abstract class AndroidApplicationComponent(@get:Provides val application: Applic
   @Provides
   fun mainActivityIntent(): @MainActivityIntent Intent =
     Intent(application, MainActivity::class.java)
+      .setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
 
   @Provides fun buildInfo(): BuildInfo = BuildInfo(debug = BuildConfig.DEBUG)
 
