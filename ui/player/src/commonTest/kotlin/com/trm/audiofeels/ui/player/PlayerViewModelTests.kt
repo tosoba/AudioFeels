@@ -160,15 +160,7 @@ internal class PlayerViewModelTests : RobolectricTest() {
           assertIs<PlayerViewState.Loading>(awaitItem())
 
           val initialPlaybackViewState = awaitItem()
-          assertPlaybackViewState(
-            viewState = initialPlaybackViewState,
-            expectedPlaylistId = playlistId,
-            expectedIsPlaying = true,
-            expectedTracks = tracks,
-            expectedCurrentTrackIndex = 0,
-            expectedCurrentTrackProgress = 0.0,
-          )
-
+          assertIs<PlayerViewState.Playback>(initialPlaybackViewState)
           val primaryControlState = initialPlaybackViewState.primaryControlState
           assertIs<PlayerPrimaryControlState.Action>(primaryControlState)
           primaryControlState.action()
@@ -211,15 +203,7 @@ internal class PlayerViewModelTests : RobolectricTest() {
           assertIs<PlayerViewState.Loading>(awaitItem())
 
           val initialPlaybackViewState = awaitItem()
-          assertPlaybackViewState(
-            viewState = initialPlaybackViewState,
-            expectedPlaylistId = playlistId,
-            expectedIsPlaying = true,
-            expectedTracks = tracks,
-            expectedCurrentTrackIndex = 0,
-            expectedCurrentTrackProgress = 0.0,
-          )
-
+          assertIs<PlayerViewState.Playback>(initialPlaybackViewState)
           initialPlaybackViewState.startPlaylistPlayback(stubPlaylist(id = playlistId))
 
           assertPlaybackViewState(
@@ -262,22 +246,12 @@ internal class PlayerViewModelTests : RobolectricTest() {
           assertIs<PlayerViewState.Loading>(awaitItem())
 
           val initialPlaybackViewState = awaitItem()
-          assertPlaybackViewState(
-            viewState = initialPlaybackViewState,
-            expectedPlaylistId = playlistId,
-            expectedIsPlaying = true,
-            expectedTracks = tracks,
-            expectedCurrentTrackIndex = 0,
-            expectedCurrentTrackProgress = 0.0,
-          )
-
+          assertIs<PlayerViewState.Playback>(initialPlaybackViewState)
           initialPlaybackViewState.cancelPlayback()
 
-          var nextPlaybackViewState = awaitItem()
-          while (nextPlaybackViewState is PlayerViewState.Playback) {
-            nextPlaybackViewState = awaitItem()
-          }
-          assertIs<PlayerViewState.Invisible>(nextPlaybackViewState)
+          assertIs<PlayerViewState.Invisible>(
+            awaitViewStateWhile { it is PlayerViewState.Playback }
+          )
 
           awaitComplete()
         }
@@ -386,10 +360,14 @@ internal class PlayerViewModelTests : RobolectricTest() {
     everySuspend { retrieveHost() } returns DEFAULT_HOST
   }
 
-  private suspend fun TurbineTestContext<PlayerViewState>.awaitPlaybackPausedViewState():
-    PlayerViewState {
+  private suspend fun TurbineTestContext<PlayerViewState>.awaitPlaybackPausedViewState() =
+    awaitViewStateWhile(PlayerViewState::isPlaying)
+
+  private suspend fun TurbineTestContext<PlayerViewState>.awaitViewStateWhile(
+    condition: (PlayerViewState) -> Boolean
+  ): PlayerViewState {
     var viewState = awaitItem()
-    while (viewState.isPlaying) viewState = awaitItem()
+    while (condition(viewState)) viewState = awaitItem()
     return viewState
   }
 
