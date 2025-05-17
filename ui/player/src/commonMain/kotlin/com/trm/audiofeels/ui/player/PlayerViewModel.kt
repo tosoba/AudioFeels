@@ -122,6 +122,11 @@ class PlayerViewModel(
             startTrackIndex = playback.currentTrackIndex,
             startPositionMs = playback.currentTrackPositionMs,
           )
+          updateCurrentPlaylist(
+            id = playback.playlist.id,
+            currentTrackIndex = 0,
+            currentTrackPositionMs = 0L,
+          )
         }
       }
       .flatMapLatest { playerInput -> playerViewStateFlow(playerInput, playback) }
@@ -281,19 +286,30 @@ class PlayerViewModel(
     Napier.d(tag = "PLAYER_STATE", message = state.playerState.toString())
     when (val playerState = state.playerState) {
       is PlayerState.Enqueued -> {
-        viewModelScope.launch {
-          playbackRepository.updateCurrentPlaylist(
-            id = state.playlistId,
-            currentTrackIndex = playerState.currentTrackIndex,
-            currentTrackPositionMs =
-              playerState.currentTrack.positionMsOf(state.currentTrackProgress),
-          )
-        }
+        updateCurrentPlaylist(
+          id = state.playlistId,
+          currentTrackIndex = playerState.currentTrackIndex,
+          currentTrackPositionMs = playerState.currentTrack.positionMsOf(state.currentTrackProgress),
+        )
       }
       is PlayerState.Idle,
       is PlayerState.Error -> {
         return
       }
+    }
+  }
+
+  private fun updateCurrentPlaylist(
+    id: String,
+    currentTrackIndex: Int,
+    currentTrackPositionMs: Long,
+  ) {
+    viewModelScope.launch {
+      playbackRepository.updateCurrentPlaylist(
+        id = id,
+        currentTrackIndex = currentTrackIndex,
+        currentTrackPositionMs = currentTrackPositionMs,
+      )
     }
   }
 
