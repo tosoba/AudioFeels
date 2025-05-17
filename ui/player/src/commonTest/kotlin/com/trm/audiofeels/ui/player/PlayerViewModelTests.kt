@@ -29,6 +29,7 @@ import kotlin.test.assertNull
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.transformWhile
+import kotlinx.coroutines.flow.withIndex
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -129,7 +130,7 @@ internal class PlayerViewModelTests : RobolectricTest() {
     }
 
   @Test
-  fun `given no current playlist - when start playlist playback and pause - then playerViewState emits Loading and Playback playing and Playback paused`() =
+  fun `given no current playlist - when start playlist playback and pause - then playerViewState emits Playback playing and Playback paused after loading completed`() =
     runTest {
       val playlistId = "playlist-1"
       val tracks = listOf(stubTrack(id = "track-1"))
@@ -176,6 +177,53 @@ internal class PlayerViewModelTests : RobolectricTest() {
           )
 
           playerConnection.reset()
+
+          awaitComplete()
+        }
+    }
+
+  @Test
+  fun `given no current playlist - when start playlist playback and cancel playback - then playerViewState emits Invisible after cancel playback`() =
+    runTest {
+      val playlistId = "playlist-1"
+      val tracks = listOf(stubTrack(id = "track-1"))
+      val playerConnection = PlayerFakeConnection()
+      val viewModel =
+        viewModel(
+          playerConnection = playerConnection,
+          playlistsRepository =
+            mock { everySuspend { getPlaylistTracks(eq(playlistId)) } returns tracks },
+          hostsRepository = stubDefaultHostsRepository(),
+        )
+
+      viewModel.playerViewState
+        .withIndex()
+        .transformWhile { (index, viewState) ->
+          emit(viewState)
+          index == 0 || viewState !is PlayerViewState.Invisible
+        }
+        .test {
+          awaitItem().startPlaylistPlayback(stubPlaylist(id = playlistId))
+
+          assertIs<PlayerViewState.Loading>(awaitItem())
+
+          val initialPlaybackViewState = awaitItem()
+          assertPlaybackViewState(
+            viewState = initialPlaybackViewState,
+            expectedPlaylistId = playlistId,
+            expectedIsPlaying = true,
+            expectedTracks = tracks,
+            expectedCurrentTrackIndex = 0,
+            expectedCurrentTrackProgress = 0.0,
+          )
+
+          initialPlaybackViewState.cancelPlayback()
+
+          var nextPlaybackViewState = awaitItem()
+          while (nextPlaybackViewState is PlayerViewState.Playback) {
+            nextPlaybackViewState = awaitItem()
+          }
+          assertIs<PlayerViewState.Invisible>(nextPlaybackViewState)
 
           awaitComplete()
         }
