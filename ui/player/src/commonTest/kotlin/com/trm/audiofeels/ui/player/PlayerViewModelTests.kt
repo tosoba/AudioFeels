@@ -16,6 +16,7 @@ import com.trm.audiofeels.domain.repository.PlaylistsRepository
 import com.trm.audiofeels.domain.usecase.GetPlayerInputUseCase
 import com.trm.audiofeels.ui.player.util.isPlaying
 import dev.mokkery.answering.returns
+import dev.mokkery.answering.sequentially
 import dev.mokkery.answering.throws
 import dev.mokkery.everySuspend
 import dev.mokkery.matcher.eq
@@ -322,6 +323,56 @@ internal class PlayerViewModelTests : RobolectricTest() {
           awaitItem().startPlaylistPlayback(stubPlaylist(id = playlistId))
           assertIs<PlayerViewState.Loading>(awaitItem())
           assertIs<PlayerViewState.Error>(awaitItem())
+          awaitComplete()
+        }
+    }
+
+  @Test
+  fun `given no current playlist and initial error from playlistTracks - when retry - then playerViewState emits Loading and Playback after successful retry`() =
+    runTest {
+      val playlistId = "playlist-1"
+      val tracks = listOf(stubTrack(id = "track-1"))
+      val playerConnection = PlayerFakeConnection()
+
+      viewModel(
+          playerConnection = playerConnection,
+          playlistsRepository =
+            mock {
+              everySuspend { getPlaylistTracks(eq(playlistId)) } sequentially
+                {
+                  throws(Throwable())
+                  returns(tracks)
+                }
+            },
+          hostsRepository = stubDefaultHostsRepository(),
+        )
+        .playerViewState
+        .transformWhile {
+          emit(it)
+          it !is PlayerViewState.Playback
+        }
+        .test {
+          awaitItem().startPlaylistPlayback(stubPlaylist(id = playlistId))
+          assertIs<PlayerViewState.Loading>(awaitItem())
+
+          val errorViewState = awaitItem()
+          assertIs<PlayerViewState.Error>(errorViewState)
+          errorViewState.primaryControlState.action()
+
+          assertIs<PlayerViewState.Invisible>(awaitItem())
+          assertIs<PlayerViewState.Loading>(awaitItem())
+
+          assertPlaybackViewState(
+            viewState = awaitItem(),
+            expectedPlaylistId = playlistId,
+            expectedIsPlaying = true,
+            expectedTracks = tracks,
+            expectedCurrentTrackIndex = 0,
+            expectedCurrentTrackProgress = 0.0,
+          )
+
+          playerConnection.reset()
+
           awaitComplete()
         }
     }
