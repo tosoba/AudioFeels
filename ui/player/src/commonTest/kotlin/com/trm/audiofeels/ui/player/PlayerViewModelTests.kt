@@ -15,6 +15,7 @@ import com.trm.audiofeels.domain.repository.PlaylistsRepository
 import com.trm.audiofeels.domain.usecase.GetPlayerInputUseCase
 import com.trm.audiofeels.ui.player.util.isPlaying
 import dev.mokkery.answering.returns
+import dev.mokkery.answering.throws
 import dev.mokkery.everySuspend
 import dev.mokkery.matcher.eq
 import dev.mokkery.mock
@@ -100,7 +101,7 @@ internal class PlayerViewModelTests : RobolectricTest() {
           playerConnection = playerConnection,
           playlistsRepository =
             mock { everySuspend { getPlaylistTracks(eq(playlistId)) } returns tracks },
-          hostsRepository = mock { everySuspend { retrieveHost() } returns DEFAULT_HOST },
+          hostsRepository = stubDefaultHostsRepository(),
         )
         .playerViewState
         .transformWhile {
@@ -138,7 +139,7 @@ internal class PlayerViewModelTests : RobolectricTest() {
           playerConnection = playerConnection,
           playlistsRepository =
             mock { everySuspend { getPlaylistTracks(eq(playlistId)) } returns tracks },
-          hostsRepository = mock { everySuspend { retrieveHost() } returns DEFAULT_HOST },
+          hostsRepository = stubDefaultHostsRepository(),
         )
         .playerViewState
         .transformWhile {
@@ -179,6 +180,59 @@ internal class PlayerViewModelTests : RobolectricTest() {
           awaitComplete()
         }
     }
+
+  @Test
+  fun `given no current playlist and error response from playlistTracks - when start playlist - then playerViewState emits Loading and Error`() =
+    runTest {
+      val playlistId = "playlist-1"
+
+      viewModel(
+          playlistsRepository =
+            mock { everySuspend { getPlaylistTracks(eq(playlistId)) } throws Throwable() },
+          hostsRepository = stubDefaultHostsRepository(),
+        )
+        .playerViewState
+        .transformWhile {
+          emit(it)
+          it !is PlayerViewState.Error
+        }
+        .test {
+          awaitItem().startPlaylistPlayback(stubPlaylist(id = playlistId))
+          assertIs<PlayerViewState.Loading>(awaitItem())
+          assertIs<PlayerViewState.Error>(awaitItem())
+          awaitComplete()
+        }
+    }
+
+  @Test
+  fun `given no current playlist and error response from retrieveHost - when start playlist - then playerViewState emits Loading and Error`() =
+    runTest {
+      val playlistId = "playlist-1"
+
+      viewModel(
+          playlistsRepository =
+            mock {
+              everySuspend { getPlaylistTracks(eq(playlistId)) } returns
+                listOf(stubTrack(id = "track-1"))
+            },
+          hostsRepository = mock { everySuspend { retrieveHost() } throws Throwable() },
+        )
+        .playerViewState
+        .transformWhile {
+          emit(it)
+          it !is PlayerViewState.Error
+        }
+        .test {
+          awaitItem().startPlaylistPlayback(stubPlaylist(id = playlistId))
+          assertIs<PlayerViewState.Loading>(awaitItem())
+          assertIs<PlayerViewState.Error>(awaitItem())
+          awaitComplete()
+        }
+    }
+
+  private fun stubDefaultHostsRepository(): HostsRepository = mock {
+    everySuspend { retrieveHost() } returns DEFAULT_HOST
+  }
 
   private fun assertPlaybackViewState(
     viewState: PlayerViewState,
