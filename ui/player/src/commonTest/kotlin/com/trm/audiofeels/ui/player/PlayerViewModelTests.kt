@@ -1,5 +1,6 @@
 package com.trm.audiofeels.ui.player
 
+import app.cash.turbine.TurbineTestContext
 import app.cash.turbine.test
 import com.trm.audiofeels.core.test.PlayerFakeConnection
 import com.trm.audiofeels.core.test.RobolectricTest
@@ -166,10 +167,57 @@ internal class PlayerViewModelTests : RobolectricTest() {
           assertIs<PlayerPrimaryControlState.Action>(primaryControlState)
           primaryControlState.action()
 
-          var nextPlaybackViewState = awaitItem()
-          while (nextPlaybackViewState.isPlaying) nextPlaybackViewState = awaitItem()
           assertPlaybackViewState(
-            viewState = nextPlaybackViewState,
+            viewState = awaitPlaybackPausedViewState(),
+            expectedPlaylistId = playlistId,
+            expectedIsPlaying = false,
+            expectedTracks = tracks,
+            expectedCurrentTrackIndex = 0,
+          )
+
+          playerConnection.reset()
+
+          awaitComplete()
+        }
+    }
+
+  @Test
+  fun `given no current playlist - when start the same playlist playback twice - then playerViewState emits Playback playing and Playback paused after loading completed`() =
+    runTest {
+      val playlistId = "playlist-1"
+      val tracks = listOf(stubTrack(id = "track-1"))
+      val playerConnection = PlayerFakeConnection()
+
+      viewModel(
+          playerConnection = playerConnection,
+          playlistsRepository =
+            mock { everySuspend { getPlaylistTracks(eq(playlistId)) } returns tracks },
+          hostsRepository = stubDefaultHostsRepository(),
+        )
+        .playerViewState
+        .transformWhile {
+          emit(it)
+          it !is PlayerViewState.Playback || it.isPlaying
+        }
+        .test {
+          awaitItem().startPlaylistPlayback(stubPlaylist(id = playlistId))
+
+          assertIs<PlayerViewState.Loading>(awaitItem())
+
+          val initialPlaybackViewState = awaitItem()
+          assertPlaybackViewState(
+            viewState = initialPlaybackViewState,
+            expectedPlaylistId = playlistId,
+            expectedIsPlaying = true,
+            expectedTracks = tracks,
+            expectedCurrentTrackIndex = 0,
+            expectedCurrentTrackProgress = 0.0,
+          )
+
+          initialPlaybackViewState.startPlaylistPlayback(stubPlaylist(id = playlistId))
+
+          assertPlaybackViewState(
+            viewState = awaitPlaybackPausedViewState(),
             expectedPlaylistId = playlistId,
             expectedIsPlaying = false,
             expectedTracks = tracks,
@@ -280,6 +328,13 @@ internal class PlayerViewModelTests : RobolectricTest() {
 
   private fun stubDefaultHostsRepository(): HostsRepository = mock {
     everySuspend { retrieveHost() } returns DEFAULT_HOST
+  }
+
+  private suspend fun TurbineTestContext<PlayerViewState>.awaitPlaybackPausedViewState():
+    PlayerViewState {
+    var viewState = awaitItem()
+    while (viewState.isPlaying) viewState = awaitItem()
+    return viewState
   }
 
   private fun assertPlaybackViewState(
