@@ -6,12 +6,13 @@ import com.trm.audiofeels.core.test.PlayerFakeConnection
 import com.trm.audiofeels.core.test.RobolectricTest
 import com.trm.audiofeels.core.test.stubPlaylist
 import com.trm.audiofeels.core.test.stubTrack
-import com.trm.audiofeels.data.test.playbackInMemoryRepository
+import com.trm.audiofeels.data.test.PlaybackInMemoryRepository
 import com.trm.audiofeels.data.test.visualizationInMemoryRepository
 import com.trm.audiofeels.domain.model.PlayerState
 import com.trm.audiofeels.domain.model.Track
 import com.trm.audiofeels.domain.player.PlayerConnection
 import com.trm.audiofeels.domain.repository.HostsRepository
+import com.trm.audiofeels.domain.repository.PlaybackRepository
 import com.trm.audiofeels.domain.repository.PlaylistsRepository
 import com.trm.audiofeels.domain.usecase.GetPlayerInputUseCase
 import com.trm.audiofeels.ui.player.util.isPlaying
@@ -39,13 +40,17 @@ import kotlinx.coroutines.test.setMain
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class PlayerViewModelTests : RobolectricTest() {
+  private lateinit var playbackInMemoryRepository: PlaybackInMemoryRepository
+
   @BeforeTest
   fun before() {
     Dispatchers.setMain(StandardTestDispatcher())
+    playbackInMemoryRepository = PlaybackInMemoryRepository()
   }
 
   @AfterTest
   fun after() {
+    playbackInMemoryRepository.close()
     Dispatchers.resetMain()
   }
 
@@ -416,6 +421,7 @@ internal class PlayerViewModelTests : RobolectricTest() {
 
   private fun viewModel(
     playerConnection: PlayerConnection = PlayerFakeConnection(),
+    playbackRepository: PlaybackRepository = playbackInMemoryRepository,
     playlistsRepository: PlaylistsRepository = mock {},
     hostsRepository: HostsRepository = mock {},
     recordAudioPermissionPermanentlyDenied: Boolean? = null,
@@ -423,7 +429,7 @@ internal class PlayerViewModelTests : RobolectricTest() {
     PlayerViewModel(
       playerConnection = playerConnection,
       getPlayerInputUseCase = GetPlayerInputUseCase(playlistsRepository, hostsRepository),
-      playbackRepository = playbackInMemoryRepository(),
+      playbackRepository = playbackRepository,
       visualizationRepository =
         visualizationInMemoryRepository(recordAudioPermissionPermanentlyDenied),
       hostsRepository = hostsRepository,
