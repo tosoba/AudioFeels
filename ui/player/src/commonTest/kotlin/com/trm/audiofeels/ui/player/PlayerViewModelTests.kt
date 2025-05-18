@@ -22,6 +22,8 @@ import dev.mokkery.answering.throws
 import dev.mokkery.everySuspend
 import dev.mokkery.matcher.eq
 import dev.mokkery.mock
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -392,6 +394,152 @@ internal class PlayerViewModelTests : RobolectricTest() {
         }
     }
 
+  @Test
+  fun `given initial current playlist - when play next - then playerViewState emits Playback with next track`() =
+    runTest {
+      val playlistId = "playlist-1"
+      val tracks = listOf(stubTrack(id = "track-1"), stubTrack(id = "track-2"))
+      val playerConnection = PlayerFakeConnection()
+      setCurrentPlaylist(playlistId)
+
+      viewModel(
+          playerConnection = playerConnection,
+          playlistsRepository =
+            mock { everySuspend { getPlaylistTracks(eq(playlistId)) } returns tracks },
+          hostsRepository = stubDefaultHostsRepository(),
+        )
+        .playerViewState
+        .transformWhile {
+          emit(it)
+          !it.isPlaying
+        }
+        .test {
+          skipItems(2)
+
+          val initialPlaybackViewState = awaitItem()
+          assertPlaybackPlayerIdleViewState(
+            viewState = initialPlaybackViewState,
+            expectedPlaylistId = playlistId,
+            expectedTracks = tracks,
+            expectedCurrentTrackIndex = 0,
+            expectedCurrentTrackProgress = 0.0,
+          )
+
+          initialPlaybackViewState.playNextTrack()
+
+          assertPlaybackPlayerEnqueuedViewState(
+            viewState = awaitItem(),
+            expectedPlaylistId = playlistId,
+            expectedIsPlaying = true,
+            expectedTracks = tracks,
+            expectedCurrentTrackIndex = 1,
+            expectedCurrentTrackProgress = 0.0,
+          )
+
+          playerConnection.reset()
+
+          awaitComplete()
+        }
+    }
+
+  @Test
+  fun `given initial current playlist - when play previous - then playerViewState emits Playback with previous track`() =
+    runTest {
+      val playlistId = "playlist-1"
+      val tracks = listOf(stubTrack(id = "track-1"), stubTrack(id = "track-2"))
+      val playerConnection = PlayerFakeConnection()
+      setCurrentPlaylist(playlistId = playlistId, currentTrackIndex = 1)
+
+      viewModel(
+          playerConnection = playerConnection,
+          playlistsRepository =
+            mock { everySuspend { getPlaylistTracks(eq(playlistId)) } returns tracks },
+          hostsRepository = stubDefaultHostsRepository(),
+        )
+        .playerViewState
+        .transformWhile {
+          emit(it)
+          !it.isPlaying
+        }
+        .test {
+          skipItems(2)
+
+          val initialPlaybackViewState = awaitItem()
+          assertPlaybackPlayerIdleViewState(
+            viewState = initialPlaybackViewState,
+            expectedPlaylistId = playlistId,
+            expectedTracks = tracks,
+            expectedCurrentTrackIndex = 1,
+            expectedCurrentTrackProgress = 0.0,
+          )
+
+          initialPlaybackViewState.playPreviousTrack()
+
+          assertPlaybackPlayerEnqueuedViewState(
+            viewState = awaitItem(),
+            expectedPlaylistId = playlistId,
+            expectedIsPlaying = true,
+            expectedTracks = tracks,
+            expectedCurrentTrackIndex = 0,
+            expectedCurrentTrackProgress = 0.0,
+          )
+
+          playerConnection.reset()
+
+          awaitComplete()
+        }
+    }
+
+  @Test
+  fun `given initial current playlist - when play at index - then playerViewState emits Playback with track at index`() =
+    runTest {
+      val playlistId = "playlist-1"
+      val tracks =
+        listOf(stubTrack(id = "track-1"), stubTrack(id = "track-2"), stubTrack(id = "track-3"))
+      val expectedTrackIndex = 2
+      val playerConnection = PlayerFakeConnection()
+      setCurrentPlaylist(playlistId = playlistId, currentTrackIndex = 0)
+
+      viewModel(
+          playerConnection = playerConnection,
+          playlistsRepository =
+            mock { everySuspend { getPlaylistTracks(eq(playlistId)) } returns tracks },
+          hostsRepository = stubDefaultHostsRepository(),
+        )
+        .playerViewState
+        .transformWhile {
+          emit(it)
+          !it.isPlaying
+        }
+        .test {
+          skipItems(2)
+
+          val initialPlaybackViewState = awaitItem()
+          assertPlaybackPlayerIdleViewState(
+            viewState = initialPlaybackViewState,
+            expectedPlaylistId = playlistId,
+            expectedTracks = tracks,
+            expectedCurrentTrackIndex = 0,
+            expectedCurrentTrackProgress = 0.0,
+          )
+
+          initialPlaybackViewState.playTrackAtIndex(expectedTrackIndex)
+
+          assertPlaybackPlayerEnqueuedViewState(
+            viewState = awaitItem(),
+            expectedPlaylistId = playlistId,
+            expectedIsPlaying = true,
+            expectedTracks = tracks,
+            expectedCurrentTrackIndex = expectedTrackIndex,
+            expectedCurrentTrackProgress = 0.0,
+          )
+
+          playerConnection.reset()
+
+          awaitComplete()
+        }
+    }
+
   private suspend fun setCurrentPlaylist(
     playlistId: String,
     currentTrackIndex: Int = 0,
@@ -423,6 +571,7 @@ internal class PlayerViewModelTests : RobolectricTest() {
     return viewState
   }
 
+  @OptIn(ExperimentalContracts::class)
   private fun assertPlaybackPlayerEnqueuedViewState(
     viewState: PlayerViewState,
     expectedPlaylistId: String,
@@ -431,6 +580,8 @@ internal class PlayerViewModelTests : RobolectricTest() {
     expectedCurrentTrackIndex: Int,
     expectedCurrentTrackProgress: Double? = null,
   ) {
+    contract { returns() implies (viewState is PlayerViewState.Playback) }
+
     assertIs<PlayerViewState.Playback>(viewState)
     assertPlaybackViewState(
       viewState = viewState,
@@ -449,6 +600,7 @@ internal class PlayerViewModelTests : RobolectricTest() {
     )
   }
 
+  @OptIn(ExperimentalContracts::class)
   private fun assertPlaybackPlayerIdleViewState(
     viewState: PlayerViewState,
     expectedPlaylistId: String,
@@ -456,6 +608,8 @@ internal class PlayerViewModelTests : RobolectricTest() {
     expectedCurrentTrackIndex: Int,
     expectedCurrentTrackProgress: Double? = null,
   ) {
+    contract { returns() implies (viewState is PlayerViewState.Playback) }
+
     assertIs<PlayerViewState.Playback>(viewState)
     assertPlaybackViewState(
       viewState = viewState,
