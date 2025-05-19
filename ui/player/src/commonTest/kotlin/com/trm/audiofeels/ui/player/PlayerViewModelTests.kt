@@ -29,8 +29,11 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.transformWhile
@@ -99,6 +102,48 @@ internal class PlayerViewModelTests : RobolectricTest() {
       expectNoEvents()
     }
   }
+
+  @Test
+  fun `given initial current playlist - when toggle favourite - then currentPlaylist is favourite state changes`() =
+    runTest {
+      val playlistId = "playlist-1"
+      val tracks = listOf(stubTrack(id = "track-1"))
+      setCurrentPlaylist(playlistId)
+      val playerConnection = PlayerFakeConnection()
+
+      val viewModel =
+        viewModel(
+          playerConnection = playerConnection,
+          playlistsRepository =
+            mock { everySuspend { getPlaylistTracks(eq(playlistId)) } returns tracks },
+          hostsRepository = stubDefaultHostsRepository(),
+        )
+
+      viewModel.currentPlaylist.test {
+        skipItems(1)
+
+        val initialCurrentPlaylist = awaitItem()
+        assertNotNull(initialCurrentPlaylist)
+        assertFalse(initialCurrentPlaylist.favourite)
+
+        viewModel.playerViewState
+          .transformWhile {
+            emit(it)
+            it !is PlayerViewState.Playback
+          }
+          .test {
+            awaitUntilViewStateIsInstance<PlayerViewState.Playback>().togglePlaylistFavourite()
+            playerConnection.reset()
+            awaitComplete()
+          }
+
+        val favouriteCurrentPlaylist = awaitItem()
+        assertNotNull(favouriteCurrentPlaylist)
+        assertTrue(favouriteCurrentPlaylist.favourite)
+
+        expectNoEvents()
+      }
+    }
 
   @Test
   fun `given no current playlist - when start playlist playback - then playerViewState emits Loading and Playback`() =
@@ -568,6 +613,13 @@ internal class PlayerViewModelTests : RobolectricTest() {
   ): PlayerViewState {
     var viewState = awaitItem()
     while (condition(viewState)) viewState = awaitItem()
+    return viewState
+  }
+
+  private suspend inline fun <reified T : PlayerViewState> TurbineTestContext<PlayerViewState>
+    .awaitUntilViewStateIsInstance(): T {
+    var viewState = awaitItem()
+    while (viewState !is T) viewState = awaitItem()
     return viewState
   }
 
