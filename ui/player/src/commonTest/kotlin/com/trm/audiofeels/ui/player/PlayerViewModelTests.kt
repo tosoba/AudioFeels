@@ -29,11 +29,8 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertIs
-import kotlin.test.assertNotNull
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.transformWhile
@@ -122,9 +119,7 @@ internal class PlayerViewModelTests : RobolectricTest() {
       viewModel.currentPlaylist.test {
         skipItems(1)
 
-        val initialCurrentPlaylist = awaitItem()
-        assertNotNull(initialCurrentPlaylist)
-        assertFalse(initialCurrentPlaylist.favourite)
+        assertEquals(expected = false, actual = awaitItem()?.favourite)
 
         viewModel.playerViewState
           .transformWhile {
@@ -137,9 +132,7 @@ internal class PlayerViewModelTests : RobolectricTest() {
             awaitComplete()
           }
 
-        val favouriteCurrentPlaylist = awaitItem()
-        assertNotNull(favouriteCurrentPlaylist)
-        assertTrue(favouriteCurrentPlaylist.favourite)
+        assertEquals(expected = true, actual = awaitItem()?.favourite)
 
         expectNoEvents()
       }
