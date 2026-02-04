@@ -33,7 +33,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -51,7 +51,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.window.core.layout.WindowHeightSizeClass
 import com.trm.audiofeels.core.base.model.LoadableState
 import com.trm.audiofeels.core.ui.compose.BottomEdgeGradient
 import com.trm.audiofeels.core.ui.compose.CarryOnPlaylistLazyRowItem
@@ -67,6 +66,7 @@ import com.trm.audiofeels.core.ui.compose.TopEdgeGradient
 import com.trm.audiofeels.core.ui.compose.theme.ListItemSize
 import com.trm.audiofeels.core.ui.compose.theme.RoundedCornerSize
 import com.trm.audiofeels.core.ui.compose.theme.Spacing
+import com.trm.audiofeels.core.ui.compose.util.currentWindowHeightClass
 import com.trm.audiofeels.core.ui.compose.util.shimmerBackground
 import com.trm.audiofeels.core.ui.compose.util.topAppBarSpacerHeight
 import com.trm.audiofeels.core.ui.resources.Res
@@ -80,8 +80,8 @@ import com.trm.audiofeels.domain.model.Mood
 import com.trm.audiofeels.domain.model.Playlist
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
-import org.jetbrains.compose.resources.stringResource
 import kotlin.random.Random
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun SharedTransitionScope.DiscoverPage(
@@ -170,9 +170,9 @@ fun SharedTransitionScope.DiscoverPage(
           Modifier.fillMaxWidth()
             .heightIn(
               max =
-                when (currentWindowAdaptiveInfo().windowSizeClass.windowHeightSizeClass) {
-                  WindowHeightSizeClass.COMPACT -> 124
-                  else -> 220
+                when (currentWindowHeightClass()) {
+                  WindowHeightSizeClass.Compact -> 128
+                  else -> 256
                 }.dp
             ),
       ) {

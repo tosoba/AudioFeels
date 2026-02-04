@@ -21,6 +21,7 @@ kotlin {
         implementation(libs.haze)
 
         implementation(libs.material3.adaptive)
+        implementation(libs.material3.windowSizeClass)
       }
     }
   }

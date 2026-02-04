@@ -1,6 +1,6 @@
 package com.trm.audiofeels.core.ui.compose.util
 
-import androidx.window.core.layout.WindowHeightSizeClass
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 
 enum class NavigationContentPosition {
   TOP,
@@ -9,8 +9,8 @@ enum class NavigationContentPosition {
   companion object {
     operator fun invoke(heightSizeClass: WindowHeightSizeClass): NavigationContentPosition =
       when (heightSizeClass) {
-        WindowHeightSizeClass.MEDIUM,
-        WindowHeightSizeClass.EXPANDED -> {
+        WindowHeightSizeClass.Medium,
+        WindowHeightSizeClass.Expanded -> {
           CENTER
         }
         else -> {

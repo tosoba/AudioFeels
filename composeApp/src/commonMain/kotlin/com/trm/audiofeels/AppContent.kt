@@ -48,6 +48,7 @@ import androidx.compose.material3.adaptive.navigation.rememberSupportingPaneScaf
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldLayout
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -78,7 +79,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
-import androidx.window.core.layout.WindowHeightSizeClass
 import coil3.compose.setSingletonImageLoaderFactory
 import com.materialkolor.DynamicMaterialTheme
 import com.materialkolor.ktx.rememberThemeColor
@@ -88,6 +88,7 @@ import com.trm.audiofeels.core.ui.compose.theme.Spacing
 import com.trm.audiofeels.core.ui.compose.theme.UpdateEdgeToEdge
 import com.trm.audiofeels.core.ui.compose.util.NavigationContentPosition
 import com.trm.audiofeels.core.ui.compose.util.NavigationType
+import com.trm.audiofeels.core.ui.compose.util.currentWindowHeightClass
 import com.trm.audiofeels.core.ui.compose.util.defaultHazeEffect
 import com.trm.audiofeels.core.ui.compose.util.loadImageBitmapOrNull
 import com.trm.audiofeels.core.ui.resources.Res
@@ -152,8 +153,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
     val adaptiveInfo = currentWindowAdaptiveInfo()
     val navigationType =
       NavigationType(adaptiveInfo = adaptiveInfo, windowSize = currentWindowDpSize())
-    val navigationContentPosition =
-      NavigationContentPosition(adaptiveInfo.windowSizeClass.windowHeightSizeClass)
+    val navigationContentPosition = NavigationContentPosition(currentWindowHeightClass())
 
     val scope = rememberCoroutineScope()
     val appLayoutState =
@@ -330,9 +330,7 @@ private fun AppBottomSheetScaffold(
         currentPlaylist = currentPlaylist,
         partiallyExpandedAlpha = partiallyExpandedAlpha,
         expandedAlpha = expandedAlpha,
-        showToggleFavourite =
-          currentWindowAdaptiveInfo().windowSizeClass.windowHeightSizeClass !=
-            WindowHeightSizeClass.COMPACT,
+        showToggleFavourite = currentWindowHeightClass() != WindowHeightSizeClass.Compact,
         modifier =
           Modifier.fillMaxSize()
             .defaultHazeEffect(hazeState, sheetHazeStyle)
@@ -394,9 +392,7 @@ private fun AppBottomSheetScaffold(
           PlayerExpandedContent(
             viewState = playerViewState,
             currentPlaylist = currentPlaylist,
-            showSlider =
-              currentWindowAdaptiveInfo().windowSizeClass.windowHeightSizeClass !=
-                WindowHeightSizeClass.COMPACT,
+            showSlider = currentWindowHeightClass() != WindowHeightSizeClass.Compact,
             showEdgeGradients = true,
             modifier =
               Modifier.fillMaxSize()
