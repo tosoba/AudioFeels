@@ -122,11 +122,9 @@ import dev.chrisbanes.haze.HazeTint
 import dev.zwander.compose.rememberThemeInfo
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
-@Preview
 fun AppContent(applicationComponent: ApplicationComponent) {
   setSingletonImageLoaderFactory { applicationComponent.imageLoader }
 
