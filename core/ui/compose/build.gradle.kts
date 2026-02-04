@@ -32,10 +32,10 @@ kotlin {
         implementation(libs.coil.compose)
         implementation(libs.haze)
 
-        implementation(compose.material3AdaptiveNavigationSuite)
         implementation(libs.material3.adaptive)
         implementation(libs.material3.adaptive.layout)
         implementation(libs.material3.adaptive.navigation)
+        implementation(libs.material3.navigation.suite)
         implementation(libs.material3.windowSizeClass)
       }
     }
