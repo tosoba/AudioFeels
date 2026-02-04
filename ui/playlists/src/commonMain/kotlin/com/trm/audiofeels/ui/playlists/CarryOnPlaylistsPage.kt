@@ -2,7 +2,6 @@ package com.trm.audiofeels.ui.playlists
 
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
@@ -36,10 +35,9 @@ import com.trm.audiofeels.core.ui.resources.carry_on
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
-import kotlin.random.Random
 import org.jetbrains.compose.resources.stringResource
+import kotlin.random.Random
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun SharedTransitionScope.CarryOnPlaylistsPage(
   playlists: LoadableState<List<CarryOnPlaylist>>,
@@ -79,7 +77,7 @@ fun SharedTransitionScope.CarryOnPlaylistsPage(
               lastPlayed = lastPlayed,
               modifier =
                 Modifier.sharedElement(
-                    state =
+                    sharedContentState =
                       rememberSharedContentState(
                         key = "${stringResource(Res.string.carry_on)}-${playlist.id}"
                       ),

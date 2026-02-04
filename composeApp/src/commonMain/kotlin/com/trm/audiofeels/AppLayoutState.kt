@@ -35,6 +35,7 @@ class AppLayoutState(
           playerLayoutState.scaffoldState.bottomSheetState.hide()
         }
       }
+      else -> {}
     }
   }
 }

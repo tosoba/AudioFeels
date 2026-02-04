@@ -6,8 +6,8 @@ import androidx.room.Transaction
 import androidx.room.Upsert
 import com.trm.audiofeels.data.database.model.PlaylistEntity
 import kotlinx.coroutines.flow.Flow
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 @Dao
 interface PlaylistDao {

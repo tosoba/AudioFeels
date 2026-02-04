@@ -3,7 +3,6 @@ package com.trm.audiofeels.ui.discover
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
@@ -81,10 +80,9 @@ import com.trm.audiofeels.domain.model.Mood
 import com.trm.audiofeels.domain.model.Playlist
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
-import kotlin.random.Random
 import org.jetbrains.compose.resources.stringResource
+import kotlin.random.Random
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun SharedTransitionScope.DiscoverPage(
   viewModel: DiscoverViewModel,
@@ -132,7 +130,7 @@ fun SharedTransitionScope.DiscoverPage(
           lastPlayed = carryOn.lastPlayed,
           modifier =
             Modifier.sharedElement(
-                state =
+                sharedContentState =
                   rememberSharedContentState(
                     key = "${stringResource(Res.string.carry_on)}-${carryOn.playlist.id}"
                   ),
@@ -184,7 +182,7 @@ fun SharedTransitionScope.DiscoverPage(
             symbol = item.symbol,
             modifier =
               Modifier.sharedElement(
-                  state = rememberSharedContentState(key = item.name),
+                  sharedContentState = rememberSharedContentState(key = item.name),
                   animatedVisibilityScope = animatedContentScope,
                 )
                 .size(ListItemSize.small90dp),
@@ -212,7 +210,7 @@ fun SharedTransitionScope.DiscoverPage(
           artworkUrl = playlist.artworkUrl,
           modifier =
             Modifier.sharedElement(
-                state =
+                sharedContentState =
                   rememberSharedContentState(
                     key = "${stringResource(Res.string.favourite)}-${playlist.id}"
                   ),
@@ -244,7 +242,7 @@ fun SharedTransitionScope.DiscoverPage(
           artworkUrl = playlist.artworkUrl,
           modifier =
             Modifier.sharedElement(
-                state =
+                sharedContentState =
                   rememberSharedContentState(
                     key = "${stringResource(Res.string.trending)}-${playlist.id}"
                   ),

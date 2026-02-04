@@ -12,8 +12,8 @@ import com.trm.audiofeels.domain.model.PlaylistPlayback
 import com.trm.audiofeels.domain.repository.PlaybackRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.datetime.Clock
 import me.tatarka.inject.annotations.Inject
+import kotlin.time.Clock
 
 @Inject
 class PlaybackLocalRepository(private val playlistDao: PlaylistDao) : PlaybackRepository {

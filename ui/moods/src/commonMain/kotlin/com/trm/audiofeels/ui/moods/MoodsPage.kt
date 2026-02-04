@@ -1,7 +1,6 @@
 package com.trm.audiofeels.ui.moods
 
 import androidx.compose.animation.AnimatedContentScope
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,7 +27,6 @@ import com.trm.audiofeels.domain.model.Mood
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun SharedTransitionScope.MoodsPage(
   animatedContentScope: AnimatedContentScope,
@@ -61,7 +59,7 @@ fun SharedTransitionScope.MoodsPage(
             symbol = item.symbol,
             modifier =
               Modifier.sharedElement(
-                  state = rememberSharedContentState(key = item.name),
+                  sharedContentState = rememberSharedContentState(key = item.name),
                   animatedVisibilityScope = animatedContentScope,
                 )
                 .size(ListItemSize.small90dp),

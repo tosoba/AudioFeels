@@ -2,7 +2,6 @@ package com.trm.audiofeels.ui.playlists
 
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
@@ -36,7 +35,6 @@ import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
 import kotlin.random.Random
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun SharedTransitionScope.PlaylistsPage(
   playlists: LoadableState<List<Playlist>>,
@@ -76,7 +74,7 @@ fun SharedTransitionScope.PlaylistsPage(
               artworkUrl = playlist.artworkUrl,
               modifier =
                 Modifier.sharedElement(
-                    state =
+                    sharedContentState =
                       rememberSharedContentState(key = "$sharedElementKeyPrefix-${playlist.id}"),
                     animatedVisibilityScope = animatedContentScope,
                   )

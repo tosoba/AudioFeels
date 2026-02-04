@@ -30,10 +30,10 @@ import com.trm.audiofeels.core.ui.resources.moments_ago
 import com.trm.audiofeels.core.ui.resources.one_hour_ago
 import com.trm.audiofeels.core.ui.resources.one_minute_ago
 import com.trm.audiofeels.core.ui.resources.yesterday
-import kotlin.time.Duration
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Clock
+import kotlin.time.Duration
+import kotlin.time.Instant
 
 @Composable
 fun PlaylistLazyRowItem(

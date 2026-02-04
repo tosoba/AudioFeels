@@ -1,7 +1,6 @@
 package com.trm.audiofeels
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -523,7 +522,6 @@ private fun AppPermanentNavigationDrawer(
   }
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun AppNavHost(
   applicationComponent: ApplicationComponent,
