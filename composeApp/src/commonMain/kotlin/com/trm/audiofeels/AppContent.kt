@@ -38,6 +38,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowDpSize
 import androidx.compose.material3.adaptive.layout.AnimatedPane
 import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
 import androidx.compose.material3.adaptive.layout.SupportingPaneScaffold
@@ -87,7 +88,6 @@ import com.trm.audiofeels.core.ui.compose.theme.Spacing
 import com.trm.audiofeels.core.ui.compose.theme.UpdateEdgeToEdge
 import com.trm.audiofeels.core.ui.compose.util.NavigationContentPosition
 import com.trm.audiofeels.core.ui.compose.util.NavigationType
-import com.trm.audiofeels.core.ui.compose.util.calculateWindowSize
 import com.trm.audiofeels.core.ui.compose.util.defaultHazeEffect
 import com.trm.audiofeels.core.ui.compose.util.loadImageBitmapOrNull
 import com.trm.audiofeels.core.ui.resources.Res
@@ -151,7 +151,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
   DynamicMaterialTheme(seedColor = rememberThemeSeedColor(playerViewState, applicationComponent)) {
     val adaptiveInfo = currentWindowAdaptiveInfo()
     val navigationType =
-      NavigationType(adaptiveInfo = adaptiveInfo, windowSize = calculateWindowSize())
+      NavigationType(adaptiveInfo = adaptiveInfo, windowSize = currentWindowDpSize())
     val navigationContentPosition =
       NavigationContentPosition(adaptiveInfo.windowSizeClass.windowHeightSizeClass)
 
