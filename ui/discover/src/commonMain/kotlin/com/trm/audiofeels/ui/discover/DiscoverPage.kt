@@ -80,8 +80,8 @@ import com.trm.audiofeels.domain.model.Mood
 import com.trm.audiofeels.domain.model.Playlist
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
-import kotlin.random.Random
 import org.jetbrains.compose.resources.stringResource
+import kotlin.random.Random
 
 @Composable
 fun SharedTransitionScope.DiscoverPage(
@@ -171,8 +171,8 @@ fun SharedTransitionScope.DiscoverPage(
             .heightIn(
               max =
                 when (currentWindowHeightClass()) {
-                  WindowHeightSizeClass.Compact -> 128
-                  else -> 256
+                  WindowHeightSizeClass.Compact -> 124
+                  else -> 220
                 }.dp
             ),
       ) {
