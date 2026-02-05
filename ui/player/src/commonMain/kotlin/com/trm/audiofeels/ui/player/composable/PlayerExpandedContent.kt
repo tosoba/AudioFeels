@@ -34,6 +34,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.util.lerp
 import com.trm.audiofeels.core.ui.compose.AsyncShimmerImage
@@ -55,7 +56,6 @@ import org.jetbrains.compose.resources.vectorResource
 fun PlayerExpandedContent(
   viewState: PlayerViewState,
   currentPlaylist: Playlist?,
-  showSlider: Boolean,
   showEdgeGradients: Boolean,
   modifier: Modifier = Modifier,
 ) {
@@ -79,7 +79,7 @@ fun PlayerExpandedContent(
         }
       }
 
-      if (showSlider) {
+      if (this@BoxWithConstraints.maxHeight > 480.dp) {
         AnimatedVisibility(visible = viewState is PlayerViewState.Playback) {
           var sliderValue by
             remember(viewState) { mutableFloatStateOf(viewState.currentTrackProgressOrZero) }
@@ -98,7 +98,7 @@ fun PlayerExpandedContent(
       Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceEvenly,
-        modifier = Modifier.fillMaxWidth().weight(1f),
+        modifier = Modifier.fillMaxWidth(),
       ) {
         PlaylistFavouriteToggleButton(
           checked = currentPlaylist?.favourite == true,

@@ -31,7 +31,6 @@ fun PlayerSheetContent(
       PlayerExpandedContent(
         viewState = viewState,
         currentPlaylist = currentPlaylist,
-        showSlider = showToggleFavourite,
         showEdgeGradients = false,
         modifier = Modifier.fillMaxSize().alpha(expandedAlpha),
       )
