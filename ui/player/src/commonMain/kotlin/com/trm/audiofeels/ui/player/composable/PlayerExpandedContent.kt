@@ -64,7 +64,7 @@ fun PlayerExpandedContent(
       val pagerModifier =
         Modifier.fillMaxWidth()
           .heightIn(
-            max = min(this@BoxWithConstraints.maxWidth, this@BoxWithConstraints.maxHeight * .75f)
+            max = min(this@BoxWithConstraints.maxWidth, this@BoxWithConstraints.maxHeight * .6f)
           )
       when (viewState) {
         is PlayerViewState.Invisible -> {}

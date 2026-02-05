@@ -49,6 +49,7 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -89,6 +90,7 @@ import com.trm.audiofeels.core.ui.compose.theme.UpdateEdgeToEdge
 import com.trm.audiofeels.core.ui.compose.util.NavigationContentPosition
 import com.trm.audiofeels.core.ui.compose.util.NavigationType
 import com.trm.audiofeels.core.ui.compose.util.currentWindowHeightClass
+import com.trm.audiofeels.core.ui.compose.util.currentWindowWidthClass
 import com.trm.audiofeels.core.ui.compose.util.defaultHazeEffect
 import com.trm.audiofeels.core.ui.compose.util.loadImageBitmapOrNull
 import com.trm.audiofeels.core.ui.resources.Res
@@ -164,9 +166,6 @@ fun AppContent(applicationComponent: ApplicationComponent) {
                 bottomSheetState =
                   rememberStandardBottomSheetState(
                     initialValue = SheetValue.Hidden,
-                    confirmValueChange = {
-                      it != SheetValue.Hidden || !playerViewState.playerVisible
-                    },
                     skipHiddenState = false,
                   )
               )
@@ -277,11 +276,7 @@ private fun AppBottomSheetScaffold(
 
   val paneNavigator =
     rememberSupportingPaneScaffoldNavigator(
-      scaffoldDirective =
-        calculatePaneScaffoldDirective(currentWindowAdaptiveInfo()).let {
-          if (playerViewState.playerVisible) it
-          else it.copy(maxHorizontalPartitions = 1, maxVerticalPartitions = 1)
-        }
+      scaffoldDirective = calculatePaneScaffoldDirective(currentWindowAdaptiveInfo())
     )
   val supportingPaneValue = paneNavigator.scaffoldValue[SupportingPaneScaffoldRole.Supporting]
   LaunchedEffect(supportingPaneValue) {
@@ -390,7 +385,9 @@ private fun AppBottomSheetScaffold(
           PlayerExpandedContent(
             viewState = playerViewState,
             currentPlaylist = currentPlaylist,
-            showSlider = currentWindowHeightClass() != WindowHeightSizeClass.Compact,
+            showSlider =
+              currentWindowHeightClass() != WindowHeightSizeClass.Compact &&
+                currentWindowWidthClass() != WindowWidthSizeClass.Compact,
             showEdgeGradients = true,
             modifier =
               Modifier.fillMaxSize()
