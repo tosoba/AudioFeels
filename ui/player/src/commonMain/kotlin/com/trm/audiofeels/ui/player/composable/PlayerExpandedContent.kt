@@ -10,8 +10,10 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
@@ -48,9 +50,9 @@ import com.trm.audiofeels.core.ui.resources.error_occurred
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.ui.player.PlayerViewState
 import com.trm.audiofeels.ui.player.util.currentTrackProgressOrZero
-import kotlin.math.absoluteValue
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
+import kotlin.math.absoluteValue
 
 @Composable
 fun PlayerExpandedContent(
@@ -80,6 +82,8 @@ fun PlayerExpandedContent(
       }
 
       if (this@BoxWithConstraints.maxHeight > 480.dp) {
+        Spacer(modifier = Modifier.height(Spacing.medium16dp))
+
         AnimatedVisibility(visible = viewState is PlayerViewState.Playback) {
           var sliderValue by
             remember(viewState) { mutableFloatStateOf(viewState.currentTrackProgressOrZero) }
@@ -90,7 +94,7 @@ fun PlayerExpandedContent(
               (viewState as? PlayerViewState.Playback)?.seekToProgress?.invoke(sliderValue)
             },
             enabled = viewState is PlayerViewState.Playback,
-            modifier = Modifier.fillMaxWidth().padding(Spacing.medium16dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = Spacing.medium16dp),
           )
         }
       }
@@ -98,7 +102,7 @@ fun PlayerExpandedContent(
       Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceEvenly,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(Spacing.medium16dp),
       ) {
         PlaylistFavouriteToggleButton(
           checked = currentPlaylist?.favourite == true,
