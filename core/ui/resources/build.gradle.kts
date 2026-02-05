@@ -10,9 +10,9 @@ kotlin {
       dependencies {
         implementation(projects.core.base)
 
-        api(compose.ui)
-        api(compose.components.resources)
-        implementation(compose.runtime)
+        api(libs.compose.ui)
+        api(libs.compose.components.resources)
+        implementation(libs.compose.runtime)
       }
     }
   }
