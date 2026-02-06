@@ -30,12 +30,11 @@ class AppLayoutState(
           playerLayoutState.restoreLastVisibleSheetValue()
         }
       }
-      PaneAdaptedValue.Expanded -> {
+      else -> {
         if (playerVisible) {
           playerLayoutState.scaffoldState.bottomSheetState.hide()
         }
       }
-      else -> {}
     }
   }
 }
