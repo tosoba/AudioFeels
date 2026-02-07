@@ -16,7 +16,7 @@ import com.trm.audiofeels.domain.model.Mood
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 
-val APP_ROUTES = listOf(DiscoverGraph, SearchPage)
+val APP_ROUTES: List<AppRoute> = listOf(DiscoverGraph, SearchPage)
 
 sealed interface AppRoute {
   val icon: ImageVector

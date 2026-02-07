@@ -74,12 +74,16 @@ import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
+import androidx.savedstate.SavedState
+import androidx.savedstate.read
+import androidx.savedstate.write
 import coil3.compose.setSingletonImageLoaderFactory
 import com.materialkolor.DynamicMaterialTheme
 import com.materialkolor.ktx.rememberThemeColor
@@ -98,6 +102,7 @@ import com.trm.audiofeels.core.ui.resources.favourite
 import com.trm.audiofeels.core.ui.resources.trending
 import com.trm.audiofeels.di.ApplicationComponent
 import com.trm.audiofeels.domain.model.CarryOnPlaylist
+import com.trm.audiofeels.domain.model.Mood
 import com.trm.audiofeels.domain.model.Playlist
 import com.trm.audiofeels.ui.discover.DiscoverPage
 import com.trm.audiofeels.ui.discover.DiscoverViewModel
@@ -124,6 +129,7 @@ import dev.chrisbanes.haze.HazeTint
 import dev.zwander.compose.rememberThemeInfo
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import kotlin.reflect.typeOf
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
@@ -584,7 +590,7 @@ private fun AppNavHost(
           )
         }
 
-        composable<DiscoverGraphRoute.MoodPage> {
+        composable<DiscoverGraphRoute.MoodPage>(typeMap = mapOf(typeOf<Mood>() to MoodNavType)) {
           MoodPage(
             viewModel =
               MoodViewModel(
@@ -653,6 +659,20 @@ private fun AppNavHost(
     }
   }
 }
+
+private val MoodNavType =
+  object : NavType<Mood>(isNullableAllowed = false) {
+    override fun get(bundle: SavedState, key: String): Mood =
+      Mood.valueOf(bundle.read { getString(key) })
+
+    override fun parseValue(value: String): Mood = Mood.valueOf(value)
+
+    override fun serializeAsValue(value: Mood): String = value.name
+
+    override fun put(bundle: SavedState, key: String, value: Mood) {
+      bundle.write { putString(key, value.name) }
+    }
+  }
 
 private fun NavController.navigateToAppRoute(route: AppRoute) {
   navigate(route) {
