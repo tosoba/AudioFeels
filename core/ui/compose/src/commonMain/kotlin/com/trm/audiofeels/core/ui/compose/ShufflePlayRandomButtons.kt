@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Shuffle
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -29,7 +29,10 @@ fun ShufflePlayRandomButtonsColumn(
   onRandomClick: () -> Unit,
 ) {
   Column(horizontalAlignment = Alignment.End, modifier = modifier) {
-    SmallFloatingActionButton(onClick = onShuffleClick) {
+    SmallFloatingActionButton(
+      onClick = onShuffleClick,
+      containerColor = MaterialTheme.colorScheme.secondaryContainer,
+    ) {
       Icon(
         imageVector = Icons.Outlined.Shuffle,
         contentDescription = stringResource(Res.string.shuffle_playlists),
@@ -46,13 +49,10 @@ fun ShufflePlayRandomButtonsColumn(
 fun PlayRandomFloatingActionButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
   ExtendedFloatingActionButton(
     onClick = onClick,
-    containerColor = MaterialTheme.colorScheme.inversePrimary,
-    text = {
-      Text(stringResource(Res.string.play_random), style = MaterialTheme.typography.titleMedium)
-    },
+    text = { Text(stringResource(Res.string.play_random)) },
     icon = {
       Icon(
-        imageVector = Icons.Filled.PlayArrow,
+        imageVector = Icons.Outlined.PlayArrow,
         contentDescription = stringResource(Res.string.play_random_playlist),
         modifier = Modifier.size(Spacing.large32dp),
       )
