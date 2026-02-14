@@ -1,12 +1,12 @@
 package com.trm.audiofeels.core.base.model
 
 import io.github.aakira.napier.Napier
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withTimeout
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 sealed interface LoadableState<out T> {
   data object Loading : LoadableState<Nothing>
@@ -39,4 +39,4 @@ fun <T> loadableStateFlowOf(
       emit(LoadableState.Error(it))
     }
 
-internal val DefaultTimeout = 20.seconds
+internal val DefaultTimeout = 10.seconds
