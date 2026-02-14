@@ -16,12 +16,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.material3.carousel.CarouselDefaults
+import androidx.compose.material3.carousel.HorizontalCenteredHeroCarousel
+import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -30,15 +32,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
-import androidx.compose.ui.util.lerp
 import com.trm.audiofeels.core.ui.compose.AsyncShimmerImage
 import com.trm.audiofeels.core.ui.compose.EndEdgeGradient
 import com.trm.audiofeels.core.ui.compose.StartEdgeGradient
@@ -52,8 +50,8 @@ import com.trm.audiofeels.ui.player.PlayerViewState
 import com.trm.audiofeels.ui.player.util.currentTrackProgressOrZero
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
-import kotlin.math.absoluteValue
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayerExpandedContent(
   viewState: PlayerViewState,
@@ -62,6 +60,9 @@ fun PlayerExpandedContent(
   modifier: Modifier = Modifier,
 ) {
   BoxWithConstraints(modifier = modifier) {
+    val expandedCutoff = 600.dp
+    val isExpanded = this@BoxWithConstraints.maxWidth >= expandedCutoff
+
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
       val pagerModifier =
         Modifier.fillMaxWidth()
@@ -71,13 +72,17 @@ fun PlayerExpandedContent(
       when (viewState) {
         is PlayerViewState.Invisible -> {}
         is PlayerViewState.Loading -> {
-          PlayerTrackPlaceholdersPager(modifier = pagerModifier)
+          PlayerTrackPlaceholdersPager(isExpanded = isExpanded, modifier = pagerModifier)
         }
         is PlayerViewState.Playback -> {
-          PlayerTracksPager(viewState = viewState, modifier = pagerModifier)
+          PlayerTracksPager(
+            viewState = viewState,
+            isExpanded = isExpanded,
+            modifier = pagerModifier,
+          )
         }
         is PlayerViewState.Error -> {
-          PlayerErrorPager(modifier = pagerModifier)
+          PlayerErrorPager(isExpanded = isExpanded, modifier = pagerModifier)
         }
       }
 
@@ -125,21 +130,25 @@ fun PlayerExpandedContent(
   }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun PlayerTrackPlaceholdersPager(modifier: Modifier = Modifier) {
-  val pagerState = rememberPagerState(initialPage = 1, pageCount = { 3 })
-  HorizontalPager(
-    state = pagerState,
-    contentPadding = playerTracksPagerContentPadding,
+private fun PlayerTrackPlaceholdersPager(isExpanded: Boolean, modifier: Modifier = Modifier) {
+  val carouselState = rememberCarouselState(initialItem = 1) { 3 }
+  val (minSmallItemWidth, maxSmallItemWidth) = getSmallItemWidths(isExpanded)
+
+  HorizontalCenteredHeroCarousel(
+    state = carouselState,
+    itemSpacing = Spacing.medium16dp,
+    minSmallItemWidth = minSmallItemWidth,
+    maxSmallItemWidth = maxSmallItemWidth,
     userScrollEnabled = false,
+    contentPadding = PaddingValues(horizontal = Spacing.medium16dp),
     modifier = modifier,
   ) {
     Column(
       modifier =
-        Modifier.clip(MaterialTheme.shapes.extraLarge)
-          .scale(if (it == pagerState.currentPage) 1f else playerTracksPagerItemMinScale)
+        Modifier.maskClip(MaterialTheme.shapes.extraLarge)
           .shimmerBackground(enabled = true, shape = MaterialTheme.shapes.extraLarge)
-          .alpha(if (it == pagerState.currentPage) 1f else playerTracksPagerItemMinAlpha)
     ) {
       Box(modifier = Modifier.fillMaxWidth().weight(1f))
       Text(
@@ -151,15 +160,25 @@ private fun PlayerTrackPlaceholdersPager(modifier: Modifier = Modifier) {
   }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun PlayerErrorPager(modifier: Modifier = Modifier) {
-  HorizontalPager(
-    state = rememberPagerState(initialPage = 1, pageCount = { 1 }),
-    contentPadding = playerTracksPagerContentPadding,
+private fun PlayerErrorPager(isExpanded: Boolean, modifier: Modifier = Modifier) {
+  val carouselState = rememberCarouselState(initialItem = 0) { 1 }
+  val (minSmallItemWidth, maxSmallItemWidth) = getSmallItemWidths(isExpanded)
+
+  HorizontalCenteredHeroCarousel(
+    state = carouselState,
+    itemSpacing = Spacing.medium16dp,
+    minSmallItemWidth = minSmallItemWidth,
+    maxSmallItemWidth = maxSmallItemWidth,
     userScrollEnabled = false,
+    contentPadding = PaddingValues(horizontal = Spacing.medium16dp),
     modifier = modifier,
   ) {
-    Card(shape = MaterialTheme.shapes.extraLarge) {
+    Card(
+      shape = MaterialTheme.shapes.extraLarge,
+      modifier = Modifier.maskClip(MaterialTheme.shapes.extraLarge),
+    ) {
       Image(
         painter = rememberVectorPainter(vectorResource(Res.drawable.artwork_placeholder)),
         contentDescription = null,
@@ -176,35 +195,40 @@ private fun PlayerErrorPager(modifier: Modifier = Modifier) {
   }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun PlayerTracksPager(viewState: PlayerViewState.Playback, modifier: Modifier = Modifier) {
-  val pagerState =
-    rememberPagerState(
-      initialPage = viewState.currentTrackIndex,
-      pageCount = viewState.tracks::size,
+private fun PlayerTracksPager(
+  viewState: PlayerViewState.Playback,
+  isExpanded: Boolean,
+  modifier: Modifier = Modifier,
+) {
+  val carouselState =
+    rememberCarouselState(
+      initialItem = viewState.currentTrackIndex,
+      itemCount = { viewState.tracks.size },
     )
-  LaunchedEffect(pagerState.settledPage) { viewState.playTrackAtIndex(pagerState.settledPage) }
-  LaunchedEffect(viewState.currentTrackIndex) {
-    pagerState.animateScrollToPage(viewState.currentTrackIndex)
+  val (minSmallItemWidth, maxSmallItemWidth) = getSmallItemWidths(isExpanded)
+
+  LaunchedEffect(carouselState.currentItem) {
+    viewState.playTrackAtIndex(carouselState.currentItem)
   }
 
-  HorizontalPager(
-    state = pagerState,
-    contentPadding = playerTracksPagerContentPadding,
+  LaunchedEffect(viewState.currentTrackIndex) {
+    carouselState.scrollToItem(viewState.currentTrackIndex)
+  }
+
+  HorizontalCenteredHeroCarousel(
+    state = carouselState,
+    itemSpacing = Spacing.medium16dp,
+    minSmallItemWidth = minSmallItemWidth,
+    maxSmallItemWidth = maxSmallItemWidth,
+    contentPadding = PaddingValues(horizontal = Spacing.medium16dp),
     modifier = modifier,
-  ) {
-    val track = viewState.tracks.getOrNull(it) ?: return@HorizontalPager
-    val pageOffset = pagerState.currentPage - it + pagerState.currentPageOffsetFraction
+  ) { index ->
+    val track = viewState.tracks.getOrNull(index) ?: return@HorizontalCenteredHeroCarousel
 
     Card(
-      modifier =
-        Modifier.graphicsLayer {
-          val fraction = 1f - pageOffset.absoluteValue.coerceIn(0f, 1f)
-          val scale = lerp(start = playerTracksPagerItemMinScale, stop = 1f, fraction = fraction)
-          scaleX = scale
-          scaleY = scale
-          alpha = lerp(start = playerTracksPagerItemMinAlpha, stop = 1f, fraction = fraction)
-        },
+      modifier = Modifier.maskClip(MaterialTheme.shapes.extraLarge),
       shape = MaterialTheme.shapes.extraLarge,
     ) {
       AsyncShimmerImage(
@@ -225,7 +249,11 @@ private fun PlayerTracksPager(viewState: PlayerViewState.Playback, modifier: Mod
   }
 }
 
-private val playerTracksPagerContentPadding =
-  PaddingValues(horizontal = Spacing.extraLarge64dp, vertical = Spacing.medium16dp)
-private const val playerTracksPagerItemMinScale = .85f
-private const val playerTracksPagerItemMinAlpha = .5f
+@OptIn(ExperimentalMaterial3Api::class)
+private fun getSmallItemWidths(isExpanded: Boolean): Pair<Dp, Dp> {
+  val multiplier = if (isExpanded) 3f else 1f
+  return Pair(
+    CarouselDefaults.MinSmallItemSize * multiplier,
+    CarouselDefaults.MaxSmallItemSize * multiplier,
+  )
+}
