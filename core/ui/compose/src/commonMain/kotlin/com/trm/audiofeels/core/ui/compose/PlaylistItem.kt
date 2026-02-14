@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,10 +31,10 @@ import com.trm.audiofeels.core.ui.resources.moments_ago
 import com.trm.audiofeels.core.ui.resources.one_hour_ago
 import com.trm.audiofeels.core.ui.resources.one_minute_ago
 import com.trm.audiofeels.core.ui.resources.yesterday
-import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Instant
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun PlaylistLazyRowItem(
@@ -42,7 +43,12 @@ fun PlaylistLazyRowItem(
   modifier: Modifier = Modifier,
   onClick: () -> Unit,
 ) {
-  Card(onClick = onClick, modifier = modifier) {
+  Card(
+    onClick = onClick,
+    colors =
+      CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+    modifier = modifier,
+  ) {
     PlaylistArtworkImage(
       name = name,
       artworkUrl = artworkUrl,
@@ -59,7 +65,12 @@ fun PlaylistLazyVerticalGridItem(
   modifier: Modifier = Modifier,
   onClick: () -> Unit,
 ) {
-  Card(onClick = onClick, modifier = modifier) {
+  Card(
+    onClick = onClick,
+    colors =
+      CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+    modifier = modifier,
+  ) {
     PlaylistArtworkImage(
       name = name,
       artworkUrl = artworkUrl,
@@ -149,7 +160,12 @@ fun CarryOnPlaylistLazyRowItem(
   modifier: Modifier = Modifier,
   onClick: () -> Unit,
 ) {
-  Card(onClick = onClick, modifier = modifier) {
+  Card(
+    onClick = onClick,
+    colors =
+      CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+    modifier = modifier,
+  ) {
     PlaylistArtworkImage(
       name = name,
       artworkUrl = artworkUrl,
@@ -168,7 +184,12 @@ fun CarryOnPlaylistLazyVerticalGridItem(
   modifier: Modifier = Modifier,
   onClick: () -> Unit,
 ) {
-  Card(onClick = onClick, modifier = modifier) {
+  Card(
+    onClick = onClick,
+    colors =
+      CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+    modifier = modifier,
+  ) {
     PlaylistArtworkImage(
       name = name,
       artworkUrl = artworkUrl,

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,7 +33,12 @@ import org.jetbrains.compose.resources.vectorResource
 @Composable
 fun ErrorListItem(modifier: Modifier = Modifier, onClick: () -> Unit) {
   Box(modifier = modifier, contentAlignment = Alignment.Center) {
-    Card(modifier = Modifier.width(ListItemSize.medium150dp), onClick = onClick) {
+    Card(
+      modifier = Modifier.width(ListItemSize.medium150dp),
+      colors =
+        CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+      onClick = onClick,
+    ) {
       Image(
         painter = rememberVectorPainter(vectorResource(Res.drawable.refresh)),
         contentDescription = null,
