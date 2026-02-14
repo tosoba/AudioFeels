@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -378,6 +378,10 @@ private fun AppBottomSheetScaffold(
     scaffoldState = appLayoutState.playerLayoutState.scaffoldState,
   ) {
     SupportingPaneScaffold(
+      modifier =
+        Modifier.padding(
+          end = safeDrawingPaddingValues.calculateEndPadding(LocalLayoutDirection.current)
+        ),
       directive = paneNavigator.scaffoldDirective,
       value = paneNavigator.scaffoldValue,
       mainPane = {
@@ -448,19 +452,14 @@ private fun AppNavigationRail(
   onNavigateToRoute: (AppRoute) -> Unit,
 ) {
   NavigationRail(modifier = Modifier.fillMaxHeight()) {
-    val paddingValues = WindowInsets.safeDrawing.asPaddingValues()
     Column(
-      modifier =
-        Modifier.padding(
-          top = paddingValues.calculateTopPadding(),
-          bottom = paddingValues.calculateBottomPadding(),
-          start = paddingValues.calculateStartPadding(LocalLayoutDirection.current),
-        ),
       horizontalAlignment = Alignment.CenterHorizontally,
       verticalArrangement = Arrangement.spacedBy(Spacing.extraSmall4dp),
     ) {
       if (navigationContentPosition == NavigationContentPosition.CENTER) {
         Spacer(modifier = Modifier.weight(1f))
+      } else {
+        Spacer(modifier = Modifier.height(Spacing.medium16dp))
       }
 
       APP_ROUTES.forEach { route ->
@@ -476,6 +475,8 @@ private fun AppNavigationRail(
 
       if (navigationContentPosition == NavigationContentPosition.CENTER) {
         Spacer(modifier = Modifier.weight(1f))
+      } else {
+        Spacer(modifier = Modifier.height(Spacing.medium16dp))
       }
     }
   }
@@ -488,18 +489,8 @@ private fun AppPermanentNavigationDrawer(
   onNavigateToRoute: (AppRoute) -> Unit,
 ) {
   PermanentDrawerSheet(modifier = Modifier.sizeIn(minWidth = 200.dp, maxWidth = 300.dp)) {
-    val paddingValues = WindowInsets.safeDrawing.asPaddingValues()
     Column(
-      modifier =
-        Modifier.verticalScroll(rememberScrollState())
-          .padding(
-            top = paddingValues.calculateTopPadding() + Spacing.medium16dp,
-            bottom = paddingValues.calculateBottomPadding() + Spacing.medium16dp,
-            start =
-              paddingValues.calculateStartPadding(LocalLayoutDirection.current) +
-                Spacing.medium16dp,
-            end = Spacing.medium16dp,
-          ),
+      modifier = Modifier.verticalScroll(rememberScrollState()).padding(Spacing.medium16dp),
       horizontalAlignment = Alignment.CenterHorizontally,
     ) {
       if (navigationContentPosition == NavigationContentPosition.CENTER) {
