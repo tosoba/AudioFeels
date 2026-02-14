@@ -1,6 +1,6 @@
-package com.trm.audiofeels.core.player.visualizer
+package com.trm.audiofeels.core.player.visualization
 
-import com.trm.audiofeels.core.player.visualizer.filter.SgFilter
+import com.trm.audiofeels.core.player.visualization.filter.SgFilter
 import kotlin.math.sqrt
 
 class WaveParser {

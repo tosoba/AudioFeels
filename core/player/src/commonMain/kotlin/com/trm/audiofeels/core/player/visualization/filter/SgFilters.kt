@@ -1,4 +1,4 @@
-package com.trm.audiofeels.core.player.visualizer.filter
+package com.trm.audiofeels.core.player.visualization.filter
 
 import kotlin.math.floor
 import kotlin.math.roundToInt

@@ -1,6 +1,7 @@
 package com.trm.audiofeels.core.player.visualizer
 
 import android.media.audiofx.Visualizer
+import com.trm.audiofeels.core.player.visualization.WaveParser
 
 class WaveEngine(
   audioSession: Int,

@@ -1,6 +1,5 @@
-package com.trm.audiofeels.core.player.visualizer.filter
+package com.trm.audiofeels.core.player.visualization.filter
 
-import com.trm.audiofeels.core.player.visualizer.filter.SgFilters.computeWeights
 import kotlin.math.floor
 import kotlin.math.pow
 import kotlin.math.roundToInt
@@ -18,7 +17,7 @@ class SgFilter(
     }
     require(derivative >= 0) { "options.Derivative [$derivative] must be equal or greater than 0" }
     require(polynomial >= 0) { "options.Polynomial [$polynomial] must be equal or greater than 0" }
-    this.weights = computeWeights(windowSize, polynomial, derivative)
+    this.weights = SgFilters.computeWeights(windowSize, polynomial, derivative)
   }
 
   fun getHs(h: FloatArray, center: Int, half: Int, derivative: Int): Float {
