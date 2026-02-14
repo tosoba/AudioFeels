@@ -30,7 +30,7 @@ import com.trm.audiofeels.core.ui.compose.PlaylistPlaceholderItemContent
 import com.trm.audiofeels.core.ui.compose.PlaylistsLazyVerticalGrid
 import com.trm.audiofeels.core.ui.compose.ShufflePlayRandomButtonsColumn
 import com.trm.audiofeels.core.ui.compose.TopEdgeGradient
-import com.trm.audiofeels.core.ui.compose.emptyListTextItem
+import com.trm.audiofeels.core.ui.compose.emptyListItem
 import com.trm.audiofeels.core.ui.compose.theme.Spacing
 import com.trm.audiofeels.core.ui.compose.util.topAppBarSpacerHeight
 import com.trm.audiofeels.core.ui.resources.Res
@@ -82,13 +82,13 @@ fun SearchPage(
 
       when {
         query.isEmpty() -> {
-          emptyListTextItem(
+          emptyListItem(
             primaryText = Res.string.query_is_empty_primary_text,
             secondaryText = Res.string.query_is_empty_secondary_text,
           )
         }
         query.length < 3 -> {
-          emptyListTextItem(
+          emptyListItem(
             primaryText = Res.string.query_is_too_short_primary_text,
             secondaryText = Res.string.query_is_too_short_secondary_text,
           )
@@ -100,7 +100,7 @@ fun SearchPage(
             }
             is LoadableState.Idle -> {
               if (playlists.value.isEmpty()) {
-                emptyListTextItem(
+                emptyListItem(
                   primaryText = Res.string.no_playlists_found_primary_text,
                   secondaryText = Res.string.no_playlists_found_search_secondary_text,
                 )

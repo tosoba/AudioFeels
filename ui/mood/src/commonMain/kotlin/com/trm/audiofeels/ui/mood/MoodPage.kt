@@ -28,7 +28,7 @@ import com.trm.audiofeels.core.ui.compose.PlaylistPlaceholderItemContent
 import com.trm.audiofeels.core.ui.compose.PlaylistsLazyVerticalGrid
 import com.trm.audiofeels.core.ui.compose.ShufflePlayRandomButtonsColumn
 import com.trm.audiofeels.core.ui.compose.TopEdgeGradient
-import com.trm.audiofeels.core.ui.compose.emptyListTextItem
+import com.trm.audiofeels.core.ui.compose.emptyListItem
 import com.trm.audiofeels.core.ui.compose.theme.Spacing
 import com.trm.audiofeels.core.ui.compose.util.topAppBarSpacerHeight
 import com.trm.audiofeels.core.ui.resources.Res
@@ -64,7 +64,7 @@ fun MoodPage(
         is LoadableState.Idle -> {
           val items = playlists.valueOrNull
           if (items.isNullOrEmpty()) {
-            emptyListTextItem(
+            emptyListItem(
               primaryText = Res.string.no_playlists_found_primary_text,
               secondaryText = Res.string.no_playlists_found_mood_secondary_text,
             )
