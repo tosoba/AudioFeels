@@ -91,6 +91,7 @@ import com.trm.audiofeels.core.ui.compose.theme.GRADIENT_BASE_ALPHA
 import com.trm.audiofeels.core.ui.compose.theme.GRADIENT_MAX_ALPHA
 import com.trm.audiofeels.core.ui.compose.theme.Spacing
 import com.trm.audiofeels.core.ui.compose.theme.UpdateEdgeToEdge
+import com.trm.audiofeels.core.ui.compose.theme.audioFeelsTypography
 import com.trm.audiofeels.core.ui.compose.util.NavigationContentPosition
 import com.trm.audiofeels.core.ui.compose.util.NavigationType
 import com.trm.audiofeels.core.ui.compose.util.currentWindowHeightClass
@@ -155,7 +156,10 @@ fun AppContent(applicationComponent: ApplicationComponent) {
     onDenied = playerViewModel::onRecordAudioPermissionDenied,
   )
 
-  DynamicMaterialTheme(seedColor = rememberThemeSeedColor(playerViewState, applicationComponent)) {
+  DynamicMaterialTheme(
+    seedColor = rememberThemeSeedColor(playerViewState, applicationComponent),
+    typography = audioFeelsTypography(),
+  ) {
     val adaptiveInfo = currentWindowAdaptiveInfo()
     val navigationType =
       NavigationType(adaptiveInfo = adaptiveInfo, windowSize = currentWindowDpSize())
