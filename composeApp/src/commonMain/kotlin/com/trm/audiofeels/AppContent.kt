@@ -44,6 +44,7 @@ import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
 import androidx.compose.material3.adaptive.layout.SupportingPaneScaffold
 import androidx.compose.material3.adaptive.layout.SupportingPaneScaffoldRole
 import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
+import androidx.compose.material3.adaptive.navigation.ThreePaneScaffoldNavigator
 import androidx.compose.material3.adaptive.navigation.rememberSupportingPaneScaffoldNavigator
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldLayout
 import androidx.compose.material3.rememberBottomSheetScaffoldState
@@ -168,21 +169,41 @@ fun AppContent(applicationComponent: ApplicationComponent) {
     val navController = rememberNavController()
     val currentDestination = navController.currentBackStackEntryAsState().value?.destination
 
+    val bottomSheetState =
+      rememberStandardBottomSheetState(initialValue = SheetValue.Hidden, skipHiddenState = false)
     val appLayoutState =
       rememberAppLayoutState(
         playerVisible = playerViewState.playerVisible,
         playerLayoutState =
           rememberAppPlayerLayoutState(
-            scaffoldState =
-              rememberBottomSheetScaffoldState(
-                bottomSheetState =
-                  rememberStandardBottomSheetState(
-                    initialValue = SheetValue.Hidden,
-                    skipHiddenState = false,
-                  )
-              )
+            scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = bottomSheetState)
           ),
       )
+
+    val paneNavigator =
+      rememberSupportingPaneScaffoldNavigator(
+        scaffoldDirective =
+          calculatePaneScaffoldDirective(currentWindowAdaptiveInfo()).let {
+            if (
+              !playerViewState.playerVisible ||
+                currentWindowHeightClass() == WindowHeightSizeClass.Compact ||
+                currentWindowWidthClass() == WindowWidthSizeClass.Compact
+            ) {
+              it.copy(maxHorizontalPartitions = 1, maxVerticalPartitions = 1)
+            } else {
+              it
+            }
+          }
+      )
+    val supportingPaneValue = paneNavigator.scaffoldValue[SupportingPaneScaffoldRole.Supporting]
+    LaunchedEffect(bottomSheetState.currentValue) {
+      if (
+        bottomSheetState.currentValue == SheetValue.Hidden &&
+          supportingPaneValue == PaneAdaptedValue.Hidden
+      ) {
+        playerViewState.cancelPlayback()
+      }
+    }
 
     fun navigateToAppGraphRoute(route: AppRoute) {
       scope.launch { appLayoutState.onNavigateToPageDestination() }
@@ -221,6 +242,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
         playerViewState = playerViewState,
         currentPlaylist = currentPlaylist,
         navController = navController,
+        paneNavigator = paneNavigator,
         applicationComponent = applicationComponent,
       )
     }
@@ -279,25 +301,11 @@ private fun AppBottomSheetScaffold(
   playerViewState: PlayerViewState,
   currentPlaylist: Playlist?,
   navController: NavHostController,
+  paneNavigator: ThreePaneScaffoldNavigator<Any>,
   applicationComponent: ApplicationComponent,
 ) {
   val scope = rememberCoroutineScope()
 
-  val paneNavigator =
-    rememberSupportingPaneScaffoldNavigator(
-      scaffoldDirective =
-        calculatePaneScaffoldDirective(currentWindowAdaptiveInfo()).let {
-          if (
-            !playerViewState.playerVisible ||
-              currentWindowHeightClass() == WindowHeightSizeClass.Compact ||
-              currentWindowWidthClass() == WindowWidthSizeClass.Compact
-          ) {
-            it.copy(maxHorizontalPartitions = 1, maxVerticalPartitions = 1)
-          } else {
-            it
-          }
-        }
-    )
   val supportingPaneValue = paneNavigator.scaffoldValue[SupportingPaneScaffoldRole.Supporting]
   LaunchedEffect(supportingPaneValue) {
     scope.launch { appLayoutState.onSupportingPaneValueChange(supportingPaneValue) }
