@@ -169,7 +169,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
     val appLayoutState =
       rememberAppLayoutState(
         playerVisible = playerViewState.playerVisible,
-        playerViewState =
+        playerLayoutState =
           rememberAppPlayerLayoutState(
             scaffoldState =
               rememberBottomSheetScaffoldState(

@@ -42,17 +42,14 @@ class AppLayoutState(
 @Composable
 fun rememberAppLayoutState(
   playerVisible: Boolean,
-  playerViewState: AppPlayerLayoutState,
+  playerLayoutState: AppPlayerLayoutState,
 ): AppLayoutState {
   val state =
-    remember(playerVisible, playerViewState) { AppLayoutState(playerVisible, playerViewState) }
+    remember(playerVisible, playerLayoutState) { AppLayoutState(playerVisible, playerLayoutState) }
 
   LaunchedEffect(playerVisible) {
-    if (playerVisible) {
-      playerViewState.partialExpandSheetIfPaneHidden()
-    } else {
-      playerViewState.hideSheetIfPaneHidden()
-    }
+    if (playerVisible) playerLayoutState.partialExpandSheetIfPaneHidden()
+    else playerLayoutState.hideSheetIfPaneHidden()
   }
 
   return state
