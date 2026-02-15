@@ -160,12 +160,14 @@ fun AppContent(applicationComponent: ApplicationComponent) {
     seedColor = rememberThemeSeedColor(playerViewState, applicationComponent),
     typography = audioFeelsTypography(),
   ) {
-    val adaptiveInfo = currentWindowAdaptiveInfo()
-    val navigationType =
-      NavigationType(adaptiveInfo = adaptiveInfo, windowSize = currentWindowDpSize())
-    val navigationContentPosition = NavigationContentPosition(currentWindowHeightClass())
-
     val scope = rememberCoroutineScope()
+
+    val navigationType =
+      NavigationType(adaptiveInfo = currentWindowAdaptiveInfo(), windowSize = currentWindowDpSize())
+    val navigationContentPosition = NavigationContentPosition(currentWindowHeightClass())
+    val navController = rememberNavController()
+    val currentDestination = navController.currentBackStackEntryAsState().value?.destination
+
     val appLayoutState =
       rememberAppLayoutState(
         playerVisible = playerViewState.playerVisible,
@@ -181,9 +183,6 @@ fun AppContent(applicationComponent: ApplicationComponent) {
               )
           ),
       )
-
-    val navController = rememberNavController()
-    val currentDestination = navController.currentBackStackEntryAsState().value?.destination
 
     fun navigateToAppGraphRoute(route: AppRoute) {
       scope.launch { appLayoutState.onNavigateToPageDestination() }
