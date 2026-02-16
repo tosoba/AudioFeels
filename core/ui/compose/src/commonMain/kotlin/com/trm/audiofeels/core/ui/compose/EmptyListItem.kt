@@ -89,19 +89,7 @@ private fun EmptyListItemTextsContent(
   secondaryText: String,
   textAlign: TextAlign,
 ) {
-  Text(
-    text = primaryText,
-    textAlign = textAlign,
-    style = MaterialTheme.typography.titleLarge,
-    modifier = Modifier.fillMaxWidth(),
-  )
-
+  Text(text = primaryText, textAlign = textAlign, style = MaterialTheme.typography.titleLarge)
   Spacer(modifier = Modifier.height(Spacing.extraSmall4dp))
-
-  Text(
-    text = secondaryText,
-    textAlign = textAlign,
-    style = MaterialTheme.typography.bodyMedium,
-    modifier = Modifier.fillMaxWidth(),
-  )
+  Text(text = secondaryText, textAlign = textAlign, style = MaterialTheme.typography.bodyMedium)
 }
