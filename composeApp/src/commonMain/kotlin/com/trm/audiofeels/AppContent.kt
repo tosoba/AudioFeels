@@ -6,7 +6,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -55,7 +54,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -107,7 +105,6 @@ import com.trm.audiofeels.ui.moods.MoodsPage
 import com.trm.audiofeels.ui.player.PlayerViewModel
 import com.trm.audiofeels.ui.player.PlayerViewState
 import com.trm.audiofeels.ui.player.composable.PlayerAudioVisualization
-import com.trm.audiofeels.ui.player.composable.PlayerCancelPlaybackButton
 import com.trm.audiofeels.ui.player.composable.PlayerExpandedContent
 import com.trm.audiofeels.ui.player.composable.PlayerRecordAudioPermissionObserver
 import com.trm.audiofeels.ui.player.composable.PlayerRecordAudioPermissionRequest
@@ -319,23 +316,15 @@ private fun AppBottomSheetScaffold(
       )
     },
     sheetDragHandle = {
-      Column(modifier = Modifier.fillMaxWidth().defaultHazeEffect(hazeState, sheetHazeStyle)) {
+      Column(
+        modifier = Modifier.fillMaxWidth().defaultHazeEffect(hazeState, sheetHazeStyle),
+        horizontalAlignment = Alignment.CenterHorizontally,
+      ) {
         Spacer(
           modifier = Modifier.height(safeDrawingPaddingValues.calculateTopPadding() * expandedAlpha)
         )
 
-        Box(modifier = Modifier.fillMaxWidth()) {
-          BottomSheetDefaults.DragHandle(modifier = Modifier.align(Alignment.Center))
-
-          PlayerCancelPlaybackButton(
-            modifier =
-              Modifier.align(Alignment.CenterEnd)
-                .alpha(partiallyExpandedAlpha)
-                .padding(end = Spacing.medium16dp),
-            enabled = partiallyExpandedAlpha == 1f,
-            onClick = playerViewState.cancelPlayback,
-          )
-        }
+        BottomSheetDefaults.DragHandle()
       }
     },
     sheetPeekHeight = sheetPeekHeight,
