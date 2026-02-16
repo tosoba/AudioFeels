@@ -47,14 +47,12 @@ import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -77,18 +75,14 @@ import androidx.savedstate.SavedState
 import androidx.savedstate.read
 import androidx.savedstate.write
 import coil3.compose.setSingletonImageLoaderFactory
-import com.materialkolor.DynamicMaterialTheme
-import com.materialkolor.ktx.rememberThemeColor
 import com.trm.audiofeels.core.ui.compose.theme.GRADIENT_BASE_ALPHA
 import com.trm.audiofeels.core.ui.compose.theme.GRADIENT_MAX_ALPHA
 import com.trm.audiofeels.core.ui.compose.theme.Spacing
 import com.trm.audiofeels.core.ui.compose.theme.UpdateEdgeToEdge
-import com.trm.audiofeels.core.ui.compose.theme.audioFeelsTypography
 import com.trm.audiofeels.core.ui.compose.util.NavigationContentPosition
 import com.trm.audiofeels.core.ui.compose.util.NavigationType
 import com.trm.audiofeels.core.ui.compose.util.currentWindowHeightClass
 import com.trm.audiofeels.core.ui.compose.util.defaultHazeEffect
-import com.trm.audiofeels.core.ui.compose.util.loadImageBitmapOrNull
 import com.trm.audiofeels.core.ui.resources.Res
 import com.trm.audiofeels.core.ui.resources.favourite
 import com.trm.audiofeels.core.ui.resources.trending
@@ -108,7 +102,6 @@ import com.trm.audiofeels.ui.player.composable.PlayerExpandedContent
 import com.trm.audiofeels.ui.player.composable.PlayerRecordAudioPermissionObserver
 import com.trm.audiofeels.ui.player.composable.PlayerRecordAudioPermissionRequest
 import com.trm.audiofeels.ui.player.composable.PlayerSheetContent
-import com.trm.audiofeels.ui.player.util.currentTrackArtworkUrl
 import com.trm.audiofeels.ui.player.util.isPlaying
 import com.trm.audiofeels.ui.player.util.playerVisible
 import com.trm.audiofeels.ui.playlists.CarryOnPlaylistsPage
@@ -117,7 +110,6 @@ import com.trm.audiofeels.ui.search.SearchPage
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
-import dev.zwander.compose.rememberThemeInfo
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import kotlin.reflect.typeOf
@@ -146,10 +138,7 @@ fun AppContent(applicationComponent: ApplicationComponent) {
     onDenied = playerViewModel::onRecordAudioPermissionDenied,
   )
 
-  DynamicMaterialTheme(
-    seedColor = rememberThemeSeedColor(playerViewState, applicationComponent),
-    typography = audioFeelsTypography(),
-  ) {
+  AppTheme(playerViewState = playerViewState, applicationComponent = applicationComponent) {
     val scope = rememberCoroutineScope()
     val appLayoutState = rememberAppLayoutState(playerViewState)
 
@@ -216,35 +205,6 @@ fun AppContent(applicationComponent: ApplicationComponent) {
       )
     }
   }
-}
-
-@Composable
-private fun rememberThemeSeedColor(
-  playerViewState: PlayerViewState,
-  applicationComponent: ApplicationComponent,
-): Color {
-  val fallbackSeedColor = rememberThemeInfo().seedColor
-  val currentTrackImageBitmap by
-    produceState<ImageBitmap?>(initialValue = null, key1 = playerViewState.currentTrackArtworkUrl) {
-      when (playerViewState) {
-        is PlayerViewState.Invisible -> {
-          value = null
-        }
-        is PlayerViewState.Playback -> {
-          value =
-            playerViewState.currentTrack?.artworkUrl?.let {
-              applicationComponent.imageLoader.loadImageBitmapOrNull(
-                url = it,
-                platformContext = applicationComponent.coilPlatformContext,
-              )
-            }
-        }
-        is PlayerViewState.Loading,
-        is PlayerViewState.Error -> {}
-      }
-    }
-  return currentTrackImageBitmap?.let { rememberThemeColor(it, fallbackSeedColor) }
-    ?: fallbackSeedColor
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
