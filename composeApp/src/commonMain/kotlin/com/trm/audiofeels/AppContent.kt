@@ -43,14 +43,8 @@ import androidx.compose.material3.adaptive.layout.AnimatedPane
 import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
 import androidx.compose.material3.adaptive.layout.SupportingPaneScaffold
 import androidx.compose.material3.adaptive.layout.SupportingPaneScaffoldRole
-import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
-import androidx.compose.material3.adaptive.navigation.ThreePaneScaffoldNavigator
-import androidx.compose.material3.adaptive.navigation.rememberSupportingPaneScaffoldNavigator
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldLayout
-import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -96,7 +90,6 @@ import com.trm.audiofeels.core.ui.compose.theme.audioFeelsTypography
 import com.trm.audiofeels.core.ui.compose.util.NavigationContentPosition
 import com.trm.audiofeels.core.ui.compose.util.NavigationType
 import com.trm.audiofeels.core.ui.compose.util.currentWindowHeightClass
-import com.trm.audiofeels.core.ui.compose.util.currentWindowWidthClass
 import com.trm.audiofeels.core.ui.compose.util.defaultHazeEffect
 import com.trm.audiofeels.core.ui.compose.util.loadImageBitmapOrNull
 import com.trm.audiofeels.core.ui.resources.Res
@@ -162,48 +155,13 @@ fun AppContent(applicationComponent: ApplicationComponent) {
     typography = audioFeelsTypography(),
   ) {
     val scope = rememberCoroutineScope()
+    val appLayoutState = rememberAppLayoutState(playerViewState)
 
     val navigationType =
       NavigationType(adaptiveInfo = currentWindowAdaptiveInfo(), windowSize = currentWindowDpSize())
     val navigationContentPosition = NavigationContentPosition(currentWindowHeightClass())
     val navController = rememberNavController()
     val currentDestination = navController.currentBackStackEntryAsState().value?.destination
-
-    val bottomSheetState =
-      rememberStandardBottomSheetState(initialValue = SheetValue.Hidden, skipHiddenState = false)
-    val appLayoutState =
-      rememberAppLayoutState(
-        playerVisible = playerViewState.playerVisible,
-        playerLayoutState =
-          rememberAppPlayerLayoutState(
-            scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = bottomSheetState)
-          ),
-      )
-
-    val paneNavigator =
-      rememberSupportingPaneScaffoldNavigator(
-        scaffoldDirective =
-          calculatePaneScaffoldDirective(currentWindowAdaptiveInfo()).let {
-            if (
-              !playerViewState.playerVisible ||
-                currentWindowHeightClass() == WindowHeightSizeClass.Compact ||
-                currentWindowWidthClass() == WindowWidthSizeClass.Compact
-            ) {
-              it.copy(maxHorizontalPartitions = 1, maxVerticalPartitions = 1)
-            } else {
-              it
-            }
-          }
-      )
-    val supportingPaneValue = paneNavigator.scaffoldValue[SupportingPaneScaffoldRole.Supporting]
-    LaunchedEffect(bottomSheetState.currentValue) {
-      if (
-        bottomSheetState.currentValue == SheetValue.Hidden &&
-          supportingPaneValue == PaneAdaptedValue.Hidden
-      ) {
-        playerViewState.cancelPlayback()
-      }
-    }
 
     fun navigateToAppGraphRoute(route: AppRoute) {
       scope.launch { appLayoutState.onNavigateToPageDestination() }
@@ -242,7 +200,6 @@ fun AppContent(applicationComponent: ApplicationComponent) {
         playerViewState = playerViewState,
         currentPlaylist = currentPlaylist,
         navController = navController,
-        paneNavigator = paneNavigator,
         applicationComponent = applicationComponent,
       )
     }
@@ -301,12 +258,12 @@ private fun AppBottomSheetScaffold(
   playerViewState: PlayerViewState,
   currentPlaylist: Playlist?,
   navController: NavHostController,
-  paneNavigator: ThreePaneScaffoldNavigator<Any>,
   applicationComponent: ApplicationComponent,
 ) {
   val scope = rememberCoroutineScope()
 
-  val supportingPaneValue = paneNavigator.scaffoldValue[SupportingPaneScaffoldRole.Supporting]
+  val supportingPaneValue =
+    appLayoutState.paneNavigator.scaffoldValue[SupportingPaneScaffoldRole.Supporting]
   LaunchedEffect(supportingPaneValue) {
     scope.launch { appLayoutState.onSupportingPaneValueChange(supportingPaneValue) }
   }
@@ -389,8 +346,8 @@ private fun AppBottomSheetScaffold(
         Modifier.padding(
           end = safeDrawingPaddingValues.calculateEndPadding(LocalLayoutDirection.current)
         ),
-      directive = paneNavigator.scaffoldDirective,
-      value = paneNavigator.scaffoldValue,
+      directive = appLayoutState.paneNavigator.scaffoldDirective,
+      value = appLayoutState.paneNavigator.scaffoldValue,
       mainPane = {
         AnimatedPane {
           AppNavHost(
