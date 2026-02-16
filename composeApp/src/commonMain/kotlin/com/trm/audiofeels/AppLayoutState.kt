@@ -74,6 +74,9 @@ fun rememberAppLayoutState(playerViewState: PlayerViewState): AppLayoutState {
         }
     )
   val supportingPaneValue = paneNavigator.scaffoldValue[SupportingPaneScaffoldRole.Supporting]
+  val playerLayoutState =
+    rememberAppPlayerLayoutState(scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState))
+
   LaunchedEffect(bottomSheetState.currentValue) {
     if (
       bottomSheetState.currentValue == SheetValue.Hidden &&
@@ -83,16 +86,17 @@ fun rememberAppLayoutState(playerViewState: PlayerViewState): AppLayoutState {
     }
   }
 
-  val playerLayoutState =
-    rememberAppPlayerLayoutState(
-      scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = bottomSheetState)
-    )
   LaunchedEffect(playerViewState.playerVisible) {
     if (playerViewState.playerVisible) playerLayoutState.partialExpandSheetIfPaneHidden()
     else playerLayoutState.hideSheetIfPaneHidden()
   }
 
-  return remember(playerViewState.playerVisible, playerLayoutState, paneNavigator) {
-    AppLayoutState(playerViewState.playerVisible, playerLayoutState, paneNavigator)
-  }
+  val state =
+    remember(playerViewState.playerVisible, playerLayoutState, paneNavigator) {
+      AppLayoutState(playerViewState.playerVisible, playerLayoutState, paneNavigator)
+    }
+
+  LaunchedEffect(supportingPaneValue) { state.onSupportingPaneValueChange(supportingPaneValue) }
+
+  return state
 }

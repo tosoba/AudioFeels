@@ -45,7 +45,6 @@ import androidx.compose.material3.adaptive.layout.SupportingPaneScaffoldRole
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldLayout
 import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.produceState
@@ -257,16 +256,11 @@ private fun AppBottomSheetScaffold(
   navController: NavHostController,
   applicationComponent: ApplicationComponent,
 ) {
-  val scope = rememberCoroutineScope()
+  val safeDrawingPaddingValues = WindowInsets.safeDrawing.asPaddingValues()
+  val density = LocalDensity.current
 
   val supportingPaneValue =
     appLayoutState.paneNavigator.scaffoldValue[SupportingPaneScaffoldRole.Supporting]
-  LaunchedEffect(supportingPaneValue) {
-    scope.launch { appLayoutState.onSupportingPaneValueChange(supportingPaneValue) }
-  }
-
-  val safeDrawingPaddingValues = WindowInsets.safeDrawing.asPaddingValues()
-  val density = LocalDensity.current
 
   val sheetOffset = appLayoutState.playerLayoutState.currentSheetOffset
   val sheetPeekHeight = 128.dp
@@ -276,7 +270,6 @@ private fun AppBottomSheetScaffold(
     remember(sheetOffset, sheetHeightPx) {
       if (sheetHeightPx > 0f) (sheetOffset / sheetHeightPx).coerceIn(0f, 1f) else 0f
     }
-
   val transitionThreshold = 0.5f
   val thresholdProgress =
     remember(transitionProgress) {
@@ -323,7 +316,6 @@ private fun AppBottomSheetScaffold(
         Spacer(
           modifier = Modifier.height(safeDrawingPaddingValues.calculateTopPadding() * expandedAlpha)
         )
-
         BottomSheetDefaults.DragHandle()
       }
     },
