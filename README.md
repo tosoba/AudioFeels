@@ -31,9 +31,11 @@
 
 ## Used technologies
 - [Jetpack Navigation (aka "Navigation 2")](https://developer.android.com/jetpack/androidx/releases/navigation) - screen flows definition, backstack management
+- [Kotlin-inject](https://github.com/evant/kotlin-inject) - dependency injection
+- [Coroutines](https://kotlinlang.org/docs/coroutines-guide.html) - asynchronous/concurrent programming
 - [Room](https://developer.android.com/jetpack/androidx/releases/room) - database for on-device playlist/search suggestion storage
 - [Datastore](https://developer.android.com/jetpack/androidx/releases/datastore) - user preference storage
-- [Kotlin-inject](https://github.com/evant/kotlin-inject) - dependency injection
 - [Ktor](https://ktor.io/) - network requests
-- [Coroutines](https://kotlinlang.org/docs/coroutines-guide.html) - asynchronous/concurrent programming
 - [Haze](https://github.com/chrisbanes/haze) - background blurring
+- [MaterialKolor](https://materialkolor.com/) - dynamic theme
+- [Coil](https://coil-kt.github.io/coil/) - image loading
