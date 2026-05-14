@@ -52,7 +52,7 @@ class PlayerNotificationProvider(
 
     val metadata = session.player.mediaMetadata
     val builder =
-      NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_NAME)
+      NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
         .setContentTitle(metadata.title)
         .setContentText(metadata.artist)
         .setStyle(MediaStyle(session))
@@ -80,6 +80,12 @@ class PlayerNotificationProvider(
   override fun handleCustomCommand(session: MediaSession, action: String, extras: Bundle): Boolean =
     true
 
+  override fun getNotificationChannelInfo(): MediaNotification.Provider.NotificationChannelInfo =
+    MediaNotification.Provider.NotificationChannelInfo(
+      NOTIFICATION_CHANNEL_ID,
+      context.getString(R.string.player_notification_channel_name),
+    )
+
   private fun ensureNotificationChannel() {
     val notificationManager by
       lazy(LazyThreadSafetyMode.NONE) {
@@ -88,14 +94,14 @@ class PlayerNotificationProvider(
 
     if (
       Build.VERSION.SDK_INT < Build.VERSION_CODES.O ||
-        notificationManager.getNotificationChannel(NOTIFICATION_CHANNEL_NAME) != null
+        notificationManager.getNotificationChannel(NOTIFICATION_CHANNEL_ID) != null
     ) {
       return
     }
 
     notificationManager.createNotificationChannel(
       NotificationChannel(
-        NOTIFICATION_CHANNEL_NAME,
+        NOTIFICATION_CHANNEL_ID,
         context.getString(R.string.player_notification_channel_name),
         NotificationManager.IMPORTANCE_LOW,
       )
@@ -110,7 +116,7 @@ class PlayerNotificationProvider(
 
   companion object {
     private const val NOTIFICATION_ID = 1001
-    private const val NOTIFICATION_CHANNEL_NAME = "MusicNotificationChannel"
+    private const val NOTIFICATION_CHANNEL_ID = "MusicNotificationChannel"
     private const val MAIN_ACTIVITY_REQUEST_CODE = 1002
   }
 }
