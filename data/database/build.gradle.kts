@@ -1,5 +1,4 @@
 plugins {
-  id("com.trm.audiofeels.android.library")
   id("com.trm.audiofeels.kotlin.multiplatform")
   alias(libs.plugins.kotlin.serialization)
   alias(libs.plugins.ksp)
@@ -7,6 +6,13 @@ plugins {
 }
 
 kotlin {
+  android {
+    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    minSdk = libs.versions.android.minSdk.get().toInt()
+    namespace = "com.trm.audiofeels.data.database"
+    androidResources { enable = true }
+  }
+
   sourceSets {
     commonMain {
       dependencies {
@@ -28,5 +34,3 @@ dependencies {
 }
 
 room { schemaDirectory("$projectDir/schemas") }
-
-android { namespace = "com.trm.audiofeels.data.database" }

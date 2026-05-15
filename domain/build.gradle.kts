@@ -1,13 +1,19 @@
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 
 plugins {
-  id("com.trm.audiofeels.android.library")
   id("com.trm.audiofeels.kotlin.multiplatform")
   alias(libs.plugins.kotlin.parcelize)
   alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
+  android {
+    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    minSdk = libs.versions.android.minSdk.get().toInt()
+    namespace = "com.trm.audiofeels.domain"
+    androidResources { enable = true }
+  }
+
   sourceSets {
     commonMain {
       dependencies {
@@ -34,5 +40,3 @@ kotlin {
     }
   }
 }
-
-android { namespace = "com.trm.audiofeels.domain" }

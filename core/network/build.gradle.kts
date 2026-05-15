@@ -1,9 +1,12 @@
-plugins {
-  id("com.trm.audiofeels.android.library")
-  id("com.trm.audiofeels.kotlin.multiplatform")
-}
+plugins { id("com.trm.audiofeels.kotlin.multiplatform") }
 
 kotlin {
+  android {
+    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    minSdk = libs.versions.android.minSdk.get().toInt()
+    namespace = "com.trm.audiofeels.core.network"
+    androidResources { enable = true }
+  }
   sourceSets {
     androidMain { dependencies { implementation(libs.androidx.core.ktx) } }
 
@@ -28,5 +31,3 @@ kotlin {
     commonTest { dependencies { implementation(libs.kotlin.test) } }
   }
 }
-
-android { namespace = "com.trm.audiofeels.core.network" }

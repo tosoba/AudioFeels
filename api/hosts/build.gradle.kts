@@ -1,10 +1,16 @@
 plugins {
-  id("com.trm.audiofeels.android.library")
   id("com.trm.audiofeels.kotlin.multiplatform")
   alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
+  android {
+    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    minSdk = libs.versions.android.minSdk.get().toInt()
+    namespace = "com.trm.audiofeels.api.hosts"
+    androidResources { enable = true }
+  }
+
   sourceSets {
     androidMain {
       dependencies {
@@ -29,5 +35,3 @@ kotlin {
     iosMain { dependencies { implementation(libs.ktor.client.darwin) } }
   }
 }
-
-android { namespace = "com.trm.audiofeels.api.hosts" }

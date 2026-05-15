@@ -1,11 +1,15 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
-plugins {
-  id("com.trm.audiofeels.android.library")
-  id("com.trm.audiofeels.kotlin.multiplatform")
-}
+plugins { id("com.trm.audiofeels.kotlin.multiplatform") }
 
 kotlin {
+  android {
+    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    minSdk = libs.versions.android.minSdk.get().toInt()
+    namespace = "com.trm.audiofeels.core.player"
+    androidResources { enable = true }
+  }
+
   targets.withType<KotlinNativeTarget>().forEach { nativeTarget ->
     nativeTarget.compilations.getByName("main") {
       val nskeyvalueobserving by cinterops.creating
@@ -34,5 +38,3 @@ kotlin {
     }
   }
 }
-
-android { namespace = "com.trm.audiofeels.core.player" }

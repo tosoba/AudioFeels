@@ -34,7 +34,7 @@ class LoadableStateFlowOfTest {
         val error = awaitItem()
         assertTrue(error is LoadableState.Error)
         assertTrue(error.throwable is RuntimeException)
-        assertEquals(expected = expectedException.message, actual = error.throwable!!.message)
+        assertEquals(expected = expectedException.message, actual = error.throwable.message)
         awaitComplete()
         ensureAllEventsConsumed()
       }

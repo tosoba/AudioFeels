@@ -33,7 +33,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 
-internal class HostsAudiusTest {
+class HostsAudiusTest {
   @Test
   fun `given no host stored locally - when call to getPlaylists - then hosts are fetched`() =
     runTest {
@@ -360,7 +360,7 @@ internal class HostsAudiusTest {
           hostFetcher = hostsRepository,
           logLevel = LogLevel.NONE,
           engine = playlistsEngine,
-        ),
+        )
     )
   }
 

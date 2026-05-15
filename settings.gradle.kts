@@ -32,6 +32,7 @@ dependencyResolutionManagement {
 }
 
 include(
+  ":androidApp",
   ":api:audius",
   ":api:hosts",
   ":composeApp",
@@ -50,7 +51,6 @@ include(
   ":data:test",
   ":data:visualization",
   ":domain",
-  ":ui:favourites",
   ":ui:discover",
   ":ui:mood",
   ":ui:moods",

@@ -1,10 +1,16 @@
 plugins {
-  id("com.trm.audiofeels.android.library")
   id("com.trm.audiofeels.kotlin.multiplatform")
   id("com.trm.audiofeels.compose")
 }
 
 kotlin {
+  android {
+    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    minSdk = libs.versions.android.minSdk.get().toInt()
+    namespace = "com.trm.audiofeels.ui.discover"
+    androidResources { enable = true }
+  }
+
   sourceSets {
     commonMain {
       dependencies {
@@ -26,5 +32,3 @@ kotlin {
     }
   }
 }
-
-android { namespace = "com.trm.audiofeels.ui.discover" }

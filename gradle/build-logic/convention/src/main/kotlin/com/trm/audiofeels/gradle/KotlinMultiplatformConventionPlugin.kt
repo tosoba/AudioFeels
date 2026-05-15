@@ -15,14 +15,13 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompileCommon
 class KotlinMultiplatformConventionPlugin : Plugin<Project> {
   override fun apply(target: Project) =
     with(target) {
-      with(pluginManager) { apply("org.jetbrains.kotlin.multiplatform") }
+      with(pluginManager) {
+        apply("org.jetbrains.kotlin.multiplatform")
+        apply("com.android.kotlin.multiplatform.library")
+      }
 
       extensions.configure<KotlinMultiplatformExtension> {
         applyDefaultHierarchyTemplate()
-
-        if (pluginManager.hasPlugin("com.android.library")) {
-          androidTarget()
-        }
 
         iosArm64()
         iosSimulatorArm64()
