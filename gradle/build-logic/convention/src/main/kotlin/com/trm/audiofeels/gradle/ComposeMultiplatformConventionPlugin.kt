@@ -22,7 +22,9 @@ fun Project.configureCompose() {
     // https://issuetracker.google.com/issues/338842143
     includeSourceInformation.set(true)
 
-    stabilityConfigurationFiles.add(project.layout.projectDirectory.file("compose-stability.conf"))
+    stabilityConfigurationFiles.add(
+      rootProject.layout.projectDirectory.file("compose-stability.conf")
+    )
   }
 
   // Workaround for:
