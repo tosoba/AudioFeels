@@ -1,0 +1,59 @@
+name: build-debug
+
+on:
+  push:
+    branches: [ master ]
+
+env:
+  GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096M -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.caching=true"
+
+jobs:
+  build-android:
+    name: Build Android Debug
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Gradle setup
+        uses: ./.github/actions/gradle-setup
+
+      - name: Build Android debug APK
+        run: ./gradlew :androidApp:assembleDebug
+
+      - name: Upload Android debug APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-apk
+          path: androidApp/build/outputs/apk/debug/*.apk
+
+  build-ios:
+    name: Build iOS simulator debug app
+    runs-on: macos-latest
+    steps:
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Gradle setup
+        uses: ./.github/actions/gradle-setup
+
+      - name: Build iOS simulator app
+        run: |
+          xcodebuild build \
+          -project iosApp/iosApp.xcodeproj \
+          -configuration Debug \
+          -scheme iosApp \
+          -sdk iphonesimulator \
+          -arch arm64 \
+          -derivedDataPath ./build \
+          -verbose
+
+      - name: Upload App Folder
+        uses: actions/upload-artifact@v7
+        with:
+          name: iphonesimulator-app
+          path: build/Build/Products/Debug-iphonesimulator/*
