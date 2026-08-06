@@ -114,7 +114,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import kotlin.reflect.typeOf
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun AppContent(applicationComponent: ApplicationComponent) {
   setSingletonImageLoaderFactory { applicationComponent.imageLoader }
