@@ -43,7 +43,7 @@ navigation = "2.9.2"
 okio = "3.17.0"
 robolectric = "4.16.1"
 room = "2.8.4"
-sqlite = "2.6.2"
+sqlite = "2.7.0"
 turbine = "1.2.1"
 windowSizeClass = "1.9.0"
 
